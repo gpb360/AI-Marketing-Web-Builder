@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { generateComponentId } from '@/lib/utils/hydration';
 
 export interface SmartComponent {
   id: string;
@@ -174,7 +175,7 @@ export const useBuilderStore = create<BuilderStore>()(
       addComponent: (component) => {
         const newComponent: SmartComponent = {
           ...component,
-          id: `component-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: generateComponentId(component.type),
         };
         
         set((state) => ({

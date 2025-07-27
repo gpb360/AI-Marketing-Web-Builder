@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { generateDeterministicId } from '@/lib/utils/hydration';
 
 export interface ComponentElement {
   id: string;
@@ -111,7 +112,7 @@ interface BuilderState {
   getElementChildren: (id: string) => ComponentElement[];
 }
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
+const generateId = () => generateDeterministicId('element');
 
 export const useBuilderStore = create<BuilderState>()(
   devtools(
