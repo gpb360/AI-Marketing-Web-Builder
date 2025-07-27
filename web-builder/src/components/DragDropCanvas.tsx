@@ -19,7 +19,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useBuilderStore } from '@/stores/builderStore';
+import { useBuilderStore, ComponentElement } from '@/stores/builderStore';
 import { CanvasElement } from './CanvasElement';
 import { ElementToolbar } from './ElementToolbar';
 import { DropIndicator } from './DropIndicator';
