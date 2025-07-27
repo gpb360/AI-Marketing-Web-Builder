@@ -159,11 +159,30 @@ The core innovation that differentiates this platform:
 
 ## 🤝 Contributing
 
-This project uses T-Mux orchestration with autonomous AI development teams:
-- **Frontend Team:** Building the drag-drop interface
-- **Backend Team:** Creating the workflow engine and CRM
-- **AI Services Team:** Implementing component customization and workflow AI
-- **Integration Team:** End-to-end testing and platform coordination
+### Development Workflow
+This project follows a **Pull Request (PR) workflow** with automated testing and code review:
+
+1. **Create Feature Branch**: `git checkout -b feature/your-feature-name`
+2. **Develop & Test**: Follow coding standards, commit frequently
+3. **Create Pull Request**: Use PR template, ensure all checks pass
+4. **Code Review**: Minimum 1 approval required
+5. **Automated Testing**: All quality gates must pass
+6. **Merge**: Squash and merge after approval
+
+📋 **See [DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md) for complete guidelines**
+
+### Quality Standards
+- ✅ **Magic Moment Journey**: <30 minutes template-to-live-site
+- ✅ **AI Customization**: <5 seconds response time
+- ✅ **Platform Response**: <2 seconds for interactions
+- ✅ **Test Coverage**: 95% E2E test success rate
+
+### Development Teams
+- **Frontend Team:** Next.js drag-drop builder
+- **Backend Team:** FastAPI workflow engine + CRM
+- **AI Services Team:** Component customization & workflow AI
+- **Integration Team:** End-to-end testing & coordination
+- **QA Team:** Automated Playwright testing
 
 ## 📝 License
 

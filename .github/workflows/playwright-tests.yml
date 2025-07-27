@@ -2,9 +2,8 @@ name: Playwright Tests for AI Marketing Web Builder
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
     branches: [ main ]
+  # PRs are handled by pr-checks.yml workflow
 
 jobs:
   test:
