@@ -69,12 +69,7 @@ uvicorn src.main:app --reload
 │   │   └── requirements.txt     # Python dependencies
 │   ├── package.json             # Frontend dependencies
 │   └── tailwind.config.ts       # Styling configuration
-└── spec/                        # Project specifications
-    ├── main-spec.md             # Overall architecture
-    ├── frontend-spec.md         # Frontend requirements
-    ├── backend-spec.md          # Backend requirements
-    ├── ai-spec.md              # AI services requirements
-    └── integration-spec.md      # Integration testing
+└── [private specifications]     # Technical specifications (not included in public repo)
 ```
 
 ## 🎨 Key Features
@@ -176,11 +171,8 @@ Private project - All rights reserved
 
 ## 🔗 Links
 
-- [Project Specifications](/spec/)
-- [Frontend Spec](/spec/frontend-spec.md)
-- [Backend Spec](/spec/backend-spec.md)
-- [AI Services Spec](/spec/ai-spec.md)
-- [Integration Spec](/spec/integration-spec.md)
+- Project specifications available to development team privately
+- Technical documentation maintained separately from public repository
 
 ---
 

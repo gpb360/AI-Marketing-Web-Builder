@@ -1,3 +1,6 @@
+# Project specifications (private)
+spec/
+
 # Dependencies
 node_modules/
 npm-debug.log*
