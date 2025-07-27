@@ -7,7 +7,7 @@ import {
   Copy, 
   Trash2, 
   Edit3, 
-  Move, 
+ 
   Layers,
   Palette,
   Type,

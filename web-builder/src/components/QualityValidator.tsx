@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Shield, 
   Zap, 
-  Eye, 
+ 
   CheckCircle, 
   AlertTriangle, 
   XCircle, 
@@ -338,7 +338,7 @@ export function QualityValidator({
         <div className="text-center py-8 text-gray-500">
           <Shield className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <p className="text-lg font-medium mb-2">Ready to Validate</p>
-          <p className="text-sm">Click "Validate Code" to check quality, security, and best practices</p>
+          <p className="text-sm">Click &quot;Validate Code&quot; to check quality, security, and best practices</p>
         </div>
       )}
     </div>

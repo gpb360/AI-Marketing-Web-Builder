@@ -29,10 +29,10 @@ export interface ComponentElement {
     right?: string;
     bottom?: string;
     zIndex?: number;
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined;
   };
   props: {
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined;
   };
   children: string[];
   parentId: string | null;

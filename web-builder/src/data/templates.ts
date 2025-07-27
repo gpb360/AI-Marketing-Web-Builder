@@ -1,4 +1,4 @@
-import { Template, ComponentElement } from '@/stores/builderStore';
+import { Template } from '@/stores/builderStore';
 
 // Sample template data
 export const sampleTemplates: Template[] = [

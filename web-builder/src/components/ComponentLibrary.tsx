@@ -8,7 +8,6 @@ import {
   Type,
   MousePointer,
   Image,
-  Star,
   CreditCard,
   FileText,
   Navigation,
@@ -16,8 +15,7 @@ import {
   Layers,
   Grid3X3,
   Box,
-  Monitor,
-  Smartphone
+  Monitor
 } from 'lucide-react';
 
 interface ComponentItem {

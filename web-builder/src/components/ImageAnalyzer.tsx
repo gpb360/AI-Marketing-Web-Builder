@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Eye, Zap, Image as ImageIcon, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { Upload, Eye, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 
 interface ImageAnalysis {
   width: number;

@@ -55,7 +55,7 @@ export function PromptInput({
 
   const removeImage = () => {
     if (onImageUpload) {
-      onImageUpload(null as any);
+      onImageUpload(null as File | null);
     }
   };
 
@@ -167,7 +167,7 @@ export function PromptInput({
           )}
           {!isDragging && (
             <span className="text-gray-500">
-              Try: "Create a responsive pricing card with hover effects and gradient background"
+              Try: &quot;Create a responsive pricing card with hover effects and gradient background&quot;
             </span>
           )}
         </div>

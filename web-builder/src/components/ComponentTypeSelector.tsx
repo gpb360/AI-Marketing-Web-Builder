@@ -116,7 +116,7 @@ export function ComponentTypeSelector({ value, onChange, className = '' }: Compo
 
       {/* Additional Info */}
       <div className="bg-gray-50 rounded-lg p-3">
-        <h5 className="text-sm font-medium text-gray-700 mb-2">What you'll get:</h5>
+        <h5 className="text-sm font-medium text-gray-700 mb-2">What you&apos;ll get:</h5>
         <ul className="text-xs text-gray-600 space-y-1">
           <li className="flex items-center gap-2">
             <span className="w-1 h-1 bg-gray-400 rounded-full" />

@@ -4,11 +4,9 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Wand2, 
-  Upload, 
   Code, 
   Eye, 
   Copy, 
-  Download,
   Sparkles,
   Zap,
   Settings,
@@ -86,7 +84,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
     } finally {
       setIsGenerating(false);
     }
-  }, [generationRequest, onGenerate]);
+  }, [generationRequest, onGenerate, mockGenerate]);
 
   const mockGenerate = async (request: GenerationRequest): Promise<GenerationResult> => {
     try {

@@ -49,7 +49,6 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     hoveredElementId,
     canvasMode,
     zoom,
-    draggedElementType,
     isDropTarget,
     selectElement,
     hoverElement,
@@ -110,7 +109,7 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
 
     // Handle new element creation
     if (typeof active.id === 'string' && active.id.startsWith('new-')) {
-      const elementType = active.id.replace('new-', '') as any;
+      const elementType = active.id.replace('new-', '') as ComponentElement['type'];
       const dropTargetId = over.id === 'canvas-root' ? null : over.id as string;
       
       const newElement = createElementFromType(elementType, dropTargetId);
@@ -130,11 +129,11 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
       
       moveElement(activeElement.id, newParentId, newOrder);
     }
-  }, [elements, addElement, moveElement, setDraggedElementType, setIsDropTarget]);
+  }, [elements, addElement, moveElement, setDraggedElementType, setIsDropTarget, createElementFromType]);
 
   const createElementFromType = useCallback((type: string, parentId: string | null) => {
     const baseElement = {
-      type: type as any,
+      type: type as ComponentElement['type'],
       name: `${type.charAt(0).toUpperCase() + type.slice(1)} Component`,
       content: getDefaultContent(type),
       styles: getDefaultStyles(type),
@@ -403,7 +402,7 @@ function getDefaultContent(type: string): string {
   }
 }
 
-function getDefaultStyles(type: string): any {
+function getDefaultStyles(type: string): ComponentElement['styles'] {
   const baseStyles = {
     position: 'relative',
     width: '100%',
@@ -463,7 +462,7 @@ function getDefaultStyles(type: string): any {
   }
 }
 
-function getDefaultProps(type: string): any {
+function getDefaultProps(type: string): ComponentElement['props'] {
   switch (type) {
     case 'button':
       return {
