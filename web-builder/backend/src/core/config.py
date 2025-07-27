@@ -16,7 +16,9 @@ class Settings(BaseSettings):
     
     # Database
     database_url: str = Field(..., description="PostgreSQL database URL")
-    database_url_sync: str = Field(..., description="Synchronous PostgreSQL database URL")
+    database_url_sync: str = Field(
+        ..., description="Synchronous PostgreSQL database URL"
+    )
     
     # Redis
     redis_url: str = Field(..., description="Redis connection URL")
