@@ -321,7 +321,6 @@ export function ComponentEditor({
                   <LivePreview 
                     code={previewCode}
                     componentType={componentType}
-                    showGrid={showGrid}
                   />
                 </div>
               </div>
@@ -369,12 +368,10 @@ export function ComponentEditor({
 // Live Preview Component
 function LivePreview({ 
   code, 
-  componentType, 
-  showGrid 
+  componentType 
 }: { 
   code: string; 
   componentType: string; 
-  showGrid: boolean; 
 }) {
   const [error, setError] = useState<string | null>(null);
 

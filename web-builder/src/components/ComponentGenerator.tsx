@@ -59,7 +59,6 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
     }
   });
   const [generationResult, setGenerationResult] = useState<GenerationResult | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [estimatedCost, setEstimatedCost] = useState<number>(0);
 
   const handleGenerate = useCallback(async () => {
@@ -67,7 +66,6 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
       return;
     }
 
-    setIsGenerating(true);
     setCurrentStep('generating');
 
     const mockGenerate = async (request: GenerationRequest): Promise<GenerationResult> => {
@@ -112,7 +110,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
           ]
         };
         
-      } catch (_error) {
+      } catch {
         // Fallback to mock generation if API fails
         await new Promise(resolve => setTimeout(resolve, 2000));
         
@@ -142,10 +140,9 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
       
       setGenerationResult(result);
       setCurrentStep('result');
-    } catch (_error) {
+    } catch {
       // Handle error state
     } finally {
-      setIsGenerating(false);
     }
   }, [generationRequest, onGenerate, estimatedCost]);
 
