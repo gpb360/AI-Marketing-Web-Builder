@@ -112,7 +112,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
           ]
         };
         
-      } catch (error) {
+      } catch (_error) {
         // Fallback to mock generation if API fails
         await new Promise(resolve => setTimeout(resolve, 2000));
         
@@ -142,7 +142,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
       
       setGenerationResult(result);
       setCurrentStep('result');
-    } catch (error) {
+    } catch (_error) {
       // Handle error state
     } finally {
       setIsGenerating(false);

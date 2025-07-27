@@ -411,7 +411,6 @@ function LivePreview({
         <EnhancedMockPreview 
           code={code} 
           componentType={componentType}
-          showGrid={showGrid}
         />
       )}
     </div>
@@ -421,12 +420,10 @@ function LivePreview({
 // Enhanced Mock Preview with better component simulation
 function EnhancedMockPreview({ 
   code, 
-  componentType,
-  showGrid 
+  componentType
 }: { 
   code: string; 
   componentType: string;
-  showGrid: boolean;
 }) {
   const [isInteractive, setIsInteractive] = useState(true);
   const [hoverElement, setHoverElement] = useState<string | null>(null);
