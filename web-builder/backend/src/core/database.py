@@ -65,3 +65,33 @@ def get_sync_session():
         raise
     finally:
         session.close()
+
+
+async def init_database():
+    """Initialize database with all tables."""
+    try:
+        async with async_engine.begin() as conn:
+            # Import all models to register them
+            try:
+                from models import base, users, sites, crm, workflows
+                print("Models imported successfully")
+            except ImportError as e:
+                print(f"Could not import models: {e}")
+                return
+            
+            # Create all tables
+            await conn.run_sync(Base.metadata.create_all)
+            print("Database tables created successfully")
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
+
+
+async def close_database_connections():
+    """Close database connections."""
+    try:
+        if async_engine:
+            await async_engine.dispose()
+            print("Database engine disposed")
+    except Exception as e:
+        print(f"Error closing connections: {e}")
+    print("Database connections cleanup completed")
