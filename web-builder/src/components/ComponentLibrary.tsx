@@ -130,19 +130,19 @@ function DraggableComponent({ component }: DraggableComponentProps) {
       style={style}
       {...listeners}
       {...attributes}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.03, y: -2 }}
+      whileTap={{ scale: 0.97 }}
       className={`
-        p-4 bg-white border border-gray-200 rounded-lg cursor-grab shadow-sm hover:shadow-md transition-all
-        ${isDragging ? 'opacity-50 shadow-lg' : ''}
+        p-4 bg-white border border-gray-200 rounded-xl cursor-grab shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-200
+        ${isDragging ? 'opacity-50 shadow-xl rotate-3 scale-105' : ''}
       `}
     >
-      <div className="flex items-center gap-3 mb-2">
-        <div className={`w-8 h-8 ${component.color} rounded-lg flex items-center justify-center`}>
-          <component.icon className="w-4 h-4 text-white" />
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`w-10 h-10 ${component.color} rounded-xl flex items-center justify-center shadow-sm`}>
+          <component.icon className="w-5 h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 truncate">
+          <h4 className="font-semibold text-gray-900 truncate text-base">
             {component.name}
           </h4>
         </div>
@@ -150,6 +150,11 @@ function DraggableComponent({ component }: DraggableComponentProps) {
       <p className="text-sm text-gray-600 leading-relaxed">
         {component.description}
       </p>
+      <div className="mt-3 pt-2 border-t border-gray-100">
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+          {component.category}
+        </span>
+      </div>
     </motion.div>
   );
 }
@@ -176,47 +181,49 @@ export function ComponentLibrary({ className = '' }: ComponentLibraryProps) {
   );
 
   return (
-    <div className={`bg-white border-r border-gray-200 h-full flex flex-col ${className}`}>
+    <div className={`bg-white border-r border-gray-200 h-full flex flex-col shadow-sm ${className}`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
+      <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
           Components
         </h2>
-        <p className="text-sm text-gray-600">
-          Drag components to the canvas
+        <p className="text-sm text-gray-600 font-medium">
+          Drag components to build your page
         </p>
       </div>
 
       {/* Category Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex overflow-x-auto scrollbar-hide">
+      <div className="border-b border-gray-200 bg-gray-50">
+        <div className="flex overflow-x-auto scrollbar-hide px-2">
           {categories.map((category) => {
             const Icon = category.icon;
             const isActive = activeCategory === category.id;
             
             return (
-              <button
+              <motion.button
                 key={category.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveCategory(category.id)}
                 className={`
-                  flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap
+                  flex items-center gap-2 px-4 py-3 mx-1 my-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap
                   ${isActive
-                    ? 'border-blue-500 text-blue-600 bg-blue-50'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-blue-100 text-blue-700 shadow-sm border border-blue-200'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm'
                   }
                 `}
               >
                 <Icon className="w-4 h-4" />
                 {category.name}
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </div>
 
       {/* Components Grid */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="grid grid-cols-1 gap-3">
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div className="grid grid-cols-1 gap-4">
           {filteredComponents.map((component) => (
             <DraggableComponent
               key={component.id}
@@ -238,15 +245,15 @@ export function ComponentLibrary({ className = '' }: ComponentLibraryProps) {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
+      <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
         <div className="text-center">
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="text-xs text-gray-500 mb-3">
             {filteredComponents.length} component{filteredComponents.length !== 1 ? 's' : ''} available
           </p>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            whileHover={{ scale: 1.05, y: -1 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium bg-white rounded-lg shadow-sm hover:shadow-md border border-blue-200 hover:border-blue-300 transition-all"
           >
             Request Component
           </motion.button>
