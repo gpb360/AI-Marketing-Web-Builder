@@ -263,6 +263,28 @@ export function ComponentLibrary({ className = '' }: ComponentLibraryProps) {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="p-4 border-b border-gray-200 bg-white">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search components..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 hover:bg-white transition-all duration-200"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Category Tabs */}
       <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50/30">
         <div className="flex overflow-x-auto scrollbar-hide px-3 py-2">
