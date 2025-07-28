@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { ComponentElement } from '@/stores/builderStore';
 import { useBuilderStore } from '@/stores/builderStore';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface CanvasElementProps {
   element: ComponentElement;
@@ -121,7 +122,7 @@ export function CanvasElement({
                 {element.name}
               </div>
             )}
-            {element.content}
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element.content) }} />
           </div>
         );
 
@@ -139,7 +140,7 @@ export function CanvasElement({
                 {element.name}
               </div>
             )}
-            {element.content}
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element.content) }} />
           </button>
         );
 
@@ -196,10 +197,10 @@ export function CanvasElement({
                 Your compelling hero subtitle goes here
               </p>
               <div className="space-x-4">
-                <button className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                <button className="bg-white text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                   Get Started
                 </button>
-                <button className="border border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors">
+                <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-gray-900 hover:scale-105 transition-all duration-300 shadow-lg backdrop-blur-sm">
                   Learn More
                 </button>
               </div>
@@ -224,7 +225,7 @@ export function CanvasElement({
             <p className="text-gray-600 mb-4">
               {element.content || 'Card description goes here. Add your content to make this card meaningful.'}
             </p>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+            <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
               Action
             </button>
           </div>
@@ -268,7 +269,7 @@ export function CanvasElement({
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 px-6 rounded-lg font-semibold hover:scale-[1.02] transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               disabled={canvasMode === 'design'}
             >
               Submit
@@ -300,7 +301,7 @@ export function CanvasElement({
                   <a href="#" className="text-gray-700 hover:text-gray-900 transition-colors">Services</a>
                   <a href="#" className="text-gray-700 hover:text-gray-900 transition-colors">Contact</a>
                 </div>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
                   Get Started
                 </button>
               </div>

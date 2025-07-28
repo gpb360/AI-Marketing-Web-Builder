@@ -428,16 +428,18 @@ function getDefaultStyles(type: string): ComponentElement['styles'] {
     case 'button':
       return {
         ...baseStyles,
-        padding: '12px 24px',
-        backgroundColor: '#3b82f6',
+        padding: '14px 28px',
+        background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
         color: '#ffffff',
-        borderRadius: '6px',
+        borderRadius: '10px',
         border: 'none',
         cursor: 'pointer',
-        fontSize: '14px',
-        fontWeight: '500',
+        fontSize: '16px',
+        fontWeight: '600',
         display: 'inline-block',
         width: 'auto',
+        boxShadow: '0 4px 14px 0 rgba(59, 130, 246, 0.25)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       };
     case 'image':
       return {
