@@ -82,10 +82,24 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
 
   const rootElements = elements.filter(el => el.parentId === null);
 
+  const createElementFromType = useCallback((type: string, parentId: string | null) => {
+    const baseElement = {
+      type: type as ComponentElement['type'],
+      name: `${type.charAt(0).toUpperCase() + type.slice(1)} Component`,
+      content: getDefaultContent(type),
+      styles: getDefaultStyles(type),
+      props: getDefaultProps(type),
+      children: [],
+      parentId,
+    };
+
+    return baseElement;
+  }, []);
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
     setActiveId(active.id as string);
-    
+
     // Check if this is a new element being dragged from the component library
     if (typeof active.id === 'string' && active.id.startsWith('new-')) {
       const elementType = active.id.replace('new-', '');
@@ -100,7 +114,7 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     setActiveId(null);
     setDraggedElementType(null);
     setIsDropTarget(false);
@@ -111,7 +125,7 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     if (typeof active.id === 'string' && active.id.startsWith('new-')) {
       const elementType = active.id.replace('new-', '') as ComponentElement['type'];
       const dropTargetId = over.id === 'canvas-root' ? null : over.id as string;
-      
+
       const newElement = createElementFromType(elementType, dropTargetId);
       if (newElement) {
         addElement(newElement);
@@ -122,28 +136,14 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     // Handle existing element movement
     const activeElement = elements.find(el => el.id === active.id);
     const overElement = elements.find(el => el.id === over.id);
-    
+
     if (activeElement && active.id !== over.id) {
       const newParentId = over.id === 'canvas-root' ? null : over.id as string;
       const newOrder = overElement ? overElement.order + 1 : 0;
-      
+
       moveElement(activeElement.id, newParentId, newOrder);
     }
   }, [elements, addElement, moveElement, setDraggedElementType, setIsDropTarget, createElementFromType]);
-
-  const createElementFromType = useCallback((type: string, parentId: string | null) => {
-    const baseElement = {
-      type: type as ComponentElement['type'],
-      name: `${type.charAt(0).toUpperCase() + type.slice(1)} Component`,
-      content: getDefaultContent(type),
-      styles: getDefaultStyles(type),
-      props: getDefaultProps(type),
-      children: [],
-      parentId,
-    };
-
-    return baseElement;
-  }, []);
 
   const getViewportDimensions = () => {
     switch (viewport) {
