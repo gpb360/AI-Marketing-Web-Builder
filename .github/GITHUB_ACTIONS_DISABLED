@@ -1,0 +1,23 @@
+# GitHub Actions Disabled
+
+This repository has GitHub Actions intentionally disabled due to account limitations.
+
+## What this means:
+- No CI/CD workflows will run automatically
+- No automated testing on push/PR
+- No automated deployments
+- No scheduled workflows
+
+## Alternative development workflow:
+1. Run tests locally: `npm test`
+2. Run type checking: `npm run type-check`
+3. Run linting: `npm run lint`
+4. Manual deployment when needed
+
+## If you need to enable actions later:
+1. Remove the `.github/workflows/disabled.yml` file
+2. Delete this `GITHUB_ACTIONS_DISABLED` file
+3. Add your actual workflow files to `.github/workflows/`
+
+Date disabled: 2025-01-29
+Reason: Account limitations - GitHub Actions not available
