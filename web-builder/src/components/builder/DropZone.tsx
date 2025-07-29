@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +12,9 @@ interface DropZoneProps {
   onDrop?: (item: any) => void;
 }
 
-export function DropZone({ id, accepts, className, children, onDrop }: DropZoneProps) {
+export function DropZone({ accepts, className, children, onDrop }: DropZoneProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: accepts.includes('*') ? ['component', 'canvas-component'] : accepts,
     drop: (item, monitor) => {
@@ -25,9 +27,12 @@ export function DropZone({ id, accepts, className, children, onDrop }: DropZoneP
     }),
   });
 
+  // Apply the drop ref
+  drop(ref);
+
   return (
     <div
-      ref={drop}
+      ref={ref}
       className={cn(
         "transition-colors duration-200",
         isOver && canDrop && "bg-blue-100/50 border-blue-300",

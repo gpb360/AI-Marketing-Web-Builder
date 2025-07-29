@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDrag } from 'react-dnd';
-import { DragItem, ComponentCategory } from '@/types/builder';
+import { DragItem, ComponentCategory, DragCollectedProps } from '@/types/builder';
 import { cn } from '@/lib/utils';
 import {
   Search,
@@ -354,7 +354,9 @@ interface DraggableComponentProps {
 }
 
 function DraggableComponent({ component }: DraggableComponentProps) {
-  const [{ isDragging }, drag] = useDrag({
+  const ref = useRef<HTMLDivElement>(null);
+  
+  const [{ isDragging }, drag] = useDrag<DragItem, unknown, DragCollectedProps>({
     type: 'component',
     item: component,
     collect: (monitor) => ({
@@ -362,9 +364,12 @@ function DraggableComponent({ component }: DraggableComponentProps) {
     }),
   });
 
+  // Apply the drag ref
+  drag(ref);
+
   return (
     <div
-      ref={drag}
+      ref={ref}
       className={cn(
         "flex items-center p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:border-blue-300 hover:shadow-sm transition-all duration-200",
         isDragging && "opacity-50 cursor-grabbing"

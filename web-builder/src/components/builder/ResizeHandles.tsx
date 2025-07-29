@@ -17,7 +17,6 @@ type ResizeDirection =
   | 's' | 'sw' | 'w' | 'nw';
 
 export function ResizeHandles({
-  componentId,
   size,
   onResize,
   onResizeStart,

@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { ComponentData } from '@/types/builder';
+import { ComponentData, DragItem, DragCollectedProps, DropCollectedProps } from '@/types/builder';
 import { useBuilderStore } from '@/store/builderStore';
 import { ResizeHandles } from './ResizeHandles';
 import { ComponentRenderer } from './ComponentRenderer';
@@ -24,41 +24,41 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
 
   const {
     selectComponent,
-    updateComponentPosition,
     updateComponentSize,
     connectToWorkflow,
     disconnectFromWorkflow,
+    setAIContext,
   } = useBuilderStore();
 
-  const [{ opacity }, drag, preview] = useDrag({
+  // Create drag item that matches DragItem interface
+  const dragItem: DragItem = {
     type: 'canvas-component',
-    item: {
-      type: 'canvas-component',
-      id: component.id,
-      componentType: component.type,
-      name: component.name,
-      defaultProps: component.props,
-      category: 'existing' as any,
-      preview: {
-        thumbnail: '',
-        description: component.name,
-      },
+    id: component.id,
+    componentType: component.type,
+    name: component.name,
+    defaultProps: component.props,
+    category: 'layout', // Default category for existing components
+    preview: {
+      thumbnail: '',
+      description: component.name,
     },
+  };
+
+  const [{ opacity }, drag, preview] = useDrag<DragItem, unknown, DragCollectedProps>({
+    type: 'canvas-component',
+    item: dragItem,
     collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
       opacity: monitor.isDragging() ? 0.5 : 1,
     }),
-    begin: () => {
-      setIsDragging(true);
-      selectComponent(component.id);
-    },
     end: () => {
       setIsDragging(false);
     },
   });
 
-  const [, drop] = useDrop({
-    accept: 'canvas-component',
-    hover: (draggedItem: any, monitor) => {
+  const [, drop] = useDrop<DragItem, unknown, DropCollectedProps>({
+    accept: ['component', 'canvas-component'],
+    hover: (draggedItem) => {
       if (draggedItem.id === component.id) return;
       
       // Allow dropping on containers
@@ -66,6 +66,10 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
         // Handle nested component logic here if needed
       }
     },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
   });
 
   // Use empty image for drag preview to avoid default browser drag image
@@ -83,7 +87,7 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
   const handleDoubleClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     // Open component editor or AI customization
-    useBuilderStore.getState().setAIContext({
+    setAIContext({
       componentId: component.id,
       currentProps: component.props,
       availableActions: ['modify', 'style', 'enhance', 'connect'],
@@ -104,7 +108,14 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
   };
 
   const combinedRef = (node: HTMLDivElement | null) => {
-    componentRef.current = node;
+    if (componentRef.current !== node) {
+      // Only update if the node has actually changed
+      Object.defineProperty(componentRef, 'current', {
+        value: node,
+        writable: true,
+        configurable: true
+      });
+    }
     drag(node);
     drop(node);
   };
@@ -125,6 +136,7 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
         height: component.size.height,
         opacity,
         zIndex: isSelected ? 10 : 1,
+        ...component.style,
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -148,7 +160,7 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
         {isSelected && (
           <WorkflowConnector
             componentId={component.id}
-            isConnected={component.isConnectedToWorkflow}
+            isConnected={component.isConnectedToWorkflow || false}
             workflowId={component.workflowId}
             onConnect={handleWorkflowConnect}
             onDisconnect={handleWorkflowDisconnect}

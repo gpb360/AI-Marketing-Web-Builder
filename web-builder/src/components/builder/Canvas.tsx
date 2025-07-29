@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { useBuilderStore } from '@/store/builderStore';
-import { ComponentData, DragItem } from '@/types/builder';
+import { ComponentData, DragItem, DropCollectedProps, DropResult } from '@/types/builder';
 import { CanvasComponent } from './CanvasComponent';
 import { DropZone } from './DropZone';
 import { GridOverlay } from './GridOverlay';
@@ -29,12 +29,12 @@ export function Canvas({ className }: CanvasProps) {
     selectComponent,
     updateComponentPosition,
     getComponentById,
-    canDropComponent,
+    setCanvasSize,
   } = useBuilderStore();
 
-  const [{ isOver, canDrop }, drop] = useDrop({
+  const [{ isOver, canDrop }, drop] = useDrop<DragItem, DropResult, DropCollectedProps>({
     accept: ['component', 'canvas-component'],
-    drop: (item: DragItem, monitor) => {
+    drop: (item: DragItem, monitor): DropResult | undefined => {
       if (!monitor.didDrop()) {
         const offset = monitor.getClientOffset();
         const canvasRect = canvasRef.current?.getBoundingClientRect();
@@ -68,18 +68,28 @@ export function Canvas({ className }: CanvasProps) {
           else if (item.type === 'canvas-component') {
             updateComponentPosition(item.id, position);
           }
+
+          setIsDragging(false);
+          return { 
+            dropEffect: 'move', 
+            position,
+          };
         }
       }
 
       setIsDragging(false);
-      return { dropEffect: 'move' };
+      return undefined;
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
     }),
     hover: (item, monitor) => {
-      setIsDragging(monitor.isDragging());
+      // Track dragging state based on the monitor
+      const dragState = monitor.getItem() !== null;
+      if (dragState !== isDragging) {
+        setIsDragging(dragState);
+      }
     },
   });
 
@@ -143,9 +153,9 @@ export function Canvas({ className }: CanvasProps) {
     };
 
     if (newSize.width !== canvasSize.width || newSize.height !== canvasSize.height) {
-      useBuilderStore.getState().setCanvasSize(newSize);
+      setCanvasSize(newSize);
     }
-  }, [components, canvasSize]);
+  }, [components, canvasSize, setCanvasSize]);
 
   drop(canvasRef);
 

@@ -4,8 +4,8 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
-import { ComponentElement } from '@/stores/builderStore';
-import { useBuilderStore } from '@/stores/builderStore';
+import { ComponentElement } from '@/store/builderStore';
+import { useBuilderStore } from '@/store/builderStore';
 import DOMPurify from 'isomorphic-dompurify';
 
 interface CanvasElementProps {
@@ -159,9 +159,13 @@ export function CanvasElement({
             )}
             {element.props.src ? (
               <img
-                src={element.props.src}
-                alt={element.props.alt || ''}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                src={String(element.props.src)}
+                alt={String(element.props.alt || '')}
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover' as const 
+                }}
               />
             ) : (
               <div 

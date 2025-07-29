@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useBuilderStore } from '@/stores/builderStore';
+import { useBuilderStore } from '@/store/builderStore';
 import { sampleTemplates, templateCategories, getTemplatesByCategory } from '@/data/templates';
 import { 
   Eye, 
@@ -185,7 +185,7 @@ export function TemplateLibrary({ className = '' }: TemplateLibraryProps) {
                         {template.category}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {template.elements.length} components
+                        {template.components.length} components
                       </span>
                     </div>
                     

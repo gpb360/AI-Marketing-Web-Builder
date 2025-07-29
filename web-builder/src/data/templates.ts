@@ -1,4 +1,4 @@
-import { Template } from '@/stores/builderStore';
+import { Template } from '@/store/builderStore';
 
 // Premium SaaS Landing Page Template
 const premiumSaasTemplate: Template = {
@@ -9,7 +9,7 @@ const premiumSaasTemplate: Template = {
   thumbnail: '/templates/premium-saas-landing.jpg',
   createdAt: new Date('2024-01-20'),
   updatedAt: new Date('2024-01-20'),
-  elements: [
+  components: [
     // Navigation Header
     {
       id: 'saas-nav',
@@ -604,351 +604,6 @@ const premiumSaasTemplate: Template = {
       order: 5,
     },
 
-    // Testimonials Section
-    {
-      id: 'testimonials-section',
-      type: 'container',
-      name: 'Testimonials Section',
-      content: '',
-      styles: {
-        position: 'relative',
-        width: '100%',
-        backgroundColor: '#f8fafc',
-        padding: '120px 20px',
-      },
-      props: {},
-      children: ['testimonials-header', 'testimonials-grid'],
-      parentId: null,
-      order: 4,
-    },
-
-    // Testimonials Header
-    {
-      id: 'testimonials-header',
-      type: 'container',
-      name: 'Testimonials Header',
-      content: '',
-      styles: {
-        textAlign: 'center',
-        marginBottom: '80px',
-      },
-      props: {},
-      children: ['testimonials-title'],
-      parentId: 'testimonials-section',
-      order: 0,
-    },
-
-    // Testimonials Title
-    {
-      id: 'testimonials-title',
-      type: 'text',
-      name: 'Testimonials Title',
-      content: 'Loved by businesses worldwide',
-      styles: {
-        fontSize: '48px',
-        fontWeight: '800',
-        color: '#1f2937',
-        lineHeight: '1.2',
-        marginBottom: '24px',
-      },
-      props: {},
-      children: [],
-      parentId: 'testimonials-header',
-      order: 0,
-    },
-
-    // Testimonials Grid
-    {
-      id: 'testimonials-grid',
-      type: 'container',
-      name: 'Testimonials Grid',
-      content: '',
-      styles: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-        gap: '30px',
-        maxWidth: '1200px',
-        margin: '0 auto',
-      },
-      props: {},
-      children: ['testimonial-1', 'testimonial-2', 'testimonial-3'],
-      parentId: 'testimonials-section',
-      order: 1,
-    },
-
-    // Testimonial 1
-    {
-      id: 'testimonial-1',
-      type: 'card',
-      name: 'Customer Testimonial 1',
-      content: 'SaaSPro transformed our workflow and increased our productivity by 300%. The AI insights are game-changing!',
-      styles: {
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        padding: '40px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-        border: 'none',
-      },
-      props: {
-        quote: 'SaaSPro transformed our workflow and increased our productivity by 300%. The AI insights are game-changing!',
-        author: 'Sarah Chen',
-        title: 'CEO, TechCorp',
-        avatar: '/avatars/sarah-chen.jpg',
-        rating: 5,
-      },
-      children: [],
-      parentId: 'testimonials-grid',
-      order: 0,
-    },
-
-    // Testimonial 2
-    {
-      id: 'testimonial-2',
-      type: 'card',
-      name: 'Customer Testimonial 2',
-      content: 'The automation features saved us 20 hours per week. Our team can now focus on strategic initiatives instead of manual tasks.',
-      styles: {
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        padding: '40px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-        border: 'none',
-      },
-      props: {
-        quote: 'The automation features saved us 20 hours per week. Our team can now focus on strategic initiatives instead of manual tasks.',
-        author: 'Michael Rodriguez',
-        title: 'COO, GrowthLabs',
-        avatar: '/avatars/michael-rodriguez.jpg',
-        rating: 5,
-      },
-      children: [],
-      parentId: 'testimonials-grid',
-      order: 1,
-    },
-
-    // Testimonial 3
-    {
-      id: 'testimonial-3',
-      type: 'card',
-      name: 'Customer Testimonial 3',
-      content: 'Best investment we made this year. The ROI was visible within the first month of implementation.',
-      styles: {
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        padding: '40px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-        border: 'none',
-      },
-      props: {
-        quote: 'Best investment we made this year. The ROI was visible within the first month of implementation.',
-        author: 'Emma Thompson',
-        title: 'VP Product, InnovateNow',
-        avatar: '/avatars/emma-thompson.jpg',
-        rating: 5,
-      },
-      children: [],
-      parentId: 'testimonials-grid',
-      order: 2,
-    },
-
-    // Pricing Section
-    {
-      id: 'pricing-section',
-      type: 'container',
-      name: 'Pricing Section',
-      content: '',
-      styles: {
-        position: 'relative',
-        width: '100%',
-        backgroundColor: '#ffffff',
-        padding: '120px 20px',
-      },
-      props: {},
-      children: ['pricing-header', 'pricing-grid'],
-      parentId: null,
-      order: 5,
-    },
-
-    // Pricing Header
-    {
-      id: 'pricing-header',
-      type: 'container',
-      name: 'Pricing Header',
-      content: '',
-      styles: {
-        textAlign: 'center',
-        marginBottom: '80px',
-      },
-      props: {},
-      children: ['pricing-title', 'pricing-subtitle'],
-      parentId: 'pricing-section',
-      order: 0,
-    },
-
-    // Pricing Title
-    {
-      id: 'pricing-title',
-      type: 'text',
-      name: 'Pricing Title',
-      content: 'Simple, transparent pricing',
-      styles: {
-        fontSize: '48px',
-        fontWeight: '800',
-        color: '#1f2937',
-        lineHeight: '1.2',
-        marginBottom: '24px',
-      },
-      props: {},
-      children: [],
-      parentId: 'pricing-header',
-      order: 0,
-    },
-
-    // Pricing Subtitle
-    {
-      id: 'pricing-subtitle',
-      type: 'text',
-      name: 'Pricing Subtitle',
-      content: 'Choose the perfect plan for your business. All plans include a 14-day free trial.',
-      styles: {
-        fontSize: '20px',
-        fontWeight: '400',
-        color: '#6b7280',
-        lineHeight: '1.6',
-        maxWidth: '600px',
-        margin: '0 auto',
-      },
-      props: {},
-      children: [],
-      parentId: 'pricing-header',
-      order: 1,
-    },
-
-    // Pricing Grid
-    {
-      id: 'pricing-grid',
-      type: 'container',
-      name: 'Pricing Plans Grid',
-      content: '',
-      styles: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '30px',
-        maxWidth: '1000px',
-        margin: '0 auto',
-      },
-      props: {},
-      children: ['pricing-starter', 'pricing-pro', 'pricing-enterprise'],
-      parentId: 'pricing-section',
-      order: 1,
-    },
-
-    // Starter Plan
-    {
-      id: 'pricing-starter',
-      type: 'card',
-      name: 'Starter Plan',
-      content: 'Perfect for small teams getting started',
-      styles: {
-        backgroundColor: '#ffffff',
-        border: '2px solid #e5e7eb',
-        borderRadius: '16px',
-        padding: '40px',
-        textAlign: 'center',
-        position: 'relative',
-      },
-      props: {
-        planName: 'Starter',
-        price: '$29',
-        billing: 'per month',
-        description: 'Perfect for small teams getting started',
-        features: [
-          'Up to 5 team members',
-          'Basic analytics',
-          '10 workflow automations',
-          'Email support',
-          '5GB storage',
-        ],
-        ctaText: 'Start Free Trial',
-        popular: false,
-      },
-      children: [],
-      parentId: 'pricing-grid',
-      order: 0,
-    },
-
-    // Pro Plan (Popular)
-    {
-      id: 'pricing-pro',
-      type: 'card',
-      name: 'Pro Plan',
-      content: 'Best for growing businesses',
-      styles: {
-        backgroundColor: '#ffffff',
-        border: '2px solid #4f46e5',
-        borderRadius: '16px',
-        padding: '40px',
-        textAlign: 'center',
-        position: 'relative',
-        transform: 'scale(1.05)',
-        boxShadow: '0 20px 40px rgba(79, 70, 229, 0.15)',
-      },
-      props: {
-        planName: 'Pro',
-        price: '$99',
-        billing: 'per month',
-        description: 'Best for growing businesses',
-        features: [
-          'Up to 25 team members',
-          'Advanced AI analytics',
-          'Unlimited automations',
-          'Priority support',
-          '100GB storage',
-          'Custom integrations',
-        ],
-        ctaText: 'Start Free Trial',
-        popular: true,
-      },
-      children: [],
-      parentId: 'pricing-grid',
-      order: 1,
-    },
-
-    // Enterprise Plan
-    {
-      id: 'pricing-enterprise',
-      type: 'card',
-      name: 'Enterprise Plan',
-      content: 'For large organizations with advanced needs',
-      styles: {
-        backgroundColor: '#ffffff',
-        border: '2px solid #e5e7eb',
-        borderRadius: '16px',
-        padding: '40px',
-        textAlign: 'center',
-        position: 'relative',
-      },
-      props: {
-        planName: 'Enterprise',
-        price: 'Custom',
-        billing: 'pricing',
-        description: 'For large organizations with advanced needs',
-        features: [
-          'Unlimited team members',
-          'Custom AI models',
-          'Advanced security',
-          'Dedicated support',
-          'Unlimited storage',
-          'White-label options',
-        ],
-        ctaText: 'Contact Sales',
-        popular: false,
-      },
-      children: [],
-      parentId: 'pricing-grid',
-      order: 2,
-    },
-
     // Final CTA Section
     {
       id: 'final-cta-section',
@@ -1090,7 +745,7 @@ export const sampleTemplates: Template[] = [
     thumbnail: '/templates/hero-landing.jpg',
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15'),
-    elements: [
+    components: [
       {
         id: 'nav-1',
         type: 'navigation',
@@ -1204,7 +859,7 @@ export const sampleTemplates: Template[] = [
     thumbnail: '/templates/pricing-page.jpg',
     createdAt: new Date('2024-01-16'),
     updatedAt: new Date('2024-01-16'),
-    elements: [
+    components: [
       {
         id: 'pricing-hero',
         type: 'hero',
@@ -1311,7 +966,7 @@ export const sampleTemplates: Template[] = [
     thumbnail: '/templates/contact-page.jpg',
     createdAt: new Date('2024-01-17'),
     updatedAt: new Date('2024-01-17'),
-    elements: [
+    components: [
       {
         id: 'contact-hero',
         type: 'container',
@@ -1405,7 +1060,7 @@ export const sampleTemplates: Template[] = [
     thumbnail: '/templates/portfolio.jpg',
     createdAt: new Date('2024-01-18'),
     updatedAt: new Date('2024-01-18'),
-    elements: [
+    components: [
       {
         id: 'portfolio-nav',
         type: 'navigation',
@@ -1542,7 +1197,7 @@ export const sampleTemplates: Template[] = [
     thumbnail: '/templates/blog-home.jpg',
     createdAt: new Date('2024-01-19'),
     updatedAt: new Date('2024-01-19'),
-    elements: [
+    components: [
       {
         id: 'blog-nav',
         type: 'navigation',

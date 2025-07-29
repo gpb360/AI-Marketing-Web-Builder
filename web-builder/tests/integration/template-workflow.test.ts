@@ -22,7 +22,7 @@ describe('Template Loading and Component Placement Integration', () => {
       const template = getTemplateById('premium-saas-landing-1');
       
       expect(template).toBeDefined();
-      expect(template?.elements).toHaveLength(78); // Premium template has 78 elements
+      expect(template?.components).toHaveLength(33); // Premium template has 33 components
       expect(template?.name).toBe('Premium SaaS Landing Page');
     });
 
@@ -31,40 +31,62 @@ describe('Template Loading and Component Placement Integration', () => {
       if (!template) throw new Error('Template not found');
 
       // Test parent-child relationships
-      const navElement = template.elements.find(el => el.id === 'saas-nav');
-      const heroElement = template.elements.find(el => el.id === 'saas-hero');
-      const heroContent = template.elements.find(el => el.id === 'hero-content');
+      const navElement = template.components.find(el => el.id === 'saas-nav');
+      const heroElement = template.components.find(el => el.id === 'saas-hero');
+      const heroContent = template.components.find(el => el.id === 'hero-content');
 
       expect(navElement?.parentId).toBeNull(); // Root element
       expect(heroElement?.parentId).toBeNull(); // Root element  
       expect(heroContent?.parentId).toBe('saas-hero'); // Child of hero
     });
 
-    test('should convert template elements to ComponentData format', () => {
+    test('should convert template components to ComponentData format', () => {
       const { result } = renderHook(() => useBuilderStore());
       const template = getTemplateById('premium-saas-landing-1');
       
       if (!template) throw new Error('Template not found');
       
-      // Mock converting template element to ComponentData
-      const templateElement = template.elements[0];
+      // Mock converting template component to ComponentData
+      const templateComponent = template.components[0];
       const componentData: ComponentData = {
-        id: templateElement.id,
-        type: templateElement.type,
-        name: templateElement.name,
+        id: templateComponent.id,
+        type: templateComponent.type,
+        name: templateComponent.name,
         props: {
-          ...templateElement.props,
-          content: templateElement.content,
-          styles: templateElement.styles
+          ...templateComponent.props,
+          content: templateComponent.content,
+          styles: templateComponent.styles
         },
         position: { x: 0, y: 0 }, // Default position
         size: { width: 100, height: 100 }, // Default size
         children: []
       };
 
-      expect(componentData.id).toBe(templateElement.id);
-      expect(componentData.type).toBe(templateElement.type);
-      expect(componentData.name).toBe(templateElement.name);
+      expect(componentData.id).toBe(templateComponent.id);
+      expect(componentData.type).toBe(templateComponent.type);
+      expect(componentData.name).toBe(templateComponent.name);
+    });
+
+    test('should actually load template into store', () => {
+      const { result } = renderHook(() => useBuilderStore());
+      const template = getTemplateById('premium-saas-landing-1');
+      
+      if (!template) throw new Error('Template not found');
+      
+      act(() => {
+        result.current.loadTemplate(template);
+      });
+
+      // Check that template was loaded
+      expect(result.current.currentTemplate).toBe(template);
+      expect(result.current.components.length).toBeGreaterThan(0);
+      
+      // Check that components have proper structure
+      const firstComponent = result.current.components[0];
+      expect(firstComponent.id).toBeDefined();
+      expect(firstComponent.type).toBeDefined();
+      expect(firstComponent.position).toBeDefined();
+      expect(firstComponent.size).toBeDefined();
     });
   });
 
@@ -346,8 +368,8 @@ describe('Template Categories and Filtering', () => {
       expect(template.name).toBeDefined();
       expect(template.category).toBeDefined();
       expect(template.description).toBeDefined();
-      expect(template.elements).toBeDefined();
-      expect(Array.isArray(template.elements)).toBe(true);
+      expect(template.components).toBeDefined();
+      expect(Array.isArray(template.components)).toBe(true);
     });
   });
 });

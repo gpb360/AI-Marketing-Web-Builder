@@ -52,7 +52,6 @@ const availableWorkflows = [
 ];
 
 export function WorkflowConnector({
-  componentId,
   isConnected,
   workflowId,
   onConnect,
