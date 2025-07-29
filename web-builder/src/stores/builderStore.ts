@@ -264,15 +264,18 @@ export const useBuilderStore = create<BuilderState>()(
       
       saveTemplate: (name, category) => {
         const state = get();
+        const now = typeof window !== 'undefined' ? new Date() : new Date(0);
+        const dateString = typeof window !== 'undefined' ? now.toLocaleDateString() : '';
+        
         const template: Template = {
           id: generateId(),
           name,
           category,
-          description: `Template created on ${new Date().toLocaleDateString()}`,
+          description: `Template created${dateString ? ` on ${dateString}` : ''}`,
           thumbnail: '', // TODO: Generate thumbnail
           elements: state.elements,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: now,
+          updatedAt: now,
         };
         
         set((state) => ({

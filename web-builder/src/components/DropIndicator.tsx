@@ -36,8 +36,8 @@ export function DropIndicator() {
                 key={i}
                 className="absolute w-2 h-2 bg-blue-400 rounded-full"
                 initial={{
-                  x: Math.random() * 100 + '%',
-                  y: Math.random() * 100 + '%',
+                  x: ((i * 15) % 100) + '%',
+                  y: ((i * 25) % 100) + '%',
                   scale: 0,
                 }}
                 animate={{

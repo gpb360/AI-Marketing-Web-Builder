@@ -86,7 +86,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
           body: formData,
           headers: {
             // Don't set Content-Type, let browser set it with boundary
-            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+            'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('auth_token') || '' : ''}`
           }
         });
         

@@ -67,12 +67,12 @@ export function CacheEfficiencyDashboard({ className = '' }: CacheEfficiencyDash
       const [statsResponse, reportResponse] = await Promise.all([
         fetch('/api/ai/cache-stats', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+            'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('auth_token') || '' : ''}`
           }
         }),
         fetch('/api/ai/cache-efficiency-report?days=30', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+            'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('auth_token') || '' : ''}`
           }
         })
       ]);
@@ -108,7 +108,7 @@ export function CacheEfficiencyDashboard({ className = '' }: CacheEfficiencyDash
       const response = await fetch('/api/ai/optimize-cache', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+          'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('auth_token') || '' : ''}`
         }
       });
 
@@ -136,7 +136,7 @@ export function CacheEfficiencyDashboard({ className = '' }: CacheEfficiencyDash
       const response = await fetch('/api/ai/cache', {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+          'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('auth_token') || '' : ''}`
         }
       });
 

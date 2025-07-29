@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Editor } from '@monaco-editor/react';
 import { Eye, Code, Copy, Download } from 'lucide-react';
+import { ClientOnly } from '@/lib/utils/hydration';
 
 interface ComponentPreviewProps {
   code: string;
@@ -17,15 +18,19 @@ export function ComponentPreview({ code, componentType, className = '' }: Compon
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (typeof window !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
     } catch (error) {
       console.error('Failed to copy code:', error);
     }
   };
 
   const handleDownload = () => {
+    if (typeof window === 'undefined') return;
+    
     const fileExtensions = {
       react: 'tsx',
       html: 'html',
@@ -160,23 +165,29 @@ export function ComponentPreview({ code, componentType, className = '' }: Compon
               transition={{ duration: 0.2 }}
               className="relative"
             >
-              <Editor
-                height="400px"
-                language={getLanguage()}
-                value={code}
-                theme="vs"
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  fontFamily: 'JetBrains Mono, Monaco, Consolas, monospace',
-                  fontSize: 13,
-                  lineNumbers: 'on',
-                  folding: true,
-                  wordWrap: 'on',
-                  automaticLayout: true
-                }}
-              />
+              <ClientOnly fallback={
+                <div className="h-[400px] bg-gray-50 border border-gray-200 rounded flex items-center justify-center">
+                  <div className="text-gray-500">Loading editor...</div>
+                </div>
+              }>
+                <Editor
+                  height="400px"
+                  language={getLanguage()}
+                  value={code}
+                  theme="vs"
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    fontFamily: 'JetBrains Mono, Monaco, Consolas, monospace',
+                    fontSize: 13,
+                    lineNumbers: 'on',
+                    folding: true,
+                    wordWrap: 'on',
+                    automaticLayout: true
+                  }}
+                />
+              </ClientOnly>
               
               {/* Copy overlay */}
               {copied && (
