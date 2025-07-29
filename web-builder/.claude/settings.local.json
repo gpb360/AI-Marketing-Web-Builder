@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(find:*)",
+      "Bash(npm install)",
+      "Bash(gh pr checkout:*)",
+      "Bash(gh project list:*)",
+      "Bash(pkill:*)",
+      "Bash(gh repo view:*)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(gh project create:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh project item-list:*)"
+    ],
+    "deny": []
+  }
+}
