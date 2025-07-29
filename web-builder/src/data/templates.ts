@@ -1,7 +1,1087 @@
 import { Template } from '@/stores/builderStore';
 
-// Sample template data
+// Premium SaaS Landing Page Template
+const premiumSaasTemplate: Template = {
+  id: 'premium-saas-landing-1',
+  name: 'Premium SaaS Landing Page',
+  category: 'landing',
+  description: 'Modern, conversion-focused SaaS landing page with hero, features, social proof, pricing, and CTA sections',
+  thumbnail: '/templates/premium-saas-landing.jpg',
+  createdAt: new Date('2024-01-20'),
+  updatedAt: new Date('2024-01-20'),
+  elements: [
+    // Navigation Header
+    {
+      id: 'saas-nav',
+      type: 'navigation',
+      name: 'Navigation Header',
+      content: '',
+      styles: {
+        position: 'sticky',
+        top: '0',
+        width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(229, 231, 235, 0.5)',
+        zIndex: 50,
+        padding: '16px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        maxWidth: '1200px',
+        margin: '0 auto',
+      },
+      props: {
+        logo: 'SaaSPro',
+        menuItems: ['Features', 'Pricing', 'About', 'Contact'],
+        ctaText: 'Start Free Trial',
+      },
+      children: [],
+      parentId: null,
+      order: 0,
+    },
+
+    // Hero Section
+    {
+      id: 'saas-hero',
+      type: 'hero',
+      name: 'Hero Section',
+      content: 'Transform Your Business with AI-Powered Analytics',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: '#ffffff',
+        textAlign: 'center',
+        padding: '120px 20px 100px',
+        minHeight: '600px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      props: {
+        headline: 'Transform Your Business with AI-Powered Analytics',
+        subheadline: 'Get real-time insights, automate workflows, and boost productivity by 300% with our cutting-edge SaaS platform trusted by 10,000+ companies.',
+        primaryCta: 'Start Free 14-Day Trial',
+        secondaryCta: 'Watch Demo',
+        heroImage: '/images/saas-dashboard-preview.png',
+      },
+      children: ['hero-content', 'hero-cta-group'],
+      parentId: null,
+      order: 1,
+    },
+
+    // Hero Content
+    {
+      id: 'hero-content',
+      type: 'container',
+      name: 'Hero Content Container',
+      content: '',
+      styles: {
+        maxWidth: '800px',
+        margin: '0 auto 40px',
+        textAlign: 'center',
+      },
+      props: {},
+      children: ['hero-headline', 'hero-subheadline'],
+      parentId: 'saas-hero',
+      order: 0,
+    },
+
+    // Hero Headline
+    {
+      id: 'hero-headline',
+      type: 'text',
+      name: 'Hero Headline',
+      content: 'Transform Your Business with AI-Powered Analytics',
+      styles: {
+        fontSize: '56px',
+        fontWeight: '800',
+        lineHeight: '1.1',
+        marginBottom: '24px',
+        background: 'linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%)',
+        backgroundClip: 'text',
+        color: 'transparent',
+      },
+      props: {},
+      children: [],
+      parentId: 'hero-content',
+      order: 0,
+    },
+
+    // Hero Subheadline
+    {
+      id: 'hero-subheadline',
+      type: 'text',
+      name: 'Hero Subheadline',
+      content: 'Get real-time insights, automate workflows, and boost productivity by 300% with our cutting-edge SaaS platform trusted by 10,000+ companies.',
+      styles: {
+        fontSize: '20px',
+        fontWeight: '400',
+        lineHeight: '1.6',
+        color: 'rgba(255, 255, 255, 0.9)',
+        maxWidth: '600px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: [],
+      parentId: 'hero-content',
+      order: 1,
+    },
+
+    // Hero CTA Group
+    {
+      id: 'hero-cta-group',
+      type: 'container',
+      name: 'Hero CTA Group',
+      content: '',
+      styles: {
+        display: 'flex',
+        gap: '16px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        marginBottom: '60px',
+      },
+      props: {},
+      children: ['hero-primary-cta', 'hero-secondary-cta'],
+      parentId: 'saas-hero',
+      order: 1,
+    },
+
+    // Primary CTA Button
+    {
+      id: 'hero-primary-cta',
+      type: 'button',
+      name: 'Primary CTA Button',
+      content: 'Start Free 14-Day Trial',
+      styles: {
+        backgroundColor: '#ffffff',
+        color: '#4f46e5',
+        fontSize: '18px',
+        fontWeight: '600',
+        padding: '16px 32px',
+        borderRadius: '12px',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+      },
+      props: {
+        href: '/signup',
+        variant: 'primary',
+      },
+      children: [],
+      parentId: 'hero-cta-group',
+      order: 0,
+    },
+
+    // Secondary CTA Button
+    {
+      id: 'hero-secondary-cta',
+      type: 'button',
+      name: 'Secondary CTA Button',
+      content: 'Watch Demo →',
+      styles: {
+        backgroundColor: 'transparent',
+        color: '#ffffff',
+        fontSize: '18px',
+        fontWeight: '600',
+        padding: '16px 32px',
+        borderRadius: '12px',
+        border: '2px solid rgba(255, 255, 255, 0.3)',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+      },
+      props: {
+        href: '/demo',
+        variant: 'secondary',
+      },
+      children: [],
+      parentId: 'hero-cta-group',
+      order: 1,
+    },
+
+    // Social Proof Section
+    {
+      id: 'social-proof',
+      type: 'container',
+      name: 'Social Proof Section',
+      content: '',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#f8fafc',
+        padding: '60px 20px',
+        textAlign: 'center',
+      },
+      props: {},
+      children: ['social-proof-title', 'social-proof-logos', 'social-proof-stats'],
+      parentId: null,
+      order: 2,
+    },
+
+    // Social Proof Title
+    {
+      id: 'social-proof-title',
+      type: 'text',
+      name: 'Social Proof Title',
+      content: 'Trusted by 10,000+ companies worldwide',
+      styles: {
+        fontSize: '16px',
+        fontWeight: '500',
+        color: '#6b7280',
+        marginBottom: '40px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+      },
+      props: {},
+      children: [],
+      parentId: 'social-proof',
+      order: 0,
+    },
+
+    // Company Logos
+    {
+      id: 'social-proof-logos',
+      type: 'container',
+      name: 'Company Logos',
+      content: '',
+      styles: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '60px',
+        flexWrap: 'wrap',
+        marginBottom: '60px',
+        opacity: '0.6',
+      },
+      props: {
+        logos: ['Google', 'Microsoft', 'Amazon', 'Spotify', 'Uber', 'Netflix'],
+      },
+      children: [],
+      parentId: 'social-proof',
+      order: 1,
+    },
+
+    // Key Stats
+    {
+      id: 'social-proof-stats',
+      type: 'container',
+      name: 'Key Statistics',
+      content: '',
+      styles: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '40px',
+        maxWidth: '800px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: ['stat-1', 'stat-2', 'stat-3', 'stat-4'],
+      parentId: 'social-proof',
+      order: 2,
+    },
+
+    // Stat 1
+    {
+      id: 'stat-1',
+      type: 'card',
+      name: 'Statistic 1',
+      content: '300%',
+      styles: {
+        textAlign: 'center',
+        padding: '0',
+        backgroundColor: 'transparent',
+        border: 'none',
+      },
+      props: {
+        number: '300%',
+        label: 'Productivity Increase',
+      },
+      children: [],
+      parentId: 'social-proof-stats',
+      order: 0,
+    },
+
+    // Stat 2
+    {
+      id: 'stat-2',
+      type: 'card',
+      name: 'Statistic 2',
+      content: '99.9%',
+      styles: {
+        textAlign: 'center',
+        padding: '0',
+        backgroundColor: 'transparent',
+        border: 'none',
+      },
+      props: {
+        number: '99.9%',
+        label: 'Uptime Guarantee',
+      },
+      children: [],
+      parentId: 'social-proof-stats',
+      order: 1,
+    },
+
+    // Stat 3
+    {
+      id: 'stat-3',
+      type: 'card',
+      name: 'Statistic 3',
+      content: '10M+',
+      styles: {
+        textAlign: 'center',
+        padding: '0',
+        backgroundColor: 'transparent',
+        border: 'none',
+      },
+      props: {
+        number: '10M+',
+        label: 'Data Points Processed',
+      },
+      children: [],
+      parentId: 'social-proof-stats',
+      order: 2,
+    },
+
+    // Stat 4
+    {
+      id: 'stat-4',
+      type: 'card',
+      name: 'Statistic 4',
+      content: '24/7',
+      styles: {
+        textAlign: 'center',
+        padding: '0',
+        backgroundColor: 'transparent',
+        border: 'none',
+      },
+      props: {
+        number: '24/7',
+        label: 'Expert Support',
+      },
+      children: [],
+      parentId: 'social-proof-stats',
+      order: 3,
+    },
+
+    // Features Section
+    {
+      id: 'features-section',
+      type: 'container',
+      name: 'Features Section',
+      content: '',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#ffffff',
+        padding: '120px 20px',
+        maxWidth: '1200px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: ['features-header', 'features-grid'],
+      parentId: null,
+      order: 3,
+    },
+
+    // Features Header
+    {
+      id: 'features-header',
+      type: 'container',
+      name: 'Features Header',
+      content: '',
+      styles: {
+        textAlign: 'center',
+        marginBottom: '80px',
+      },
+      props: {},
+      children: ['features-title', 'features-subtitle'],
+      parentId: 'features-section',
+      order: 0,
+    },
+
+    // Features Title
+    {
+      id: 'features-title',
+      type: 'text',
+      name: 'Features Title',
+      content: 'Everything you need to scale your business',
+      styles: {
+        fontSize: '48px',
+        fontWeight: '800',
+        color: '#1f2937',
+        lineHeight: '1.2',
+        marginBottom: '24px',
+      },
+      props: {},
+      children: [],
+      parentId: 'features-header',
+      order: 0,
+    },
+
+    // Features Subtitle
+    {
+      id: 'features-subtitle',
+      type: 'text',
+      name: 'Features Subtitle',
+      content: 'Our comprehensive suite of tools helps you automate workflows, gain insights, and accelerate growth with enterprise-grade security.',
+      styles: {
+        fontSize: '20px',
+        fontWeight: '400',
+        color: '#6b7280',
+        lineHeight: '1.6',
+        maxWidth: '600px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: [],
+      parentId: 'features-header',
+      order: 1,
+    },
+
+    // Features Grid
+    {
+      id: 'features-grid',
+      type: 'container',
+      name: 'Features Grid',
+      content: '',
+      styles: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '40px',
+      },
+      props: {},
+      children: ['feature-1', 'feature-2', 'feature-3', 'feature-4', 'feature-5', 'feature-6'],
+      parentId: 'features-section',
+      order: 1,
+    },
+
+    // Feature 1
+    {
+      id: 'feature-1',
+      type: 'card',
+      name: 'AI-Powered Analytics',
+      content: 'Get real-time insights with machine learning algorithms that predict trends and optimize your business performance automatically.',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+      },
+      props: {
+        icon: '🤖',
+        title: 'AI-Powered Analytics',
+        description: 'Get real-time insights with machine learning algorithms that predict trends and optimize your business performance automatically.',
+      },
+      children: [],
+      parentId: 'features-grid',
+      order: 0,
+    },
+
+    // Feature 2
+    {
+      id: 'feature-2',
+      type: 'card',
+      name: 'Workflow Automation',
+      content: 'Automate repetitive tasks and streamline your processes with our intuitive drag-and-drop workflow builder.',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+      },
+      props: {
+        icon: '⚡',
+        title: 'Workflow Automation',
+        description: 'Automate repetitive tasks and streamline your processes with our intuitive drag-and-drop workflow builder.',
+      },
+      children: [],
+      parentId: 'features-grid',
+      order: 1,
+    },
+
+    // Feature 3
+    {
+      id: 'feature-3',
+      type: 'card',
+      name: 'Real-time Collaboration',
+      content: 'Work together seamlessly with your team using real-time collaboration tools, comments, and shared workspaces.',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+      },
+      props: {
+        icon: '👥',
+        title: 'Real-time Collaboration',
+        description: 'Work together seamlessly with your team using real-time collaboration tools, comments, and shared workspaces.',
+      },
+      children: [],
+      parentId: 'features-grid',
+      order: 2,
+    },
+
+    // Feature 4
+    {
+      id: 'feature-4',
+      type: 'card',
+      name: 'Enterprise Security',
+      content: 'Keep your data safe with enterprise-grade security, SOC 2 compliance, and end-to-end encryption.',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+      },
+      props: {
+        icon: '🔒',
+        title: 'Enterprise Security',
+        description: 'Keep your data safe with enterprise-grade security, SOC 2 compliance, and end-to-end encryption.',
+      },
+      children: [],
+      parentId: 'features-grid',
+      order: 3,
+    },
+
+    // Feature 5
+    {
+      id: 'feature-5',
+      type: 'card',
+      name: 'API Integrations',
+      content: 'Connect with 500+ tools and services through our robust API and pre-built integrations.',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+      },
+      props: {
+        icon: '🔗',
+        title: 'API Integrations',
+        description: 'Connect with 500+ tools and services through our robust API and pre-built integrations.',
+      },
+      children: [],
+      parentId: 'features-grid',
+      order: 4,
+    },
+
+    // Feature 6
+    {
+      id: 'feature-6',
+      type: 'card',
+      name: 'Advanced Reporting',
+      content: 'Create custom dashboards and reports with drag-and-drop widgets and export capabilities.',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+      },
+      props: {
+        icon: '📊',
+        title: 'Advanced Reporting',
+        description: 'Create custom dashboards and reports with drag-and-drop widgets and export capabilities.',
+      },
+      children: [],
+      parentId: 'features-grid',
+      order: 5,
+    },
+
+    // Testimonials Section
+    {
+      id: 'testimonials-section',
+      type: 'container',
+      name: 'Testimonials Section',
+      content: '',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#f8fafc',
+        padding: '120px 20px',
+      },
+      props: {},
+      children: ['testimonials-header', 'testimonials-grid'],
+      parentId: null,
+      order: 4,
+    },
+
+    // Testimonials Header
+    {
+      id: 'testimonials-header',
+      type: 'container',
+      name: 'Testimonials Header',
+      content: '',
+      styles: {
+        textAlign: 'center',
+        marginBottom: '80px',
+      },
+      props: {},
+      children: ['testimonials-title'],
+      parentId: 'testimonials-section',
+      order: 0,
+    },
+
+    // Testimonials Title
+    {
+      id: 'testimonials-title',
+      type: 'text',
+      name: 'Testimonials Title',
+      content: 'Loved by businesses worldwide',
+      styles: {
+        fontSize: '48px',
+        fontWeight: '800',
+        color: '#1f2937',
+        lineHeight: '1.2',
+        marginBottom: '24px',
+      },
+      props: {},
+      children: [],
+      parentId: 'testimonials-header',
+      order: 0,
+    },
+
+    // Testimonials Grid
+    {
+      id: 'testimonials-grid',
+      type: 'container',
+      name: 'Testimonials Grid',
+      content: '',
+      styles: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '30px',
+        maxWidth: '1200px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: ['testimonial-1', 'testimonial-2', 'testimonial-3'],
+      parentId: 'testimonials-section',
+      order: 1,
+    },
+
+    // Testimonial 1
+    {
+      id: 'testimonial-1',
+      type: 'card',
+      name: 'Customer Testimonial 1',
+      content: 'SaaSPro transformed our workflow and increased our productivity by 300%. The AI insights are game-changing!',
+      styles: {
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        padding: '40px',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+        border: 'none',
+      },
+      props: {
+        quote: 'SaaSPro transformed our workflow and increased our productivity by 300%. The AI insights are game-changing!',
+        author: 'Sarah Chen',
+        title: 'CEO, TechCorp',
+        avatar: '/avatars/sarah-chen.jpg',
+        rating: 5,
+      },
+      children: [],
+      parentId: 'testimonials-grid',
+      order: 0,
+    },
+
+    // Testimonial 2
+    {
+      id: 'testimonial-2',
+      type: 'card',
+      name: 'Customer Testimonial 2',
+      content: 'The automation features saved us 20 hours per week. Our team can now focus on strategic initiatives instead of manual tasks.',
+      styles: {
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        padding: '40px',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+        border: 'none',
+      },
+      props: {
+        quote: 'The automation features saved us 20 hours per week. Our team can now focus on strategic initiatives instead of manual tasks.',
+        author: 'Michael Rodriguez',
+        title: 'COO, GrowthLabs',
+        avatar: '/avatars/michael-rodriguez.jpg',
+        rating: 5,
+      },
+      children: [],
+      parentId: 'testimonials-grid',
+      order: 1,
+    },
+
+    // Testimonial 3
+    {
+      id: 'testimonial-3',
+      type: 'card',
+      name: 'Customer Testimonial 3',
+      content: 'Best investment we made this year. The ROI was visible within the first month of implementation.',
+      styles: {
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        padding: '40px',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+        border: 'none',
+      },
+      props: {
+        quote: 'Best investment we made this year. The ROI was visible within the first month of implementation.',
+        author: 'Emma Thompson',
+        title: 'VP Product, InnovateNow',
+        avatar: '/avatars/emma-thompson.jpg',
+        rating: 5,
+      },
+      children: [],
+      parentId: 'testimonials-grid',
+      order: 2,
+    },
+
+    // Pricing Section
+    {
+      id: 'pricing-section',
+      type: 'container',
+      name: 'Pricing Section',
+      content: '',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#ffffff',
+        padding: '120px 20px',
+      },
+      props: {},
+      children: ['pricing-header', 'pricing-grid'],
+      parentId: null,
+      order: 5,
+    },
+
+    // Pricing Header
+    {
+      id: 'pricing-header',
+      type: 'container',
+      name: 'Pricing Header',
+      content: '',
+      styles: {
+        textAlign: 'center',
+        marginBottom: '80px',
+      },
+      props: {},
+      children: ['pricing-title', 'pricing-subtitle'],
+      parentId: 'pricing-section',
+      order: 0,
+    },
+
+    // Pricing Title
+    {
+      id: 'pricing-title',
+      type: 'text',
+      name: 'Pricing Title',
+      content: 'Simple, transparent pricing',
+      styles: {
+        fontSize: '48px',
+        fontWeight: '800',
+        color: '#1f2937',
+        lineHeight: '1.2',
+        marginBottom: '24px',
+      },
+      props: {},
+      children: [],
+      parentId: 'pricing-header',
+      order: 0,
+    },
+
+    // Pricing Subtitle
+    {
+      id: 'pricing-subtitle',
+      type: 'text',
+      name: 'Pricing Subtitle',
+      content: 'Choose the perfect plan for your business. All plans include a 14-day free trial.',
+      styles: {
+        fontSize: '20px',
+        fontWeight: '400',
+        color: '#6b7280',
+        lineHeight: '1.6',
+        maxWidth: '600px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: [],
+      parentId: 'pricing-header',
+      order: 1,
+    },
+
+    // Pricing Grid
+    {
+      id: 'pricing-grid',
+      type: 'container',
+      name: 'Pricing Plans Grid',
+      content: '',
+      styles: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '30px',
+        maxWidth: '1000px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: ['pricing-starter', 'pricing-pro', 'pricing-enterprise'],
+      parentId: 'pricing-section',
+      order: 1,
+    },
+
+    // Starter Plan
+    {
+      id: 'pricing-starter',
+      type: 'card',
+      name: 'Starter Plan',
+      content: 'Perfect for small teams getting started',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '2px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        textAlign: 'center',
+        position: 'relative',
+      },
+      props: {
+        planName: 'Starter',
+        price: '$29',
+        billing: 'per month',
+        description: 'Perfect for small teams getting started',
+        features: [
+          'Up to 5 team members',
+          'Basic analytics',
+          '10 workflow automations',
+          'Email support',
+          '5GB storage',
+        ],
+        ctaText: 'Start Free Trial',
+        popular: false,
+      },
+      children: [],
+      parentId: 'pricing-grid',
+      order: 0,
+    },
+
+    // Pro Plan (Popular)
+    {
+      id: 'pricing-pro',
+      type: 'card',
+      name: 'Pro Plan',
+      content: 'Best for growing businesses',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '2px solid #4f46e5',
+        borderRadius: '16px',
+        padding: '40px',
+        textAlign: 'center',
+        position: 'relative',
+        transform: 'scale(1.05)',
+        boxShadow: '0 20px 40px rgba(79, 70, 229, 0.15)',
+      },
+      props: {
+        planName: 'Pro',
+        price: '$99',
+        billing: 'per month',
+        description: 'Best for growing businesses',
+        features: [
+          'Up to 25 team members',
+          'Advanced AI analytics',
+          'Unlimited automations',
+          'Priority support',
+          '100GB storage',
+          'Custom integrations',
+        ],
+        ctaText: 'Start Free Trial',
+        popular: true,
+      },
+      children: [],
+      parentId: 'pricing-grid',
+      order: 1,
+    },
+
+    // Enterprise Plan
+    {
+      id: 'pricing-enterprise',
+      type: 'card',
+      name: 'Enterprise Plan',
+      content: 'For large organizations with advanced needs',
+      styles: {
+        backgroundColor: '#ffffff',
+        border: '2px solid #e5e7eb',
+        borderRadius: '16px',
+        padding: '40px',
+        textAlign: 'center',
+        position: 'relative',
+      },
+      props: {
+        planName: 'Enterprise',
+        price: 'Custom',
+        billing: 'pricing',
+        description: 'For large organizations with advanced needs',
+        features: [
+          'Unlimited team members',
+          'Custom AI models',
+          'Advanced security',
+          'Dedicated support',
+          'Unlimited storage',
+          'White-label options',
+        ],
+        ctaText: 'Contact Sales',
+        popular: false,
+      },
+      children: [],
+      parentId: 'pricing-grid',
+      order: 2,
+    },
+
+    // Final CTA Section
+    {
+      id: 'final-cta-section',
+      type: 'container',
+      name: 'Final CTA Section',
+      content: '',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+        color: '#ffffff',
+        padding: '100px 20px',
+        textAlign: 'center',
+      },
+      props: {},
+      children: ['final-cta-content'],
+      parentId: null,
+      order: 6,
+    },
+
+    // Final CTA Content
+    {
+      id: 'final-cta-content',
+      type: 'container',
+      name: 'Final CTA Content',
+      content: '',
+      styles: {
+        maxWidth: '800px',
+        margin: '0 auto',
+      },
+      props: {},
+      children: ['final-cta-title', 'final-cta-subtitle', 'final-cta-button'],
+      parentId: 'final-cta-section',
+      order: 0,
+    },
+
+    // Final CTA Title
+    {
+      id: 'final-cta-title',
+      type: 'text',
+      name: 'Final CTA Title',
+      content: 'Ready to transform your business?',
+      styles: {
+        fontSize: '48px',
+        fontWeight: '800',
+        lineHeight: '1.2',
+        marginBottom: '24px',
+      },
+      props: {},
+      children: [],
+      parentId: 'final-cta-content',
+      order: 0,
+    },
+
+    // Final CTA Subtitle
+    {
+      id: 'final-cta-subtitle',
+      type: 'text',
+      name: 'Final CTA Subtitle',
+      content: 'Join 10,000+ companies already using SaaSPro to boost productivity and drive growth.',
+      styles: {
+        fontSize: '20px',
+        fontWeight: '400',
+        lineHeight: '1.6',
+        marginBottom: '40px',
+        opacity: '0.9',
+      },
+      props: {},
+      children: [],
+      parentId: 'final-cta-content',
+      order: 1,
+    },
+
+    // Final CTA Button
+    {
+      id: 'final-cta-button',
+      type: 'button',
+      name: 'Final CTA Button',
+      content: 'Start Your Free Trial Today',
+      styles: {
+        backgroundColor: '#ffffff',
+        color: '#4f46e5',
+        fontSize: '20px',
+        fontWeight: '700',
+        padding: '20px 40px',
+        borderRadius: '12px',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+      },
+      props: {
+        href: '/signup',
+        variant: 'primary',
+      },
+      children: [],
+      parentId: 'final-cta-content',
+      order: 2,
+    },
+
+    // Footer
+    {
+      id: 'saas-footer',
+      type: 'container',
+      name: 'Footer',
+      content: '',
+      styles: {
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#1f2937',
+        color: '#ffffff',
+        padding: '80px 20px 40px',
+      },
+      props: {
+        companyName: 'SaaSPro',
+        links: {
+          product: ['Features', 'Pricing', 'API', 'Integrations'],
+          company: ['About', 'Blog', 'Careers', 'Contact'],
+          resources: ['Documentation', 'Help Center', 'Community', 'Status'],
+          legal: ['Privacy', 'Terms', 'Security', 'GDPR'],
+        },
+        socialLinks: ['Twitter', 'LinkedIn', 'GitHub', 'YouTube'],
+      },
+      children: [],
+      parentId: null,
+      order: 7,
+    },
+  ],
+};
+
+// Sample template data (existing templates)
 export const sampleTemplates: Template[] = [
+  premiumSaasTemplate, // Add the new premium template first
   {
     id: 'landing-hero-1',
     name: 'Hero Landing Page',
@@ -609,12 +1689,12 @@ export const sampleTemplates: Template[] = [
 // Template categories for filtering
 export const templateCategories = [
   { id: 'all', name: 'All Templates', count: sampleTemplates.length },
-  { id: 'landing', name: 'Landing Pages', count: sampleTemplates.filter(t => t.category === 'landing').length },
+  { id: 'landing', name: 'SaaS Landing', count: sampleTemplates.filter(t => t.category === 'landing').length },
   { id: 'ecommerce', name: 'E-commerce', count: sampleTemplates.filter(t => t.category === 'ecommerce').length },
   { id: 'blog', name: 'Blog', count: sampleTemplates.filter(t => t.category === 'blog').length },
   { id: 'portfolio', name: 'Portfolio', count: sampleTemplates.filter(t => t.category === 'portfolio').length },
-  { id: 'corporate', name: 'Corporate', count: sampleTemplates.filter(t => t.category === 'corporate').length },
-  { id: 'startup', name: 'Startup', count: sampleTemplates.filter(t => t.category === 'startup').length },
+  { id: 'corporate', name: 'Professional', count: sampleTemplates.filter(t => t.category === 'corporate').length },
+  { id: 'startup', name: 'Lead Generation', count: sampleTemplates.filter(t => t.category === 'startup').length },
 ];
 
 // Helper function to get templates by category
