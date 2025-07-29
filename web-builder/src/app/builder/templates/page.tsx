@@ -14,7 +14,7 @@ export default function TemplatesPage() {
           {['All', 'SaaS Landing', 'E-commerce', 'Portfolio', 'Blog', 'Corporate'].map((category) => (
             <button
               key={category}
-              className="px-4 py-2 rounded-lg bg-white border border-gray-200 hover:border-blue-500 hover:text-blue-600 transition-colors"
+              className="px-6 py-3 rounded-xl bg-white border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:scale-105 transition-all duration-300 font-semibold shadow-sm hover:shadow-md"
             >
               {category}
             </button>
@@ -31,7 +31,7 @@ export default function TemplatesPage() {
               <div className="p-4">
                 <h3 className="font-semibold text-gray-900 mb-2">Template {i}</h3>
                 <p className="text-sm text-gray-600 mb-4">Professional template for modern businesses</p>
-                <button className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-semibold hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl">
                   Use Template
                 </button>
               </div>

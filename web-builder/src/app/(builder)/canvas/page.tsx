@@ -18,13 +18,13 @@ export default function CanvasPage() {
         {/* Canvas Toolbar */}
         <div className="h-14 bg-white border-b border-gray-200 flex items-center px-4">
           <div className="flex items-center space-x-4">
-            <button className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700">
+            <button className="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               Preview
             </button>
-            <button className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
+            <button className="px-6 py-2.5 text-sm font-semibold border-2 border-gray-300 rounded-xl hover:border-gray-400 hover:bg-gray-50 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md">
               Undo
             </button>
-            <button className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
+            <button className="px-6 py-2.5 text-sm font-semibold border-2 border-gray-300 rounded-xl hover:border-gray-400 hover:bg-gray-50 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md">
               Redo
             </button>
           </div>

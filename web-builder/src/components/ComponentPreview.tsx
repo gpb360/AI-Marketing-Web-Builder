@@ -295,10 +295,10 @@ function MockComponentPreview({ componentType }: { componentType: string }) {
         includes proper styling, interactivity, and responsive design.
       </p>
       <div className="flex gap-2">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+        <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
           Primary Action
         </button>
-        <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors">
+        <button className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl text-sm font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300">
           Secondary
         </button>
       </div>
