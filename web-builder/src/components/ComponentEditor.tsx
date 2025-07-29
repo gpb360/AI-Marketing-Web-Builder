@@ -476,10 +476,10 @@ function EnhancedMockPreview({
               <h3 className="text-lg font-semibold mb-4">Modal Component</h3>
               <p className="text-gray-600 mb-4">This is a preview of your modal component with backdrop and animations.</p>
               <div className="flex gap-3">
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                   Confirm
                 </button>
-                <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                <button className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300">
                   Cancel
                 </button>
               </div>
@@ -552,13 +552,13 @@ function EnhancedMockPreview({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-gray-800">Button Component</h3>
             <div className="flex gap-3 flex-wrap">
-              <button className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                 Primary Button
               </button>
-              <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+              <button className="px-8 py-4 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl font-bold text-lg hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300">
                 Secondary Button
               </button>
-              <button className="px-6 py-3 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors">
+              <button className="px-8 py-4 border-2 border-blue-500 text-blue-500 rounded-xl font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
                 Outline Button
               </button>
             </div>

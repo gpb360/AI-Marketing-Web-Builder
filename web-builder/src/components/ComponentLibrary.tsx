@@ -16,7 +16,11 @@ import {
   Grid3X3,
   Box,
   Monitor,
-  Search
+  Search,
+  Star,
+  Zap,
+  Heart,
+  TrendingUp
 } from 'lucide-react';
 
 interface ComponentItem {
@@ -26,6 +30,8 @@ interface ComponentItem {
   icon: React.ComponentType<{ className?: string }>;
   category: 'basic' | 'layout' | 'content' | 'media' | 'forms' | 'advanced';
   color: string;
+  isPopular?: boolean;
+  isNew?: boolean;
 }
 
 const componentLibrary: ComponentItem[] = [
@@ -53,6 +59,7 @@ const componentLibrary: ComponentItem[] = [
     icon: MousePointer,
     category: 'basic',
     color: 'bg-gradient-to-br from-purple-500 to-purple-600',
+    isPopular: true,
   },
   
   // Layout Components
@@ -63,6 +70,7 @@ const componentLibrary: ComponentItem[] = [
     icon: Monitor,
     category: 'layout',
     color: 'bg-gradient-to-br from-indigo-500 to-indigo-600',
+    isPopular: true,
   },
   {
     id: 'navigation',
@@ -135,6 +143,7 @@ const componentLibrary: ComponentItem[] = [
     icon: Layers,
     category: 'advanced',
     color: 'bg-gradient-to-br from-violet-500 to-purple-600',
+    isNew: true,
   },
 ];
 
@@ -194,9 +203,23 @@ function DraggableComponent({ component }: DraggableComponentProps) {
         </p>
         
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 shadow-sm">
-            {component.category}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 shadow-sm">
+              {component.category}
+            </span>
+            {component.isPopular && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-orange-100 to-yellow-100 border border-orange-200">
+                <Star className="w-3 h-3 text-orange-500 fill-current" />
+                <span className="text-xs font-semibold text-orange-700">Popular</span>
+              </div>
+            )}
+            {component.isNew && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200">
+                <Zap className="w-3 h-3 text-green-500" />
+                <span className="text-xs font-semibold text-green-700">New</span>
+              </div>
+            )}
+          </div>
           <div className="w-2 h-2 rounded-full bg-green-400 shadow-sm animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
       </div>
@@ -264,25 +287,30 @@ export function ComponentLibrary({ className = '' }: ComponentLibraryProps) {
       </div>
 
       {/* Search Bar */}
-      <div className="p-4 border-b border-gray-200 bg-white">
+      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-white to-blue-50/30">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search components..."
+            placeholder="Search components, categories, or descriptions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 hover:bg-white transition-all duration-200"
+            className="w-full pl-10 pr-10 py-3 text-sm border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white hover:shadow-md transition-all duration-200 placeholder-gray-400"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 flex items-center justify-center text-xs font-bold transition-all duration-200"
             >
               ×
             </button>
           )}
         </div>
+        {searchQuery && (
+          <div className="mt-2 text-xs text-gray-600">
+            Showing results for "{searchQuery}"
+          </div>
+        )}
       </div>
 
       {/* Category Tabs */}
@@ -356,12 +384,20 @@ export function ComponentLibrary({ className = '' }: ComponentLibraryProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5" />
         
         <div className="relative text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-3 h-3 rounded-full bg-green-400 shadow-sm animate-pulse" />
-            <p className="text-sm font-semibold text-gray-700">
-              {filteredComponents.length} component{filteredComponents.length !== 1 ? 's' : ''} available
-            </p>
-            <div className="w-3 h-3 rounded-full bg-blue-400 shadow-sm animate-pulse" style={{ animationDelay: '0.5s' }} />
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-500" />
+              <p className="text-sm font-semibold text-gray-700">
+                {filteredComponents.length} component{filteredComponents.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div className="w-1 h-4 bg-gray-300 rounded-full" />
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-red-500" />
+              <p className="text-sm font-semibold text-gray-700">
+                {filteredComponents.filter(c => c.isPopular).length} popular
+              </p>
+            </div>
           </div>
           
           <motion.button
