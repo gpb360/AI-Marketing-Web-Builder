@@ -1,25 +1,23 @@
-"""
-Database models initialization.
-"""
+"""Database models for the AI Web Builder Platform."""
 
-from app.models.base import Base
-from app.models.user import User
-from app.models.template import Template, TemplateComponent
-from app.models.project import Project, ProjectPage
-from app.models.workflow import Workflow, WorkflowExecution, WorkflowNode
-from app.models.crm import CRMContact, CRMActivity, EmailCampaign
+from .base import BaseModel, TimestampMixin
+from .users import User
+from .sites import Site, Component, Template
+from .workflows import Workflow, WorkflowExecution, WorkflowNode
+from .crm import Contact, ContactActivity, EmailCampaign, EmailSend
 
 __all__ = [
-    "Base",
+    "BaseModel",
+    "TimestampMixin",
     "User",
+    "Site",
+    "Component", 
     "Template",
-    "TemplateComponent", 
-    "Project",
-    "ProjectPage",
     "Workflow",
     "WorkflowExecution",
     "WorkflowNode",
-    "CRMContact",
-    "CRMActivity",
+    "Contact",
+    "ContactActivity",
     "EmailCampaign",
+    "EmailSend",
 ]
