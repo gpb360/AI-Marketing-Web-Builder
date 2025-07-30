@@ -1,0 +1,36 @@
+<div id="{{ component.component_id }}" class="component-{{ component.type }} {{ component.styles.get('container_class', 'py-8 px-4') }}">
+    <div class="container mx-auto">
+        {% if component.config.get('title') %}
+        <h2 class="{{ component.styles.get('title_class', 'text-2xl font-bold mb-4') }}">
+            {{ component.config.title }}
+        </h2>
+        {% endif %}
+        
+        {% if component.config.get('content') %}
+        <div class="{{ component.styles.get('content_class', 'prose max-w-none') }}">
+            {{ component.config.content | safe }}
+        </div>
+        {% endif %}
+        
+        {% if component.config.get('image') %}
+        <div class="image-container {{ component.styles.get('image_container_class', 'mt-4') }}">
+            <img src="{{ component.config.image }}" 
+                 alt="{{ component.config.get('image_alt', '') }}"
+                 class="{{ component.styles.get('image_class', 'max-w-full h-auto rounded-lg') }}"
+                 loading="lazy">
+        </div>
+        {% endif %}
+        
+        {% if component.config.get('buttons') %}
+        <div class="buttons-container {{ component.styles.get('buttons_class', 'mt-6 flex gap-4') }}">
+            {% for button in component.config.buttons %}
+            <a href="{{ button.get('url', '#') }}" 
+               class="{{ button.get('class', 'bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors') }}"
+               {% if button.get('target') %}target="{{ button.target }}"{% endif %}>
+                {{ button.get('text', 'Learn More') }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
