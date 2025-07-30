@@ -1,9 +1,10 @@
 """Site and component models for the web builder."""
 
-from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Integer, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Integer, Enum as SQLEnum, Float
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import relationship
 import enum
+from datetime import datetime
 
 from ..core.database import Base
 from .base import UUIDMixin, TimestampMixin
@@ -41,6 +42,31 @@ class TemplateCategory(str, enum.Enum):
     LANDING_PAGE = "landing_page"
     CORPORATE = "corporate"
     CREATIVE = "creative"
+
+
+class BuildStatus(str, enum.Enum):
+    """Site build status options."""
+    PENDING = "pending"
+    BUILDING = "building"
+    SUCCESS = "success"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class SSLStatus(str, enum.Enum):
+    """SSL certificate status options."""
+    PENDING = "pending"
+    ACTIVE = "active"
+    FAILED = "failed"
+    EXPIRED = "expired"
+
+
+class DomainStatus(str, enum.Enum):
+    """Domain verification status options."""
+    PENDING = "pending"
+    VERIFIED = "verified"
+    FAILED = "failed"
+    DNS_ERROR = "dns_error"
 
 
 class Site(Base, UUIDMixin, TimestampMixin):
@@ -82,6 +108,7 @@ class Site(Base, UUIDMixin, TimestampMixin):
     template = relationship("Template", back_populates="sites")
     components = relationship("Component", back_populates="site", cascade="all, delete-orphan")
     workflows = relationship("Workflow", back_populates="site", cascade="all, delete-orphan")
+    published_sites = relationship("PublishedSite", back_populates="site", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
         return f"<Site(name='{self.name}', subdomain='{self.subdomain}')>"
@@ -97,6 +124,114 @@ class Site(Base, UUIDMixin, TimestampMixin):
     def is_published(self) -> bool:
         """Check if site is published."""
         return self.status == SiteStatus.PUBLISHED
+
+
+class PublishedSite(Base, UUIDMixin, TimestampMixin):
+    """Published site deployment information."""
+    
+    __tablename__ = "published_sites"
+    
+    site_id = Column(UUID(as_uuid=True), ForeignKey("sites.id"), nullable=False)
+    
+    # Domain configuration
+    domain = Column(String(255), nullable=False, index=True)
+    custom_domain = Column(String(255), index=True)
+    ssl_status = Column(SQLEnum(SSLStatus), default=SSLStatus.PENDING)
+    domain_status = Column(SQLEnum(DomainStatus), default=DomainStatus.PENDING)
+    
+    # Build information
+    build_status = Column(SQLEnum(BuildStatus), default=BuildStatus.PENDING)
+    build_started_at = Column(DateTime)
+    build_completed_at = Column(DateTime)
+    build_duration = Column(Integer)  # seconds
+    
+    # Deployment URLs
+    cdn_url = Column(String(500))
+    preview_url = Column(String(500))
+    
+    # SEO and performance
+    seo_settings = Column(JSON, default=dict)
+    analytics_id = Column(String(100))
+    performance_score = Column(Integer)  # Lighthouse score
+    
+    # SSL certificate details
+    ssl_issued_at = Column(DateTime)
+    ssl_expires_at = Column(DateTime)
+    ssl_provider = Column(String(100), default="Let's Encrypt")
+    
+    # Build artifacts
+    build_size = Column(Integer)  # bytes
+    build_hash = Column(String(64))  # SHA256 of build artifacts
+    
+    # Relationships
+    site = relationship("Site", back_populates="published_sites")
+    deployment_history = relationship("DeploymentHistory", back_populates="published_site", cascade="all, delete-orphan")
+    
+    def __repr__(self) -> str:
+        return f"<PublishedSite(domain='{self.domain}', status='{self.build_status}')>"
+    
+    @property
+    def is_live(self) -> bool:
+        """Check if site is live and accessible."""
+        return (
+            self.build_status == BuildStatus.SUCCESS and
+            self.domain_status == DomainStatus.VERIFIED and
+            self.ssl_status == SSLStatus.ACTIVE
+        )
+    
+    @property
+    def primary_url(self) -> str:
+        """Get the primary URL for the published site."""
+        if self.custom_domain and self.domain_status == DomainStatus.VERIFIED:
+            return f"https://{self.custom_domain}"
+        return f"https://{self.domain}"
+
+
+class DeploymentHistory(Base, UUIDMixin, TimestampMixin):
+    """Deployment history and version control."""
+    
+    __tablename__ = "deployment_history"
+    
+    published_site_id = Column(UUID(as_uuid=True), ForeignKey("published_sites.id"), nullable=False)
+    
+    # Version information
+    version = Column(String(50), nullable=False)
+    tag = Column(String(100))  # Optional tag for releases
+    
+    # Build information
+    build_time = Column(DateTime, nullable=False, default=datetime.utcnow)
+    build_duration = Column(Integer)  # seconds
+    build_status = Column(SQLEnum(BuildStatus), nullable=False)
+    
+    # Build artifacts
+    build_logs = Column(Text)
+    build_size = Column(Integer)  # bytes
+    build_hash = Column(String(64))  # SHA256 of build artifacts
+    
+    # Rollback data
+    rollback_data = Column(JSON)  # Previous version data for rollback
+    is_rollback = Column(Boolean, default=False)
+    rollback_from_version = Column(String(50))
+    
+    # Performance metrics
+    performance_score = Column(Integer)
+    load_time = Column(Float)  # seconds
+    bundle_size = Column(Integer)  # bytes
+    
+    # SEO metrics
+    seo_score = Column(Integer)
+    accessibility_score = Column(Integer)
+    
+    # Relationships
+    published_site = relationship("PublishedSite", back_populates="deployment_history")
+    
+    def __repr__(self) -> str:
+        return f"<DeploymentHistory(version='{self.version}', status='{self.build_status}')>"
+    
+    @property
+    def was_successful(self) -> bool:
+        """Check if deployment was successful."""
+        return self.build_status == BuildStatus.SUCCESS
 
 
 class Component(Base, UUIDMixin, TimestampMixin):

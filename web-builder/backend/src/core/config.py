@@ -50,6 +50,37 @@ class Settings(BaseSettings):
     max_concurrent_workflows: int = 100
     cache_ttl: int = 3600  # 1 hour
     
+    # Site Publishing & CDN
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_region: str = "us-east-1"
+    s3_bucket_name: str = "aiwebbuilder-sites"
+    cloudfront_distribution_id: Optional[str] = None
+    
+    # Domain Management
+    cloudflare_api_token: Optional[str] = None
+    cloudflare_zone_id: Optional[str] = None
+    default_domain: str = "aiwebbuilder.com"
+    
+    # SSL Certificates
+    acme_directory_url: str = "https://acme-v02.api.letsencrypt.org/directory"
+    acme_contact_email: str = "ssl@aiwebbuilder.com"
+    
+    # Build System
+    build_timeout: int = 600  # 10 minutes
+    max_build_size: int = 100 * 1024 * 1024  # 100MB
+    concurrent_builds: int = 5
+    
+    # Site Generation
+    template_engine: str = "jinja2"
+    css_minification: bool = True
+    js_bundling: bool = True
+    image_optimization: bool = True
+    
+    # Performance Monitoring
+    lighthouse_api_key: Optional[str] = None
+    analytics_api_key: Optional[str] = None
+    
     @validator("allowed_origins", pre=True)
     def assemble_cors_origins(cls, v):
         """Parse CORS origins from string or list."""
