@@ -19,7 +19,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useBuilderStore, ComponentElement } from '@/stores/builderStore';
+import { useBuilderStore } from '@/store/builderStore';
+import { ComponentData } from '@/types/builder';
 import { CanvasElement } from './CanvasElement';
 import { ElementToolbar } from './ElementToolbar';
 import { DropIndicator } from './DropIndicator';
@@ -44,25 +45,21 @@ type ViewportSize = 'mobile' | 'tablet' | 'desktop';
 
 export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
   const {
-    elements,
-    selectedElementId,
-    hoveredElementId,
-    canvasMode,
+    components: elements,
+    selectedComponentId: selectedElementId,
     zoom,
-    isDropTarget,
-    selectElement,
-    hoverElement,
-    addElement,
-    moveElement,
-    setCanvasMode,
+    selectComponent: selectElement,
+    addComponent: addElement,
+    updateComponentPosition: moveElement,
     setZoom,
-    setDraggedElementType,
-    setIsDropTarget,
-    undo,
-    redo,
-    history,
-    historyIndex,
   } = useBuilderStore();
+
+  // Temporary state for hover and canvas mode
+  const [hoveredElementId, setHoveredElementId] = React.useState<string | null>(null);
+  const [canvasMode, setCanvasMode] = React.useState<'design' | 'preview'>('design');
+  const [isDropTarget, setIsDropTarget] = React.useState(false);
+  const [history, setHistory] = React.useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = React.useState(0);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [activeId, setActiveId] = React.useState<string | null>(null);
@@ -83,14 +80,20 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
   const rootElements = elements.filter(el => el.parentId === null);
 
   const createElementFromType = useCallback((type: string, parentId: string | null) => {
-    const baseElement = {
-      type: type as ComponentElement['type'],
+    const baseElement: ComponentData = {
+      id: `${type}-${Date.now()}`,
+      type: type,
       name: `${type.charAt(0).toUpperCase() + type.slice(1)} Component`,
-      content: getDefaultContent(type),
-      styles: getDefaultStyles(type),
-      props: getDefaultProps(type),
+      props: {
+        content: getDefaultContent(type),
+        styles: getDefaultStyles(type),
+        ...getDefaultProps(type),
+      },
       children: [],
+      position: { x: 20, y: 20 },
+      size: { width: 300, height: 100 },
       parentId,
+      order: 0,
     };
 
     return baseElement;
@@ -116,14 +119,13 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     const { active, over } = event;
 
     setActiveId(null);
-    setDraggedElementType(null);
     setIsDropTarget(false);
 
     if (!over) return;
 
     // Handle new element creation
     if (typeof active.id === 'string' && active.id.startsWith('new-')) {
-      const elementType = active.id.replace('new-', '') as ComponentElement['type'];
+      const elementType = active.id.replace('new-', '');
       const dropTargetId = over.id === 'canvas-root' ? null : over.id as string;
 
       const newElement = createElementFromType(elementType, dropTargetId);
@@ -139,11 +141,11 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
 
     if (activeElement && active.id !== over.id) {
       const newParentId = over.id === 'canvas-root' ? null : over.id as string;
-      const newOrder = overElement ? overElement.order + 1 : 0;
-
-      moveElement(activeElement.id, newParentId, newOrder);
+      
+      // Update position instead of order for now
+      moveElement(activeElement.id, { x: 0, y: 0 });
     }
-  }, [elements, addElement, moveElement, setDraggedElementType, setIsDropTarget, createElementFromType]);
+  }, [elements, addElement, moveElement, createElementFromType]);
 
   const getViewportDimensions = () => {
     switch (viewport) {
@@ -402,7 +404,7 @@ function getDefaultContent(type: string): string {
   }
 }
 
-function getDefaultStyles(type: string): ComponentElement['styles'] {
+function getDefaultStyles(type: string): CSSProperties {
   const baseStyles = {
     position: 'relative',
     width: '100%',

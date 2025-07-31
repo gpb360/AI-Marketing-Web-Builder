@@ -7,6 +7,7 @@ export { AuthService, authService } from './auth';
 export { TemplateService, templateService } from './templates';
 export { WorkflowService, workflowService } from './workflows';
 export { CRMService, crmService } from './crm';
+export { templateOptimizationApi } from './template-optimization';
 
 // Re-export types for convenience
 export type {

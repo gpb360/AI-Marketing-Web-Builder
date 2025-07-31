@@ -27,7 +27,7 @@ interface ComponentItem {
   id: string;
   name: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<any>;
   category: 'basic' | 'layout' | 'content' | 'media' | 'forms' | 'advanced';
   color: string;
   isPopular?: boolean;

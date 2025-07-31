@@ -42,18 +42,28 @@ echo ""
 
 # Check Frontend Status  
 echo -e "${BLUE}🎨 Frontend Status:${NC}"
+FRONTEND_PORT=""
 if check_port 3000; then
+    FRONTEND_PORT="3000"
     echo -e "   • Port 3000: ${GREEN}✅ RUNNING${NC}"
     echo -e "   • App: ${GREEN}http://localhost:3000${NC}"
-    
+elif check_port 3001; then
+    FRONTEND_PORT="3001"
+    echo -e "   • Port 3001: ${GREEN}✅ RUNNING${NC}"
+    echo -e "   • App: ${GREEN}http://localhost:3001${NC}"
+    echo -e "   • Note: ${YELLOW}Running on alternate port due to port conflict${NC}"
+else
+    echo -e "   • Port 3000: ${RED}❌ NOT RUNNING${NC}"
+    echo -e "   • Port 3001: ${RED}❌ NOT RUNNING${NC}"
+fi
+
+if [ ! -z "$FRONTEND_PORT" ]; then
     # Test frontend endpoint
-    if curl -s http://localhost:3000 >/dev/null 2>&1; then
+    if curl -s http://localhost:$FRONTEND_PORT >/dev/null 2>&1; then
         echo -e "   • Health Check: ${GREEN}✅ RESPONSIVE${NC}"
     else
         echo -e "   • Health Check: ${YELLOW}⚠️ NO RESPONSE${NC}"
     fi
-else
-    echo -e "   • Port 3000: ${RED}❌ NOT RUNNING${NC}"
 fi
 
 echo ""
@@ -106,12 +116,16 @@ echo ""
 
 # Overall Status
 BACKEND_OK=$(check_port 8000 && echo "1" || echo "0")
-FRONTEND_OK=$(check_port 3000 && echo "1" || echo "0")
+FRONTEND_OK=$(($(check_port 3000 && echo "1" || echo "0") + $(check_port 3001 && echo "1" || echo "0")))
+FRONTEND_OK=$([ "$FRONTEND_OK" -gt "0" ] && echo "1" || echo "0")
 
 if [ "$BACKEND_OK" = "1" ] && [ "$FRONTEND_OK" = "1" ]; then
     echo -e "${GREEN}🎉 Overall Status: FULLY OPERATIONAL${NC}"
 elif [ "$BACKEND_OK" = "1" ] || [ "$FRONTEND_OK" = "1" ]; then
     echo -e "${YELLOW}⚠️ Overall Status: PARTIALLY RUNNING${NC}"
+    if [ "$BACKEND_OK" = "1" ] && [ "$FRONTEND_OK" = "0" ]; then
+        echo -e "${YELLOW}💡 Backend running, but frontend has compilation issues${NC}"
+    fi
 else
     echo -e "${RED}❌ Overall Status: NOT RUNNING${NC}"
     echo -e "${YELLOW}💡 Start with: ./dev-start.sh${NC}"
