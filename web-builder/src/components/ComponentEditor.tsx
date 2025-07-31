@@ -52,6 +52,7 @@ export function ComponentEditor({
       
       return () => clearTimeout(debounce);
     }
+    return undefined;
   }, [code, previewMode]);
 
   const handleCodeChange = useCallback((value: string | undefined) => {

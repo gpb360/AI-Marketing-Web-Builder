@@ -1,435 +1,619 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Search, 
-  Filter, 
-  Star, 
-  Clock, 
-  Grid3X3, 
-  Eye, 
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowRight,
+  Zap,
+  Target,
+  CheckCircle,
+  Search,
+  Star,
+  Eye,
   Download,
-  Loader2,
-  AlertCircle,
-  RefreshCw
+  ExternalLink,
+  Heart,
+  Users,
+  TrendingUp
 } from 'lucide-react';
-import { useTemplates, useFeaturedTemplates } from '@/hooks';
-import { TemplateCategory } from '@/lib/api/types';
+import { Header } from '@/components/landing/Header';
+import { Footer } from '@/components/landing/Footer';
+import { TemplatePreviewModal } from '@/components/TemplatePreviewModal';
+import debounce from 'lodash.debounce';
 
-const TEMPLATE_CATEGORIES = [
-  { id: 'all', label: 'All Templates', value: undefined },
-  { id: 'landing_page', label: 'SaaS Landing', value: TemplateCategory.LANDING_PAGE },
-  { id: 'ecommerce', label: 'E-commerce', value: TemplateCategory.ECOMMERCE },
-  { id: 'portfolio', label: 'Portfolio', value: TemplateCategory.PORTFOLIO },
-  { id: 'blog', label: 'Blog', value: TemplateCategory.BLOG },
-  { id: 'corporate', label: 'Professional', value: TemplateCategory.CORPORATE },
-  { id: 'restaurant', label: 'Restaurant', value: TemplateCategory.RESTAURANT },
-  { id: 'health', label: 'Health & Wellness', value: TemplateCategory.HEALTH },
-  { id: 'education', label: 'Education', value: TemplateCategory.EDUCATION },
-  { id: 'real_estate', label: 'Real Estate', value: TemplateCategory.REAL_ESTATE },
-  { id: 'technology', label: 'Technology', value: TemplateCategory.TECHNOLOGY },
-  { id: 'creative', label: 'Creative', value: TemplateCategory.CREATIVE },
+interface Template {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  thumbnail_url?: string;
+  preview_image_url?: string;
+  is_premium: boolean;
+  is_featured: boolean;
+  usage_count: number;
+  rating: number;
+  review_count: number;
+  tags: string[];
+  created_at: string;
+  components: any[];
+}
+
+// Extended template data with ratings and reviews
+const extendedTemplates: Template[] = [
+  {
+    id: 1,
+    name: "SaaS Pro Template",
+    description: "Complete SaaS landing page with pricing, features, and conversion optimization. Built for high-converting SaaS businesses with modern design patterns.",
+    category: "SaaS",
+    thumbnail_url: "/templates/saas-pro-hero.jpg",
+    preview_image_url: "/templates/saas-pro-full.jpg",
+    is_premium: true,
+    is_featured: true,
+    usage_count: 2847,
+    rating: 4.8,
+    review_count: 156,
+    tags: ["SaaS", "Conversion", "Modern", "Premium"],
+    created_at: "2024-01-15",
+    components: []
+  },
+  {
+    id: 2,
+    name: "E-commerce Empire",
+    description: "Full e-commerce solution with product catalogs, shopping cart, and seamless checkout flows. Perfect for online stores of any size.",
+    category: "E-commerce",
+    thumbnail_url: "/templates/ecommerce-hero.jpg",
+    preview_image_url: "/templates/ecommerce-full.jpg",
+    is_premium: true,
+    is_featured: true,
+    usage_count: 1923,
+    rating: 4.9,
+    review_count: 203,
+    tags: ["E-commerce", "Shopping", "Products", "Checkout"],
+    created_at: "2024-01-20",
+    components: []
+  },
+  {
+    id: 3,
+    name: "Agency Showcase",
+    description: "Professional agency website with stunning portfolio gallery, client testimonials, and lead generation forms.",
+    category: "Agency",
+    thumbnail_url: "/templates/agency-hero.jpg",
+    preview_image_url: "/templates/agency-full.jpg",
+    is_premium: false,
+    is_featured: true,
+    usage_count: 3456,
+    rating: 4.7,
+    review_count: 189,
+    tags: ["Agency", "Portfolio", "Professional", "Services"],
+    created_at: "2024-01-10",
+    components: []
+  },
+  {
+    id: 4,
+    name: "Startup Launchpad",
+    description: "Modern startup landing page with investor-ready design, team showcase, and compelling roadmap presentation.",
+    category: "Startup",
+    thumbnail_url: "/templates/startup-hero.jpg",
+    preview_image_url: "/templates/startup-full.jpg",
+    is_premium: false,
+    is_featured: false,
+    usage_count: 892,
+    rating: 4.6,
+    review_count: 67,
+    tags: ["Startup", "Investor", "Pitch", "Growth"],
+    created_at: "2024-01-25",
+    components: []
+  },
+  {
+    id: 5,
+    name: "Enterprise Solution",
+    description: "Corporate-grade website with advanced features, security compliance, and scalable architecture for large organizations.",
+    category: "Enterprise",
+    thumbnail_url: "/templates/enterprise-hero.jpg",
+    preview_image_url: "/templates/enterprise-full.jpg",
+    is_premium: true,
+    is_featured: true,
+    usage_count: 567,
+    rating: 4.9,
+    review_count: 89,
+    tags: ["Enterprise", "Corporate", "Security", "Scale"],
+    created_at: "2024-01-08",
+    components: []
+  },
+  {
+    id: 6,
+    name: "Portfolio Master",
+    description: "Creative portfolio layout with stunning project gallery, smooth animations, and client showcase capabilities.",
+    category: "Portfolio",
+    thumbnail_url: "/templates/portfolio-hero.jpg",
+    preview_image_url: "/templates/portfolio-full.jpg",
+    is_premium: false,
+    is_featured: false,
+    usage_count: 1234,
+    rating: 4.5,
+    review_count: 78,
+    tags: ["Portfolio", "Creative", "Gallery", "Designer"],
+    created_at: "2024-01-22",
+    components: []
+  },
+  {
+    id: 7,
+    name: "Blog Authority",
+    description: "Content-focused blog layout with SEO optimization, newsletter integration, and social media features.",
+    category: "Blog",
+    thumbnail_url: "/templates/blog-hero.jpg",
+    preview_image_url: "/templates/blog-full.jpg",
+    is_premium: false,
+    is_featured: false,
+    usage_count: 2103,
+    rating: 4.4,
+    review_count: 134,
+    tags: ["Blog", "Content", "SEO", "Newsletter"],
+    created_at: "2024-01-18",
+    components: []
+  },
+  {
+    id: 8,
+    name: "Restaurant Pro",
+    description: "Elegant restaurant website with online ordering, reservation system, and mouth-watering menu displays.",
+    category: "Restaurant",
+    thumbnail_url: "/templates/restaurant-hero.jpg",
+    preview_image_url: "/templates/restaurant-full.jpg",
+    is_premium: true,
+    is_featured: false,
+    usage_count: 445,
+    rating: 4.7,
+    review_count: 56,
+    tags: ["Restaurant", "Food", "Reservations", "Menu"],
+    created_at: "2024-01-12",
+    components: []
+  }
+];
+
+const categories = [
+  { id: 'all', name: 'All Templates', count: 8, icon: '🎯' },
+  { id: 'SaaS', name: 'SaaS', count: 1, icon: '💼' },
+  { id: 'E-commerce', name: 'E-commerce', count: 1, icon: '🛒' },
+  { id: 'Agency', name: 'Agency', count: 1, icon: '🏢' },
+  { id: 'Startup', name: 'Startup', count: 1, icon: '🚀' },
+  { id: 'Enterprise', name: 'Enterprise', count: 1, icon: '🏭' },
+  { id: 'Portfolio', name: 'Portfolio', count: 1, icon: '🎨' },
+  { id: 'Blog', name: 'Blog', count: 1, icon: '📝' },
+  { id: 'Restaurant', name: 'Restaurant', count: 1, icon: '🍽️' }
 ];
 
 export default function TemplatesPage() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showOnlyFeatured, setShowOnlyFeatured] = useState(false);
-  const [showOnlyPremium, setShowOnlyPremium] = useState(false);
+  const [sortBy, setSortBy] = useState('featured');
+  const [showPremiumOnly, setShowPremiumOnly] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [favorites, setFavorites] = useState<number[]>([]);
 
-  // Get the current category filter
-  const currentCategory = TEMPLATE_CATEGORIES.find(cat => cat.id === selectedCategory);
+  // Debounced search
+  const debouncedSearch = useMemo(
+    () => debounce((query: string) => {
+      setSearchQuery(query);
+    }, 300),
+    []
+  );
 
-  // Configure filters for the templates hook
-  const filters = useMemo(() => ({
-    category: currentCategory?.value,
-    search: searchTerm || undefined,
-    featured: showOnlyFeatured || undefined,
-    premium: showOnlyPremium || undefined,
-    limit: 20
-  }), [currentCategory?.value, searchTerm, showOnlyFeatured, showOnlyPremium]);
+  const filteredTemplates = useMemo(() => {
+    let filtered = [...extendedTemplates];
 
-  // Use the templates API hook
-  const {
-    templates,
-    totalTemplates,
-    isLoading,
-    error,
-    refreshTemplates,
-    loadMore,
-    currentPage,
-    totalPages
-  } = useTemplates({ filters, autoLoad: true, pageSize: 20 });
-
-  // Featured templates for hero section
-  const {
-    templates: featuredTemplates,
-    isLoading: featuredLoading,
-    error: featuredError
-  } = useFeaturedTemplates(6);
-
-  const handleTemplateSelect = async (templateId: number) => {
-    try {
-      // Here you would typically:
-      // 1. Load the template data
-      // 2. Navigate to the builder with the template
-      // 3. Or show a preview modal
-      console.log('Selected template:', templateId);
-      
-      // For now, just log the selection
-      // In a real app, you might do:
-      // router.push(`/builder?template=${templateId}`);
-    } catch (err) {
-      console.error('Failed to select template:', err);
+    // Category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(template => template.category === selectedCategory);
     }
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(template =>
+        template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    // Premium filter
+    if (showPremiumOnly) {
+      filtered = filtered.filter(template => template.is_premium);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'featured':
+          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+        case 'popular':
+          return b.usage_count - a.usage_count;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [selectedCategory, searchQuery, showPremiumOnly, sortBy]);
+
+  const handlePreview = (template: Template) => {
+    setSelectedTemplate(template);
+    setIsPreviewOpen(true);
   };
 
-  const handleLoadMore = () => {
-    if (currentPage < totalPages && !isLoading) {
-      loadMore();
-    }
+  const toggleFavorite = (templateId: number) => {
+    setFavorites(prev =>
+      prev.includes(templateId)
+        ? prev.filter(id => id !== templateId)
+        : [...prev, templateId]
+    );
+  };
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`w-4 h-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`}
+      />
+    ));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Choose Your Template
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Get started with professionally designed templates. All templates are fully customizable 
-              and optimized for conversions.
-            </p>
-          </div>
-        </div>
-      </div>
+      <Header />
 
-      {/* Featured Templates Section */}
-      {!searchTerm && selectedCategory === 'all' && (
-        <div className="bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Featured Templates</h2>
-              {featuredError && (
-                <button
-                  onClick={() => window.location.reload()}
-                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Retry
-                </button>
-              )}
-            </div>
-            
-            {featuredLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="bg-gray-200 rounded-lg aspect-[4/3] animate-pulse" />
+      {/* Main Content */}
+      <main className="pt-20">
+        {/* Hero Section */}
+        <section className="py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-purple-500/5" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-12"
+            >
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                Template Marketplace
+              </h1>
+              <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+                Discover high-converting templates designed for every business type. 
+                From startups to enterprises, find the perfect design to accelerate your growth.
+              </p>
+              
+              {/* Search Bar */}
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search templates by name, category, or features..."
+                    className="w-full pl-12 pr-4 py-4 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 transition-colors"
+                    onChange={(e) => debouncedSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                <div className="bg-gray-900/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-yellow-400">{extendedTemplates.length}+</div>
+                  <div className="text-sm text-gray-400">Templates</div>
+                </div>
+                <div className="bg-gray-900/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-yellow-400">50K+</div>
+                  <div className="text-sm text-gray-400">Downloads</div>
+                </div>
+                <div className="bg-gray-900/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-yellow-400">4.8</div>
+                  <div className="text-sm text-gray-400">Avg Rating</div>
+                </div>
+                <div className="bg-gray-900/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-yellow-400">24/7</div>
+                  <div className="text-sm text-gray-400">Support</div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Filters Section */}
+        <section className="py-8 border-t border-b border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+              {/* Category Filters */}
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <motion.button
+                    key={category.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedCategory === category.id
+                        ? 'bg-yellow-400 text-black'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="mr-2">{category.icon}</span>
+                    {category.name}
+                    <span className="ml-2 text-xs opacity-75">({category.count})</span>
+                  </motion.button>
                 ))}
               </div>
-            ) : featuredError ? (
-              <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Failed to load featured templates</p>
+
+              {/* Sort and Filter Controls */}
+              <div className="flex gap-4 items-center">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-yellow-400"
+                >
+                  <option value="featured">Featured</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="rating">Highest Rated</option>
+                  <option value="newest">Newest</option>
+                </select>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showPremiumOnly}
+                    onChange={(e) => setShowPremiumOnly(e.target.checked)}
+                    className="rounded border-gray-600 text-yellow-400 focus:ring-yellow-400"
+                  />
+                  <span className="text-sm text-gray-300">Premium Only</span>
+                </label>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredTemplates.map((template) => (
+            </div>
+          </div>
+        </section>
+
+        {/* Templates Grid */}
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Results Count */}
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold text-white">
+                {filteredTemplates.length} Templates Found
+              </h2>
+              <div className="text-sm text-gray-400">
+                Showing {Math.min(12, filteredTemplates.length)} of {filteredTemplates.length}
+              </div>
+            </div>
+
+            {/* Templates Grid */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {filteredTemplates.map((template, index) => (
                   <motion.div
                     key={template.id}
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => handleTemplateSelect(template.id)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden hover:border-yellow-400/50 transition-all duration-300 group"
                   >
-                    <div className="aspect-[4/3] bg-gradient-to-br from-blue-100 to-blue-200 relative overflow-hidden">
-                      {template.preview_image_url ? (
-                        <img
-                          src={template.preview_image_url}
-                          alt={template.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Grid3X3 className="w-12 h-12 text-blue-400" />
-                        </div>
-                      )}
+                    {/* Template Image */}
+                    <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 to-purple-500/10" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-6xl opacity-20">{categories.find(c => c.id === template.category)?.icon || '🎨'}</div>
+                      </div>
                       
-                      {template.is_featured && (
-                        <div className="absolute top-3 left-3">
-                          <span className="bg-yellow-400 text-yellow-900 text-xs font-medium px-2 py-1 rounded-full">
-                            Featured
-                          </span>
+                      {/* Overlay on Hover */}
+                      <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="flex gap-3">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handlePreview(template)}
+                            className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-300 transition-colors flex items-center gap-2"
+                          >
+                            <Eye className="w-4 h-4" />
+                            Preview
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => toggleFavorite(template.id)}
+                            className="bg-gray-700 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                          >
+                            <Heart className={`w-4 h-4 ${favorites.includes(template.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                          </motion.button>
                         </div>
-                      )}
-                      
-                      {template.is_premium && (
-                        <div className="absolute top-3 right-3">
-                          <span className="bg-purple-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                            Premium
+                      </div>
+
+                      {/* Badges */}
+                      <div className="absolute top-3 left-3 flex gap-2">
+                        {template.is_featured && (
+                          <span className="bg-yellow-400 text-black px-2 py-1 rounded-full text-xs font-bold">
+                            FEATURED
                           </span>
+                        )}
+                        {template.is_premium && (
+                          <span className="bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            PREMIUM
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Usage Stats */}
+                      <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1">
+                        <div className="text-xs text-gray-300 flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {template.usage_count.toLocaleString()}
                         </div>
-                      )}
+                      </div>
                     </div>
-                    
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">{template.name}</h3>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description}</p>
-                      
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span className="capitalize">{template.category.replace('_', ' ')}</span>
+
+                    {/* Template Info */}
+                    <div className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-lg font-bold text-white line-clamp-1">{template.name}</h3>
                         <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                          <span>4.8</span>
+                          {renderStars(template.rating)}
+                          <span className="text-sm text-gray-400 ml-1">({template.review_count})</span>
                         </div>
+                      </div>
+
+                      <p className="text-sm text-gray-300 mb-3 line-clamp-2">{template.description}</p>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {template.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="bg-gray-800 text-gray-300 px-2 py-1 rounded-full text-xs"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <button className="flex-1 bg-yellow-400 text-black py-2 rounded-lg font-semibold hover:bg-yellow-300 transition-colors flex items-center justify-center gap-1">
+                          <Download className="w-4 h-4" />
+                          Use Template
+                        </button>
+                        <button className="px-3 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors">
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </motion.div>
                 ))}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Load More */}
+            {filteredTemplates.length > 12 && (
+              <div className="text-center mt-12">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gray-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                >
+                  Load More Templates
+                </motion.button>
               </div>
             )}
-          </div>
-        </div>
-      )}
 
-      {/* Filters Section */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search templates..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {TEMPLATE_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === category.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+            {/* Empty State */}
+            {filteredTemplates.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-20"
               >
-                {category.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Additional Filters */}
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={showOnlyFeatured}
-                onChange={(e) => setShowOnlyFeatured(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              Featured only
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={showOnlyPremium}
-                onChange={(e) => setShowOnlyPremium(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              Premium only
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Templates Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Results Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {searchTerm ? `Search results for "${searchTerm}"` : 'All Templates'}
-            <span className="ml-2 text-sm font-normal text-gray-500">
-              ({totalTemplates} templates)
-            </span>
-          </h2>
-          
-          {error && (
-            <button
-              onClick={refreshTemplates}
-              className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Retry
-            </button>
-          )}
-        </div>
-
-        {/* Loading State */}
-        {isLoading && templates.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="aspect-[4/3] bg-gray-200 animate-pulse" />
-                <div className="p-4">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                  <div className="h-3 bg-gray-200 rounded animate-pulse mb-3" />
-                  <div className="flex justify-between">
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-12" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load templates</h3>
-            <p className="text-gray-500 mb-4">{error}</p>
-            <button
-              onClick={refreshTemplates}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : templates.length === 0 ? (
-          <div className="text-center py-12">
-            <Filter className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No templates found</h3>
-            <p className="text-gray-500">
-              {searchTerm 
-                ? `No templates match "${searchTerm}". Try adjusting your search.`
-                : 'No templates available with the current filters.'
-              }
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Templates Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {templates.map((template) => (
-                <motion.div
-                  key={template.id}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleTemplateSelect(template.id)}
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-white mb-2">No templates found</h3>
+                <p className="text-gray-400 mb-6">
+                  Try adjusting your search criteria or browse all templates.
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSearchQuery('');
+                    setShowPremiumOnly(false);
+                  }}
+                  className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors"
                 >
-                  <div className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                    {template.preview_image_url ? (
-                      <img
-                        src={template.preview_image_url}
-                        alt={template.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Grid3X3 className="w-8 h-8 text-gray-400" />
-                      </div>
-                    )}
-                    
-                    {template.is_featured && (
-                      <div className="absolute top-2 left-2">
-                        <span className="bg-yellow-400 text-yellow-900 text-xs font-medium px-2 py-1 rounded-full">
-                          Featured
-                        </span>
-                      </div>
-                    )}
-                    
-                    {template.is_premium && (
-                      <div className="absolute top-2 right-2">
-                        <span className="bg-purple-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                          Premium
-                        </span>
-                      </div>
-                    )}
+                  Clear Filters
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </section>
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
-                      <div className="flex gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Preview functionality
-                          }}
-                        >
-                          <Eye className="w-4 h-4 text-gray-700" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 bg-blue-500 rounded-full shadow-lg hover:bg-blue-600"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTemplateSelect(template.id);
-                          }}
-                        >
-                          <Download className="w-4 h-4 text-white" />
-                        </motion.button>
-                      </div>
-                    </div>
+        {/* Features Section */}
+        <section className="py-20 bg-gray-900/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-4xl md:text-5xl font-bold text-white mb-6"
+              >
+                Why Choose Our Templates?
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-lg text-gray-300 max-w-3xl mx-auto"
+              >
+                Every template is crafted with conversion optimization, mobile responsiveness, 
+                and cutting-edge design principles.
+              </motion.p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                {
+                  icon: TrendingUp,
+                  title: "High Converting",
+                  description: "Optimized for maximum conversion rates with proven design patterns"
+                },
+                {
+                  icon: Zap,
+                  title: "Lightning Fast",
+                  description: "Optimized performance with lazy loading and efficient code structure"
+                },
+                {
+                  icon: Target,
+                  title: "Mobile First",
+                  description: "Fully responsive designs that look perfect on all devices"
+                },
+                {
+                  icon: CheckCircle,
+                  title: "SEO Ready",
+                  description: "Built with semantic HTML and structured data for search engines"
+                }
+              ].map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-center"
+                >
+                  <div className="w-16 h-16 bg-yellow-400/20 border border-yellow-400/30 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <feature.icon className="w-8 h-8 text-yellow-400" />
                   </div>
-                  
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 truncate">{template.name}</h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description}</p>
-                    
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span className="capitalize">{template.category.replace('_', ' ')}</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                        <span>4.8</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
-                      <span>{template.usage_count} uses</span>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{new Date(template.updated_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-300">{feature.description}</p>
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+      </main>
 
-            {/* Load More Button */}
-            {currentPage < totalPages && (
-              <div className="text-center mt-8">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={isLoading}
-                  className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    `Load More Templates (${totalTemplates - templates.length} remaining)`
-                  )}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      {/* Footer */}
+      <Footer />
+
+      {/* Template Preview Modal */}
+      {selectedTemplate && (
+        <TemplatePreviewModal
+          template={selectedTemplate}
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }

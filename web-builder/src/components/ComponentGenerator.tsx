@@ -357,7 +357,7 @@ ${complexity >= 3 ? `
                     onImageUpload={(file) =>
                       setGenerationRequest(prev => ({ ...prev, referenceImage: file }))
                     }
-                    uploadedImage={generationRequest.referenceImage}
+                    uploadedImage={generationRequest.referenceImage || null}
                     placeholder="Describe your component... e.g., 'Create a responsive pricing card with hover effects and a call-to-action button'"
                   />
                 </div>

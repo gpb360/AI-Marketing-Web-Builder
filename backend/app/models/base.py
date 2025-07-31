@@ -1,27 +1,45 @@
-"""
-Base model with common fields and functionality.
-"""
+"""Base models and mixins for SQLAlchemy."""
 
+import uuid
 from datetime import datetime
-from typing import Optional
-from sqlalchemy import DateTime, Integer, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from typing import Any
+
+from sqlalchemy import Column, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import as_declarative, declared_attr
 
 
-class Base(DeclarativeBase):
-    """Base model class with common fields."""
-    pass
+@as_declarative()
+class BaseModel:
+    """Base class for all database models."""
+    
+    id: Any
+    __name__: str
+    
+    # Generate table name automatically
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return cls.__name__.lower()
 
 
 class TimestampMixin:
-    """Mixin for timestamp fields."""
+    """Mixin for adding created_at and updated_at timestamps."""
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now()
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, 
+        default=datetime.utcnow, 
+        onupdate=datetime.utcnow, 
+        nullable=False
     )
-    updated_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        onupdate=func.now()
+
+
+class UUIDMixin:
+    """Mixin for adding UUID primary key."""
+    
+    id = Column(
+        UUID(as_uuid=True), 
+        primary_key=True, 
+        default=uuid.uuid4, 
+        nullable=False
     )

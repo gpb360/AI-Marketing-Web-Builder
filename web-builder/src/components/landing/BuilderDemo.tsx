@@ -6,13 +6,13 @@ import {
   Layout, 
   Type, 
   Image, 
-  Button, 
   Mail, 
   Zap, 
   BarChart3, 
   Sparkles,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  Square
 } from 'lucide-react';
 
 export function BuilderDemo() {
@@ -28,7 +28,7 @@ export function BuilderDemo() {
     { id: 'header', name: 'Header', icon: Layout, color: 'bg-blue-500' },
     { id: 'text', name: 'Text Block', icon: Type, color: 'bg-green-500' },
     { id: 'image', name: 'Image', icon: Image, color: 'bg-purple-500' },
-    { id: 'button', name: 'CTA Button', icon: Button, color: 'bg-yellow-500' },
+    { id: 'button', name: 'CTA Button', icon: Square, color: 'bg-yellow-500' },
     { id: 'form', name: 'Contact Form', icon: Mail, color: 'bg-red-500' },
   ];
 
@@ -78,7 +78,7 @@ export function BuilderDemo() {
                       : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800'
                   }`}
                 >
-                  <Icon size={18} />
+                  {Icon && <Icon size={18} />}
                   {tab.label}
                 </button>
               );
@@ -110,7 +110,7 @@ export function BuilderDemo() {
                         className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:border-yellow-400/50 transition-all duration-200 cursor-pointer"
                       >
                         <div className={`w-8 h-8 ${component.color} rounded-lg flex items-center justify-center`}>
-                          <Icon size={16} className="text-white" />
+                          {Icon && <Icon size={16} className="text-white" />}
                         </div>
                         <span className="text-gray-300 text-sm font-medium">
                           {component.name}

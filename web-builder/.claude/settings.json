@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server:latest"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp", "--browser", "chromium", "--headless", "--viewport-size", "1920,1080", "--save-trace", "--save-session"],
+      "env": {
+        "HEADLESS": "true",
+        "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
+      }
+    },
+    "playwright-firefox": {
+      "command": "npx",
+      "args": ["@playwright/mcp", "--browser", "firefox", "--headless", "--viewport-size", "1920,1080"],
+      "env": {
+        "HEADLESS": "true"
+      }
+    },
+    "playwright-webkit": {
+      "command": "npx",
+      "args": ["@playwright/mcp", "--browser", "webkit", "--headless", "--viewport-size", "1920,1080"],
+      "env": {
+        "HEADLESS": "true"
+      }
+    }
+  }
+}

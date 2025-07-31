@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { Move } from 'lucide-react';
 
 interface ResizeHandlesProps {
   componentId: string;
@@ -27,6 +28,7 @@ export function ResizeHandles({
   const [resizeDirection, setResizeDirection] = useState<ResizeDirection | null>(null);
   const [initialSize, setInitialSize] = useState(size);
   const [initialMousePos, setInitialMousePos] = useState({ x: 0, y: 0 });
+  const [currentSize, setCurrentSize] = useState(size);
 
   const handleMouseDown = useCallback((direction: ResizeDirection) => (event: React.MouseEvent) => {
     event.preventDefault();
@@ -35,6 +37,7 @@ export function ResizeHandles({
     setIsResizing(true);
     setResizeDirection(direction);
     setInitialSize(size);
+    setCurrentSize(size);
     setInitialMousePos({ x: event.clientX, y: event.clientY });
     onResizeStart();
 
@@ -79,6 +82,7 @@ export function ResizeHandles({
           break;
       }
 
+      setCurrentSize({ width: newWidth, height: newHeight });
       onResize({ width: newWidth, height: newHeight });
     };
 
@@ -98,33 +102,49 @@ export function ResizeHandles({
     direction: ResizeDirection;
     className: string;
     cursor: string;
+    label: string;
   }> = [
-    { direction: 'n', className: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1', cursor: 'ns-resize' },
-    { direction: 'ne', className: 'top-0 right-0 -translate-y-1 translate-x-1', cursor: 'nesw-resize' },
-    { direction: 'e', className: 'top-1/2 right-0 -translate-y-1/2 translate-x-1', cursor: 'ew-resize' },
-    { direction: 'se', className: 'bottom-0 right-0 translate-y-1 translate-x-1', cursor: 'nwse-resize' },
-    { direction: 's', className: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1', cursor: 'ns-resize' },
-    { direction: 'sw', className: 'bottom-0 left-0 translate-y-1 -translate-x-1', cursor: 'nesw-resize' },
-    { direction: 'w', className: 'top-1/2 left-0 -translate-y-1/2 -translate-x-1', cursor: 'ew-resize' },
-    { direction: 'nw', className: 'top-0 left-0 -translate-y-1 -translate-x-1', cursor: 'nwse-resize' },
+    { direction: 'n', className: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1', cursor: 'ns-resize', label: 'n' },
+    { direction: 'ne', className: 'top-0 right-0 -translate-y-1 translate-x-1', cursor: 'nesw-resize', label: 'ne' },
+    { direction: 'e', className: 'top-1/2 right-0 -translate-y-1/2 translate-x-1', cursor: 'ew-resize', label: 'e' },
+    { direction: 'se', className: 'bottom-0 right-0 translate-y-1 translate-x-1', cursor: 'nwse-resize', label: 'se' },
+    { direction: 's', className: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1', cursor: 'ns-resize', label: 's' },
+    { direction: 'sw', className: 'bottom-0 left-0 translate-y-1 -translate-x-1', cursor: 'nesw-resize', label: 'sw' },
+    { direction: 'w', className: 'top-1/2 left-0 -translate-y-1/2 -translate-x-1', cursor: 'ew-resize', label: 'w' },
+    { direction: 'nw', className: 'top-0 left-0 -translate-y-1 -translate-x-1', cursor: 'nwse-resize', label: 'nw' },
   ];
+
+  const zoomScale = 1 / zoom;
 
   return (
     <>
-      {handles.map(({ direction, className, cursor }) => (
+      {handles.map(({ direction, className, cursor, label }) => (
         <div
           key={direction}
           className={cn(
-            "absolute w-3 h-3 bg-blue-500 border-2 border-white rounded-sm shadow-sm hover:bg-blue-600 transition-colors duration-150",
+            "absolute w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg hover:bg-blue-600 transition-all duration-150 hover:scale-125",
             className,
-            isResizing && resizeDirection === direction && "bg-blue-600"
+            isResizing && resizeDirection === direction && "bg-blue-600 scale-125"
           )}
           style={{ 
             cursor,
-            transform: `scale(${1 / zoom}) ${className.includes('translate') ? className.split(' ').find(c => c.includes('translate')) || '' : ''}`,
+            transform: `scale(${zoomScale}) ${className.includes('translate') ? className.split(' ').find(c => c.includes('translate')) || '' : ''}`,
+            boxShadow: '0 0 0 1px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.2)',
           }}
           onMouseDown={handleMouseDown(direction)}
-        />
+        >
+          {/* Visual indicator for corners */}
+          {(direction === 'se' || direction === 'nw' || direction === 'ne' || direction === 'sw') && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-1 h-1 bg-white rounded-full" />
+            </div>
+          )}
+          
+          {/* Tooltip for resize direction */}
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+            Resize {label}
+          </div>
+        </div>
       ))}
       
       {/* Resize overlay to prevent text selection */}
@@ -133,6 +153,13 @@ export function ResizeHandles({
           className="fixed inset-0 z-50"
           style={{ cursor: handles.find(h => h.direction === resizeDirection)?.cursor }}
         />
+      )}
+      
+      {/* Size indicator during resize */}
+      {isResizing && (
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg">
+          {Math.round(currentSize.width)} × {Math.round(currentSize.height)}
+        </div>
       )}
     </>
   );
