@@ -10,19 +10,44 @@ import type { APIResponse, APIError } from './types';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const API_VERSION = '/api/v1';
 const TOKEN_COOKIE_NAME = 'auth_token';
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
 
 // Custom error class for API errors
 export class APIClientError extends Error {
   public status: number;
   public details?: any;
+  public retryable: boolean;
 
-  constructor(message: string, status: number, details?: any) {
+  constructor(message: string, status: number, details?: any, retryable: boolean = false) {
     super(message);
     this.name = 'APIClientError';
     this.status = status;
     this.details = details;
+    this.retryable = retryable;
   }
 }
+
+/**
+ * Utility function to delay execution
+ */
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Check if an error is retryable
+ */
+const isRetryableError = (error: AxiosError): boolean => {
+  if (!error.response) return true; // Network errors
+  
+  const status = error.response.status;
+  // Retry on 5xx errors and specific 4xx errors
+  return (
+    status >= 500 || // Server errors
+    status === 429 || // Rate limit
+    status === 408 || // Request timeout
+    status === 409   // Conflict
+  );
+};
 
 /**
  * Base API Client class
@@ -103,6 +128,32 @@ export class APIClient {
   }
 
   /**
+   * Execute request with retry logic
+   */
+  private async executeWithRetry<T>(
+    requestFn: () => Promise<T>,
+    retries: number = MAX_RETRIES
+  ): Promise<T> {
+    try {
+      return await requestFn();
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      
+      if (retries > 0 && isRetryableError(axiosError)) {
+        const delayMs = RETRY_DELAY * (MAX_RETRIES - retries + 1); // Exponential backoff
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Retrying request, ${retries} attempts remaining...`);
+        }
+        
+        await delay(delayMs);
+        return this.executeWithRetry(requestFn, retries - 1);
+      }
+      
+      throw this.transformError(axiosError);
+    }
+  }
+
+  /**
    * Transform axios error to our custom API error format
    */
   private transformError(error: AxiosError): APIClientError {
@@ -112,19 +163,24 @@ export class APIClient {
       return new APIClientError(
         data.message || 'An error occurred',
         error.response.status,
-        data.details
+        data.details,
+        isRetryableError(error)
       );
     } else if (error.request) {
       // Network error
       return new APIClientError(
         'Network error - please check your connection',
-        0
+        0,
+        null,
+        true // Network errors are retryable
       );
     } else {
       // Request setup error
       return new APIClientError(
         error.message || 'Request configuration error',
-        0
+        0,
+        null,
+        false
       );
     }
   }

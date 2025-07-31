@@ -18,6 +18,73 @@ interface TemplateLibraryProps {
   className?: string;
 }
 
+// Lazy loading image component
+const LazyImage: React.FC<{
+  src?: string;
+  alt: string;
+  className?: string;
+  placeholder?: React.ReactNode;
+}> = ({ src, alt, className, placeholder }) => {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
+  const imgRef = React.useRef<HTMLImageElement>(null);
+
+  React.useEffect(() => {
+    if (!src) {
+      setImageLoaded(false);
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => setImageError(true);
+    img.src = src;
+
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [src]);
+
+  if (!src || imageError) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100`}>
+        {placeholder || (
+          <div className="text-center">
+            <Grid3X3 className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+            <span className="text-sm text-gray-500 font-medium">
+              {alt}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (!imageLoaded) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100`}>
+        <div className="text-center">
+          <Grid3X3 className="w-8 h-8 text-gray-400 mx-auto mb-2 animate-pulse" />
+          <span className="text-sm text-gray-500 font-medium">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      ref={imgRef}
+      src={src}
+      alt={alt}
+      className={className}
+      loading="lazy"
+    />
+  );
+};
+
 export function TemplateLibrary({ className = '' }: TemplateLibraryProps) {
   const { loadTemplate, currentTemplate } = useBuilderStore();
   const [selectedCategory, setSelectedCategory] = React.useState('all');
@@ -114,16 +181,23 @@ export function TemplateLibrary({ className = '' }: TemplateLibraryProps) {
                 `}
                 onClick={() => handleTemplateSelect(template.id)}
               >
-                {/* Template Thumbnail */}
+                {/* Template Thumbnail with lazy loading */}
                 <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Grid3X3 className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <span className="text-sm text-gray-500 font-medium">
-                        {template.name}
-                      </span>
-                    </div>
-                  </div>
+                  <LazyImage
+                    src={template.thumbnail}
+                    alt={template.name}
+                    className="w-full h-full object-cover"
+                    placeholder={
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <Grid3X3 className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <span className="text-sm text-gray-500 font-medium">
+                            {template.name}
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  />
                   
                   {/* Overlay on hover */}
                   <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">

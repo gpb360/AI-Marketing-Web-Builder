@@ -20,6 +20,7 @@ interface BuilderStore extends CanvasState {
   addComponent: (component: ComponentData) => void;
   removeComponent: (componentId: string) => void;
   updateComponent: (componentId: string, updates: Partial<ComponentData>) => void;
+  updateComponentProps: (componentId: string, props: ComponentData['props']) => void;
   selectComponent: (componentId: string | null) => void;
   setDraggedComponent: (component: DragItem | null) => void;
   updateComponentPosition: (componentId: string, position: { x: number; y: number }) => void;
@@ -84,6 +85,14 @@ export const useBuilderStore = create<BuilderStore>()(
       set((state) => ({
         components: state.components.map((c) =>
           c.id === componentId ? { ...c, ...updates } : c
+        ),
+      }));
+    },
+
+    updateComponentProps: (componentId: string, props: ComponentData['props']) => {
+      set((state) => ({
+        components: state.components.map((c) =>
+          c.id === componentId ? { ...c, props: { ...c.props, ...props } } : c
         ),
       }));
     },
@@ -452,25 +461,4 @@ export const useBuilderStore = create<BuilderStore>()(
       return element.children;
     },
   }))
-);
-
-// Export types for compatibility
-export type { ComponentData, ComponentElement, Template } from '@/types/builder';
-
-// Auto-save functionality
-useBuilderStore.subscribe(
-  (state) => ({
-    components: state.components,
-    canvasSize: state.canvasSize,
-  }),
-  (current, previous) => {
-    if (current.components !== previous.components) {
-      // Debounced auto-save (implement with localStorage or API)
-      localStorage.setItem('builder-auto-save', JSON.stringify({
-        components: current.components,
-        canvasSize: current.canvasSize,
-        timestamp: Date.now(),
-      }));
-    }
-  }
 );

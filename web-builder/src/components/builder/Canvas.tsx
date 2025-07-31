@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { useBuilderStore } from '@/store/builderStore';
 import { ComponentData, DragItem, DropCollectedProps, DropResult } from '@/types/builder';
-import { CanvasComponent } from './CanvasComponent';
+import CanvasComponent from './CanvasComponent';
 import { DropZone } from './DropZone';
 import { GridOverlay } from './GridOverlay';
 import { SelectionBox } from './SelectionBox';

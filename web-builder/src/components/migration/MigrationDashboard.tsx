@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -48,7 +49,7 @@ export function MigrationDashboard({ onTemplateSelect }: MigrationDashboardProps
 
   useEffect(() => {
     loadActiveMigrations()
-    const interval = setInterval(loadActiveMigrations, 5000)
+    const interval = setInterval(loadActiveMigrations, 10000) // Reduced from 5000ms to 10000ms
     return () => clearInterval(interval)
   }, [])
 
@@ -114,18 +115,27 @@ export function MigrationDashboard({ onTemplateSelect }: MigrationDashboardProps
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Template Migration Dashboard</h2>
-          <p className="text-muted-foreground">
-            Migrate existing websites into reusable templates
-          </p>
-        </div>
-        <Button onClick={() => setShowWizard(true)} className="gap-2">
-          <Play className="h-4 w-4" />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center py-8"
+      >
+        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          Template Migration Dashboard
+        </h1>
+        <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+          Migrate existing websites into reusable templates with AI-powered analysis and optimization
+        </p>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowWizard(true)}
+          className="bg-yellow-400 text-black px-8 py-4 rounded-lg font-semibold hover:bg-yellow-300 transition-all duration-200 hover:shadow-xl hover:shadow-yellow-400/30 flex items-center gap-2 mx-auto"
+        >
+          <Play className="h-5 w-5" />
           Start New Migration
-        </Button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
@@ -403,8 +413,8 @@ export function MigrationDashboard({ onTemplateSelect }: MigrationDashboardProps
             </div>
           ) : (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12"
-                >Code className="h-12 w-12 text-muted-foreground mb-4" />
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Code className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No templates available</p>
                 <Button onClick={() => setShowWizard(true)} className="mt-4">
                   Create Templates

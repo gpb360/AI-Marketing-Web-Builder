@@ -6,10 +6,11 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { ComponentData, DragItem, DragCollectedProps, DropCollectedProps } from '@/types/builder';
 import { useBuilderStore } from '@/store/builderStore';
 import { ResizeHandles } from './ResizeHandles';
-import { ComponentRenderer } from './ComponentRenderer';
+import { EnhancedComponentRenderer } from './EnhancedComponentRenderer';
+import { DragHandles } from './DragHandles';
 import { WorkflowConnector } from './WorkflowConnector';
 import { cn } from '@/lib/utils';
-import { Zap } from 'lucide-react';
+import { Zap, Settings2 } from 'lucide-react';
 
 interface CanvasComponentProps {
   component: ComponentData;
@@ -21,10 +22,12 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
   const componentRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const {
     selectComponent,
     updateComponentSize,
+    updateComponentProps,
     connectToWorkflow,
     disconnectFromWorkflow,
     setAIContext,
@@ -107,6 +110,13 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
     updateComponentSize(component.id, newSize);
   };
 
+  const handlePropsUpdate = (newProps: Partial<ComponentData['props']>) => {
+    updateComponentProps(component.id, {
+      ...component.props,
+      ...newProps,
+    });
+  };
+
   const combinedRef = (node: HTMLDivElement | null) => {
     if (componentRef.current !== node) {
       // Only update if the node has actually changed
@@ -120,13 +130,34 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
     drop(node);
   };
 
+  // Enhanced resize handles with better visual feedback
+  const enhancedResizeHandles = isSelected && !isDragging && (
+    <>
+      {/* Corner resize handles with better visibility */}
+      <ResizeHandles
+        componentId={component.id}
+        size={component.size}
+        onResize={handleResize}
+        onResizeStart={() => setIsResizing(true)}
+        onResizeEnd={() => setIsResizing(false)}
+        zoom={zoom}
+      />
+      
+      {/* Additional visual feedback for resizable */}
+      <div className={cn(
+        "absolute inset-0 border-2 border-dashed border-blue-400 pointer-events-none opacity-0 transition-opacity duration-200",
+        isSelected && "opacity-50"
+      )} />
+    </>
+  );
+
   return (
     <div
       ref={combinedRef}
       className={cn(
-        "absolute cursor-move transition-all duration-200",
+        "absolute cursor-move transition-all duration-200 group",
         isSelected && "ring-2 ring-blue-500 ring-offset-2",
-        isDragging && "z-50",
+        isDragging && "z-50 opacity-75",
         component.isConnectedToWorkflow && "ring-2 ring-green-500"
       )}
       style={{
@@ -143,17 +174,32 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
     >
       {/* Component Content */}
       <div className="w-full h-full relative">
-        <ComponentRenderer
+        <EnhancedComponentRenderer
           component={component}
           isSelected={isSelected}
-          isBuilderMode={true}
+          isBuilderMode={isBuilderMode}
+          onUpdateProps={handlePropsUpdate}
         />
 
         {/* Workflow Connection Indicator */}
         {component.isConnectedToWorkflow && (
-          <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
+          <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1 shadow-lg animate-pulse">
             <Zap className="w-3 h-3" />
           </div>
+        )}
+
+        {/* Settings Button */}
+        {isSelected && (
+          <button
+            className="absolute -top-2 -left-2 bg-blue-500 text-white rounded-full p-1 shadow-lg hover:bg-blue-600 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSettings(!showSettings);
+            }}
+            title="Component Settings"
+          >
+            <Settings2 className="w-3 h-3" />
+          </button>
         )}
 
         {/* Workflow Connector Button */}
@@ -168,24 +214,47 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
         )}
       </div>
 
-      {/* Resize Handles */}
-      {isSelected && !isDragging && (
-        <ResizeHandles
-          componentId={component.id}
-          size={component.size}
-          onResize={handleResize}
-          onResizeStart={() => setIsResizing(true)}
-          onResizeEnd={() => setIsResizing(false)}
-          zoom={zoom}
-        />
-      )}
+      {/* Enhanced Resize Handles */}
+      {enhancedResizeHandles}
+
+      {/* Drag Handles */}
+      <DragHandles isSelected={isSelected} zoom={zoom} />
 
       {/* Component Label */}
       {isSelected && (
-        <div className="absolute -top-6 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-t-md">
+        <div className="absolute -top-6 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-t-md shadow-lg">
           {component.name}
         </div>
       )}
     </div>
+  );
+}
+
+// Helper to determine if we should use enhanced renderer
+export function ComponentRenderer({ 
+  component, 
+  isSelected, 
+  isBuilderMode 
+}: {
+  component: ComponentData;
+  isSelected: boolean;
+  isBuilderMode: boolean;
+}) {
+  const { updateComponentProps } = useBuilderStore();
+
+  const handlePropsUpdate = (newProps: Partial<ComponentData['props']>) => {
+    updateComponentProps(component.id, {
+      ...component.props,
+      ...newProps,
+    });
+  };
+
+  return (
+    <EnhancedComponentRenderer
+      component={component}
+      isSelected={isSelected}
+      isBuilderMode={isBuilderMode}
+      onUpdateProps={handlePropsUpdate}
+    />
   );
 }
