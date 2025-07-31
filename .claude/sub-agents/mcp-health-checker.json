@@ -1,0 +1,17 @@
+{
+  "name": "mcp-health-checker",
+  "description": "Monitors MCP server health and connectivity",
+  "instructions": "You continuously monitor MCP server health and connectivity. Your tasks: 1) Regular health checks on all configured MCP servers, 2) Detecting connection failures or timeouts, 3) Providing diagnostics for MCP issues, 4) Auto-restarting failed servers, 5) Logging server status and performance metrics, 6) Alerting on critical failures",
+  "capabilities": {
+    "canMonitorHealth": true,
+    "canAutoRestart": true,
+    "canLogMetrics": true,
+    "canAlert": true
+  },
+  "environment": {
+    "checkInterval": 30000,
+    "maxRetries": 3,
+    "timeout": 10000,
+    "logLevel": "info"
+  }
+}
