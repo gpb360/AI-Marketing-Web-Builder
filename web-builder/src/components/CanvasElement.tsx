@@ -4,12 +4,12 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
-import { ComponentElement } from '@/store/builderStore';
+import { ComponentData } from '@/store/builderStore';
 import { useBuilderStore } from '@/store/builderStore';
 import DOMPurify from 'isomorphic-dompurify';
 
 interface CanvasElementProps {
-  element: ComponentElement;
+  element: ComponentData;
   isSelected: boolean;
   isHovered: boolean;
   onSelect: () => void;
@@ -49,7 +49,7 @@ export function CanvasElement({
 
   const renderElement = () => {
     const combinedStyles = {
-      ...element.styles,
+      ...element.style,
       ...(canvasMode === 'design' && {
         outline: isSelected 
           ? '2px solid #3b82f6' 
@@ -122,7 +122,7 @@ export function CanvasElement({
                 {element.name}
               </div>
             )}
-<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element.content) }} />
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element.content || '') }} />
           </div>
         );
 
@@ -140,7 +140,7 @@ export function CanvasElement({
                 {element.name}
               </div>
             )}
-<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element.content) }} />
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element.content || '') }} />
           </button>
         );
 
