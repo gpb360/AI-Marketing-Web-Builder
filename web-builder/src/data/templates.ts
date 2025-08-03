@@ -734,8 +734,12 @@ const premiumSaasTemplate: Template = {
   ],
 };
 
+// Import VoTemplate
+import { voSaaSTemplate } from './templates/voSaaSTemplate';
+
 // Sample template data (existing templates)
 export const sampleTemplates: Template[] = [
+  voSaaSTemplate,
   premiumSaasTemplate, // Add the new premium template first
   {
     id: 'landing-hero-1',

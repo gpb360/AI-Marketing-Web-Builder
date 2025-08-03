@@ -52,7 +52,7 @@ Orchestrator (You)
 #### Project Manager
 **Primary Responsibilities:**
 - Maintain GitHub Project board (Ready/In Progress/Review/Done columns)
-- Create tasks from specifications in `/spec` folder
+- Create tasks from specifications in `/spec` and `/agents` folder
 - Ensure Ready column has 5-10 actionable tasks
 - Monitor team velocity and remove blockers
 - Enforce 5-minute maximum work periods without progress updates
@@ -107,17 +107,20 @@ Ready          In Progress    Review         Done
 └── Task 5     
 ```
 
-### DEVELOPER WORKFLOW (NO EXCEPTIONS)
+### AGENT ISOLATION WORKFLOW (MANDATORY)
 ```
-1. Check GitHub Project board (Frontend #10 or Backend #11)
-2. Pick available task from Ready column
-3. Create branch: feature/task-name-kebab-case
-4. Move task to "In Progress" + add assigned:your-role label
-5. Code + commit + push
-6. Create PR with task title matching GitHub Project task
-7. Move task to "Ready for Review" column
-8. Lead Dev reviews (5min max) + merges
-9. Lead Dev moves task to "Done" column
+1. Check GitHub Project board assigned to your agent type
+2. Pick available task from Ready column matching your domain
+3. Create ISOLATED branch: {agent-type}/{agent-name}/{feature-description}
+4. Move task to "In Progress" + add assigned:{agent-name} label
+5. Work ONLY on files within your agent domain (see File Ownership Matrix)
+6. Code + commit + push to isolated branch
+7. Create PR with agent prefix: "[{AGENT-NAME}] Task Title"
+8. Move task to "Ready for Review" column
+9. Lead Dev reviews (5min max) + merges to main
+10. Lead Dev moves task to "Done" column
+
+CRITICAL: Each agent MUST work on dedicated branches to prevent conflicts
 ```
 
 ### BACKLOG MANAGEMENT SYSTEM
@@ -145,12 +148,19 @@ BACKLOG MONITORING (Every 30 minutes):
 - PR title must match task title exactly
 - Assigned agent label for tracking
 
-**Branch Naming Convention**:
+**AGENT ISOLATION BRANCH NAMING (MANDATORY)**:
 ```
-feature/fix-component-library-ui
-feature/improve-drag-drop-performance
-feature/add-template-preview-mode
-feature/create-user-api-endpoints
+{agent-type}/{agent-name}/{feature-description}
+
+Examples:
+frontend/frontend-builder/fix-component-library-ui
+backend/backend-architect/create-user-api-endpoints
+template/template-designer/add-saas-templates
+ai/ai-services-specialist/improve-suggestions
+integration/integration-coordinator/workflow-connections
+performance/performance-optimizer/canvas-optimization
+workflow/workflow-automation-expert/automation-triggers
+deployment/deployment-manager/ci-cd-pipeline
 ```
 
 ### Workflow Rules
@@ -312,10 +322,15 @@ SPECIFICATIONS TO FOLLOW:
 TOKEN LIMIT: 5-8k per task (HARD LIMIT)
 TIME LIMIT: Maximum 2-3 hours per task
 
-BRANCH NAMING EXAMPLES:
-- feature/fix-component-library-ui
-- feature/improve-drag-drop-performance
-- feature/add-template-preview-mode
+AGENT-ISOLATED BRANCH EXAMPLES:
+- frontend/frontend-builder/fix-component-library-ui
+- backend/backend-architect/improve-drag-drop-performance
+- template/template-designer/add-template-preview-mode
+- ai/ai-services-specialist/component-suggestions
+- integration/integration-coordinator/real-time-collaboration
+- performance/performance-optimizer/canvas-performance
+- workflow/workflow-automation-expert/trigger-improvements
+- deployment/deployment-manager/automated-deployment
 
 IMMEDIATE ACTION:
 1. Go to Frontend Project #10 now
