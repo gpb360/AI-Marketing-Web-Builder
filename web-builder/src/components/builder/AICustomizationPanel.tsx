@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useBuilderStore } from '@/store/builderStore';
 import { cn } from '@/lib/utils';
+import { AISuggestionEngine, PageContext } from '@/lib/ai/suggestion-engine';
+import { PromptProcessor } from '@/lib/ai/prompt-processor';
+import { ComponentIntelligence } from '@/lib/ai/component-intelligence';
 import {
   Sparkles,
   Send,
@@ -47,6 +50,11 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
   const [showHistory, setShowHistory] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [contextAnalysis, setContextAnalysis] = useState<any>(null);
+  const [aiSuggestionEngine, setAiSuggestionEngine] = useState<AISuggestionEngine | null>(null);
+  const [promptProcessor] = useState(() => new PromptProcessor());
+  const [componentIntelligence] = useState(() => new ComponentIntelligence());
+  const [smartSuggestions, setSmartSuggestions] = useState<any[]>([]);
+  const [promptAnalysis, setPromptAnalysis] = useState<any>(null);
   
   const {
     aiContext,
@@ -60,10 +68,33 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
 
   useEffect(() => {
     if (selectedComponent) {
+      // Initialize AI engines with current page context
+      initializeAIEngines();
       // Analyze component context for better AI suggestions
       analyzeComponentContext(selectedComponent);
+      // Generate smart suggestions
+      generateSmartSuggestions(selectedComponent);
     }
   }, [selectedComponent]);
+
+  const initializeAIEngines = () => {
+    const pageContext: PageContext = {
+      existingComponents: components,
+      pageGoals: ['conversion', 'engagement'],
+      templateType: 'landing-page', // Could be derived from current template
+      industry: 'tech' // Could be from user settings
+    };
+    
+    const engine = new AISuggestionEngine(pageContext);
+    setAiSuggestionEngine(engine);
+  };
+
+  const generateSmartSuggestions = (component: any) => {
+    if (!aiSuggestionEngine) return;
+    
+    const suggestions = aiSuggestionEngine.generateContextualSuggestions(component);
+    setSmartSuggestions(suggestions);
+  };
 
   const analyzeComponentContext = (component: any) => {
     const analysis = {
@@ -105,8 +136,12 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
 
     setIsProcessing(true);
     try {
-      // Enhanced AI processing with component context
-      const response = await processAIRequest(selectedComponent, prompt);
+      // Analyze prompt with advanced NLP
+      const analysis = promptProcessor.analyzePrompt(prompt);
+      setPromptAnalysis(analysis);
+      
+      // Enhanced AI processing with component context and intelligence
+      const response = await processAIRequestWithIntelligence(selectedComponent, prompt, analysis);
       
       // Add to history
       const newEdit: AIEditHistory = {
@@ -122,6 +157,10 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
       
       // Apply changes
       updateComponent(selectedComponent.id, response.changes);
+      
+      // Regenerate suggestions after changes
+      generateSmartSuggestions({ ...selectedComponent, ...response.changes });
+      
       setPrompt('');
     } catch (error) {
       console.error('AI customization failed:', error);
@@ -130,59 +169,129 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
     }
   };
 
-  const processAIRequest = async (component: any, userPrompt: string) => {
-    // Simulate AI processing - replace with actual API
+  const processAIRequestWithIntelligence = async (component: any, userPrompt: string, analysis: any) => {
+    // Simulate AI processing with enhanced intelligence
     return new Promise<any>((resolve) => {
       setTimeout(() => {
-        const changes = generateAIChanges(component, userPrompt);
+        const changes = generateIntelligentAIChanges(component, userPrompt, analysis);
         resolve({
           changes,
-          description: `Applied: ${userPrompt.substring(0, 30)}...`
+          description: `Applied: ${analysis.expandedPrompt.substring(0, 50)}...`,
+          confidence: analysis.confidence,
+          suggestions: analysis.suggestions
         });
       }, 1200);
     });
   };
 
-  const generateAIChanges = (component: any, prompt: string) => {
+  const generateIntelligentAIChanges = (component: any, prompt: string, analysis: any) => {
     const changes: any = { props: { ...component.props } };
     
-    const promptLower = prompt.toLowerCase();
-    
-    // Smart AI responses based on component type and prompt
-    if (promptLower.includes('color') && promptLower.includes('blue')) {
+    // Apply color changes based on extracted entities
+    if (analysis.entities.colors.length > 0) {
+      const primaryColor = normalizeColor(analysis.entities.colors[0]);
       changes.props.style = {
         ...changes.props.style,
-        backgroundColor: '#3B82F6',
-        color: '#FFFFFF'
+        backgroundColor: primaryColor,
+        color: getContrastColor(primaryColor)
       };
     }
     
-    if (promptLower.includes('modern') || promptLower.includes('professional')) {
-      changes.props.style = {
-        ...changes.props.style,
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        padding: '16px'
-      };
+    // Apply dimension changes
+    analysis.entities.dimensions.forEach((dimension: string) => {
+      if (dimension === 'large' || dimension === 'bigger') {
+        changes.props.style = {
+          ...changes.props.style,
+          padding: '20px 24px',
+          fontSize: '18px'
+        };
+      } else if (dimension === 'small' || dimension === 'compact') {
+        changes.props.style = {
+          ...changes.props.style,
+          padding: '8px 12px',
+          fontSize: '14px'
+        };
+      }
+    });
+    
+    // Apply animation changes
+    if (analysis.entities.animations.length > 0) {
+      const animationClasses = analysis.entities.animations
+        .map(anim => getAnimationClass(anim))
+        .join(' ');
+      changes.props.className = `${changes.props.className || ''} ${animationClasses}`.trim();
     }
     
-    if (promptLower.includes('animation') || promptLower.includes('hover')) {
-      changes.props.className = `${changes.props.className || ''} hover:scale-105 transition-transform duration-200`.trim();
+    // Apply style properties
+    if (analysis.entities.properties.length > 0) {
+      analysis.entities.properties.forEach((property: string) => {
+        if (property === 'border-radius') {
+          changes.props.style = {
+            ...changes.props.style,
+            borderRadius: '12px'
+          };
+        } else if (property === 'box-shadow') {
+          changes.props.style = {
+            ...changes.props.style,
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+          };
+        }
+      });
     }
     
-    if (promptLower.includes('larger') || promptLower.includes('bigger')) {
-      changes.props.style = {
-        ...changes.props.style,
-        padding: '20px',
-        fontSize: '18px'
-      };
-    }
-    
-    if (promptLower.includes('mobile') || promptLower.includes('responsive')) {
-      changes.props.responsive = true;
+    // Apply intent-based changes
+    switch (analysis.intent) {
+      case 'style':
+        changes.props.style = {
+          ...changes.props.style,
+          borderRadius: '8px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        };
+        break;
+      case 'interaction':
+        changes.props.className = `${changes.props.className || ''} hover:scale-105 transition-all duration-200`.trim();
+        break;
+      case 'layout':
+        changes.props.style = {
+          ...changes.props.style,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        };
+        break;
     }
     
     return changes;
+  };
+
+  // Utility functions
+  const normalizeColor = (color: string): string => {
+    const colorMap: Record<string, string> = {
+      'blue': '#3B82F6',
+      'red': '#EF4444',
+      'green': '#10B981',
+      'yellow': '#F59E0B',
+      'purple': '#8B5CF6',
+      'pink': '#EC4899'
+    };
+    return colorMap[color.toLowerCase()] || color;
+  };
+
+  const getContrastColor = (backgroundColor: string): string => {
+    // Simple contrast calculation - in production would use proper color theory
+    const darkColors = ['#EF4444', '#8B5CF6', '#3B82F6'];
+    return darkColors.includes(backgroundColor) ? '#FFFFFF' : '#000000';
+  };
+
+  const getAnimationClass = (animation: string): string => {
+    const animationMap: Record<string, string> = {
+      'hover': 'hover:scale-105',
+      'transition': 'transition-all duration-200',
+      'fade': 'hover:opacity-80',
+      'scale': 'hover:scale-105',
+      'bounce': 'hover:animate-bounce'
+    };
+    return animationMap[animation] || 'transition-all duration-200';
   };
 
   const applyEdit = (edit: AIEditHistory) => {
@@ -256,39 +365,40 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
   };
 
   const getContextualSuggestions = () => {
-    if (!contextAnalysis || !selectedComponent) return [];
+    if (!smartSuggestions.length) return getBasicSuggestions();
+    
+    return smartSuggestions
+      .filter(suggestion => suggestion.priority === 'high')
+      .slice(0, 3)
+      .map(suggestion => suggestion.prompt);
+  };
+
+  const getBasicSuggestions = () => {
+    if (!selectedComponent) return [];
     
     const suggestions = [];
     
     if (selectedComponent.type === 'button') {
       suggestions.push(
-        'Make this button more prominent',
-        'Add hover effects and transitions',
-        'Change button color to match brand'
+        'Make this button more prominent with better contrast',
+        'Add smooth hover animations and micro-interactions',
+        'Apply consistent brand colors and typography'
       );
     }
     
     if (selectedComponent.type === 'text') {
       suggestions.push(
-        'Improve readability with better typography',
-        'Add responsive font sizes',
-        'Adjust line spacing for better UX'
+        'Optimize typography hierarchy and readability',
+        'Add responsive font scaling for mobile devices',
+        'Improve line spacing and visual rhythm'
       );
     }
     
     if (selectedComponent.type === 'container') {
       suggestions.push(
-        'Add modern spacing and padding',
-        'Include subtle shadows for depth',
-        'Improve responsive layout'
-      );
-    }
-    
-    if (selectedComponent.type === 'form') {
-      suggestions.push(
-        'Optimize form field spacing',
-        'Add input validation styling',
-        'Improve mobile form UX'
+        'Add structured spacing using design system',
+        'Include depth with subtle shadows and borders',
+        'Optimize layout for responsive breakpoints'
       );
     }
     
@@ -412,9 +522,47 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
         
         {showSuggestions && (
           <div className="space-y-2">
+            {/* AI-Powered Smart Suggestions */}
+            {smartSuggestions.length > 0 && (
+              <div className="mb-3">
+                <div className="text-xs text-blue-600 font-medium mb-2 flex items-center gap-1">
+                  <Bot className="w-3 h-3" />
+                  AI Recommendations
+                </div>
+                {smartSuggestions.slice(0, 2).map((suggestion, index) => (
+                  <button
+                    key={`smart-${index}`}
+                    onClick={() => setPrompt(suggestion.prompt)}
+                    className={cn(
+                      "w-full text-left p-2 text-xs border rounded-lg transition-colors mb-1",
+                      suggestion.priority === 'high' 
+                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700'
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700'
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className={cn(
+                        "w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0",
+                        suggestion.priority === 'high' ? 'bg-blue-500' : 'bg-gray-400'
+                      )} />
+                      <div>
+                        <div className="font-medium">{suggestion.title}</div>
+                        <div className="text-xs opacity-75 mt-0.5">{suggestion.description}</div>
+                      </div>
+                      <div className="ml-auto text-xs opacity-60">
+                        {Math.round(suggestion.confidence * 100)}%
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* Basic Contextual Suggestions */}
+            <div className="text-xs text-gray-600 font-medium mb-2">Quick Suggestions</div>
             {getContextualSuggestions().map((suggestion, index) => (
               <button
-                key={index}
+                key={`basic-${index}`}
                 onClick={() => setPrompt(suggestion)}
                 className="w-full text-left p-2 text-xs bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
               >

@@ -6,7 +6,7 @@
 - **Repository**: https://github.com/gpb360/AI-Marketing-Web-Builder
 - **Working Directory**: `D:\s7s-projects\AI-Marketing-Web-Builder\`
 - **Application Directory**: `D:\s7s-projects\AI-Marketing-Web-Builder\web-builder`
-- **Specifications Directory**: `D:\s7s-projects\AI-Marketing-Web-Builder\spec`
+- **Agent Directory**: `D:\s7s-projects\AI-Marketing-Web-Builder\.claude\agents`
 
 ## 📁 PROJECT STRUCTURE
 
@@ -14,78 +14,89 @@
 ```
 D:\s7s-projects\AI-Marketing-Web-Builder\
 ├── web-builder/          # Main Next.js application
-├── spec/                 # Project specifications and documentation
-│   ├── ai-spec.md       # AI component generation specifications
-│   ├── backend-spec.md  # FastAPI backend specifications
-│   ├── frontend-spec.md # React/Next.js frontend specifications
-│   ├── integration-spec.md # Integration and API specifications
-│   └── main-spec.md     # Overall project architecture
+├── .claude/agents/       # Specialized AI agents with embedded specifications
+│   ├── engineering/     # Frontend, backend, AI engineering agents
+│   ├── design/          # UI/UX design and template creation agents
+│   ├── marketing/       # Growth, content, and social media agents
+│   ├── product/         # Product management and research agents
+│   ├── project-management/ # Coordination and delivery agents
+│   ├── studio-operations/  # Business operations agents
+│   └── testing/         # Quality assurance and testing agents
 └── README.md            # Project overview
 ```
 
-### Specification Files Reference
-All agents MUST reference the appropriate spec files for their work:
-- **Frontend Developers**: `spec/frontend-spec.md`, `spec/main-spec.md`
-- **Backend Developers**: `spec/backend-spec.md`, `spec/integration-spec.md` 
-- **AI Specialists**: `spec/ai-spec.md`
-- **Project Managers**: All spec files for comprehensive understanding
+### Agent-Based Development Reference
+All development work uses specialized agents with embedded specifications:
+- **Frontend Development**: `.claude/agents/engineering/frontend-developer.md` (Complete frontend specs)
+- **Backend Development**: `.claude/agents/engineering/backend-architect.md` (Complete backend & API specs)
+- **AI Features**: `.claude/agents/engineering/ai-engineer.md` (Complete AI integration specs)
+- **UI/UX Design**: `.claude/agents/design/ui-designer.md` (Complete template & design specs)
+- **Project Coordination**: `.claude/agents/project-management/studio-producer.md` (Complete project specs)
 
 ## 🏗️ ENHANCED AGILE DEVELOPMENT WORKFLOW
 
-### Team Structure
+### Agent-Based Team Structure
 ```
-Orchestrator (You)
-├── Project Manager (Backlog Owner)
-├── Lead Developer (PR Review Authority)
-├── Frontend Pod 1
-│   ├── Senior Frontend Developer
-│   ├── Frontend Developer A
-│   └── Frontend Developer B
-└── Frontend Pod 2
-    ├── Senior Frontend Developer
-    ├── Frontend Developer C
-    └── Frontend Developer D
+AI Marketing Web Builder Platform
+├── Engineering Agents
+│   ├── frontend-developer.md       # React, Next.js, drag-drop builder
+│   ├── backend-architect.md        # FastAPI, workflows, CRM
+│   ├── ai-engineer.md             # GPT-4, Claude, AI customization
+│   ├── mobile-app-builder.md      # React Native, mobile experience
+│   └── devops-automator.md        # CI/CD, deployment, infrastructure
+├── Design Agents  
+│   ├── ui-designer.md             # 30+ templates, component library
+│   ├── ux-researcher.md           # User testing, journey optimization
+│   └── brand-guardian.md          # Brand consistency, guidelines
+├── Product & Management Agents
+│   ├── studio-producer.md         # Cross-team coordination, Magic Moment
+│   ├── sprint-prioritizer.md      # 6-day cycle planning
+│   └── project-shipper.md         # Launch coordination, go-to-market
+└── Specialized Agents
+    ├── marketing/ (7 agents)       # Growth, social media, content
+    ├── studio-operations/ (5 agents) # Analytics, finance, support
+    └── testing/ (5 agents)        # QA, performance, API testing
 ```
 
 ### Role Definitions
 
-#### Project Manager
+#### Studio Producer Agent (Project Coordination)
 **Primary Responsibilities:**
-- Maintain GitHub Project board (Ready/In Progress/Review/Done columns)
-- Create tasks from specifications in `/spec` and `/agents` folder
-- Ensure Ready column has 5-10 actionable tasks
-- Monitor team velocity and remove blockers
-- Enforce 5-minute maximum work periods without progress updates
+- Coordinate cross-team delivery of the Magic Moment functionality
+- Manage agent specialization and resource allocation
+- Ensure smooth handoffs between engineering, design, and AI agents
+- Monitor progress toward AI Marketing Web Builder platform goals
+- Facilitate 6-day sprint cycles with agent-specific priorities
 
 **Token Limit**: 3-5k tokens per task creation session
 **Communication**: Direct updates to Orchestrator every 30 minutes
 
-#### Lead Developer (PR Review Authority)
+#### Engineering Agents (Development Authority)
 **Primary Responsibilities:**
-- Review all PRs with **5-minute maximum** review time
-- Binary decisions: Approve or Request specific changes
-- Authority to merge approved PRs immediately
-- Escalate complex architectural decisions only
+- Frontend Agent: Drag-drop builder, 30+ templates, AI customization UI
+- Backend Agent: Workflow engine, CRM, APIs, Magic Connector backend
+- AI Agent: Component analysis, workflow suggestions, v0-style editing
+- Each agent has complete specifications and implementation authority
 
-**Token Limit**: 5-10k tokens per PR review (HARD LIMIT)
-**Review Process**: Checkout → Scan → Test → Decide (NO analysis paralysis)
+**Integration Focus**: Cross-agent coordination for Magic Moment functionality
+**Performance Targets**: <30min template-to-site, >80% AI success rate
 
-#### Senior Frontend Developers
+#### Design Agents (Visual Authority)
 **Primary Responsibilities:**
-- Technical decisions within their pod
-- Complex feature implementation
-- Code quality oversight
-- Mentor junior developers
+- UI Designer: 30+ premium templates across 6 categories, component library
+- UX Researcher: User journey optimization, Magic Moment validation
+- Brand Guardian: Visual consistency, template customization guidelines
+- Each agent maintains design system integrity
 
-**Token Limit**: 8-12k tokens per feature implementation
-**Work Scope**: Features requiring architectural decisions
+**Quality Focus**: Mobile-first responsive design, AI-customizable components
+**Success Metrics**: 95% Lighthouse score, <3s template loading
 
-#### Frontend Developers (A, B, C, D)
+#### Specialized Support Agents
 **Primary Responsibilities:**
-- Component development and implementation
-- UI/UX implementation from designs
-- Testing and bug fixes
-- Documentation updates
+- Marketing Agents: Growth, social media, app store optimization
+- Operations Agents: Analytics, finance, infrastructure, support
+- Testing Agents: QA, performance benchmarking, API testing
+- Each agent provides domain expertise when needed
 
 **Token Limit**: 5-8k tokens per task
 **Work Scope**: Well-defined, scoped tasks from Ready column
@@ -422,3 +433,294 @@ Signs of coordination overhead:
 **Response**: Direct action, bypass coordination
 
 This enhanced workflow focuses on **delivery over discussion**, **action over analysis**, and **efficiency over perfection**. Every process is designed to minimize token waste while maximizing development velocity.
+
+## 🔒 AGENT ISOLATION & BRANCH MANAGEMENT SYSTEM
+
+### Critical Problem Solved
+**BEFORE**: Multiple agents working on same branch → merge conflicts, lost work, confusion
+**AFTER**: Each agent works in isolation → clean merges, parallel development, zero conflicts
+
+### Agent Branch Isolation Rules (MANDATORY)
+
+#### 1. Branch Naming Convention (STRICT)
+```bash
+{agent-type}/{agent-name}/{feature-description}
+
+# Agent Type Categories:
+frontend/     # Frontend development
+backend/      # Backend APIs and services
+template/     # Template design and creation
+ai/           # AI services and integrations
+integration/  # System integrations
+performance/  # Performance optimizations
+workflow/     # Workflow automation
+deployment/   # Deployment and DevOps
+
+# Examples:
+frontend/frontend-builder/drag-drop-improvements
+backend/backend-architect/user-authentication-api
+template/template-designer/saas-templates-batch-3
+ai/ai-services-specialist/component-suggestions-v2
+```
+
+#### 2. File Ownership Matrix (CONFLICT PREVENTION)
+
+**Frontend Builder Agent**
+- **Primary**: `web-builder/src/components/builder/`
+- **Primary**: `web-builder/src/components/ui/`
+- **Secondary**: `web-builder/src/hooks/`
+- **Secondary**: `web-builder/src/lib/`
+- **RESTRICTED**: Backend files, API routes
+
+**Backend Architect Agent**
+- **Primary**: `backend/` (entire directory)
+- **Primary**: `web-builder/src/app/api/`
+- **Secondary**: Database migrations, configs
+- **RESTRICTED**: Frontend components, UI files
+
+**Template Designer Agent**
+- **Primary**: `web-builder/src/components/templates/`
+- **Primary**: `web-builder/src/lib/templates/`
+- **Primary**: `web-builder/src/data/templates/`
+- **Secondary**: Template-related components
+- **RESTRICTED**: Core builder logic, APIs
+
+**AI Services Specialist Agent**
+- **Primary**: `web-builder/src/lib/ai/`
+- **Primary**: AI-related API routes
+- **Secondary**: AI integration components
+- **RESTRICTED**: Non-AI related files
+
+**Integration Coordinator Agent**
+- **Primary**: Integration-specific components
+- **Primary**: Workflow connection logic
+- **Secondary**: API integration files
+- **RESTRICTED**: Core UI components
+
+**Performance Optimizer Agent**
+- **Primary**: Performance-related utilities
+- **Primary**: Optimization configurations
+- **Secondary**: Component performance fixes
+- **RESTRICTED**: New feature development
+
+**Workflow Automation Expert Agent**
+- **Primary**: Workflow automation logic
+- **Primary**: Automation API endpoints
+- **Secondary**: Workflow UI components
+- **RESTRICTED**: Non-workflow features
+
+**Deployment Manager Agent**
+- **Primary**: Deployment configurations
+- **Primary**: CI/CD pipelines
+- **Primary**: Infrastructure files
+- **RESTRICTED**: Application code
+
+#### 3. Branch Creation Protocol
+
+```bash
+# STEP 1: Identify your agent type and current main branch
+git checkout main
+git pull origin main
+
+# STEP 2: Create isolated branch with agent prefix
+git checkout -b {agent-type}/{agent-name}/{feature-description}
+
+# Examples:
+git checkout -b frontend/frontend-builder/component-library-fixes
+git checkout -b backend/backend-architect/user-auth-endpoints
+git checkout -b template/template-designer/ecommerce-templates
+
+# STEP 3: Push and set upstream
+git push -u origin {agent-type}/{agent-name}/{feature-description}
+```
+
+#### 4. File Modification Rules (PREVENT CONFLICTS)
+
+**BEFORE MODIFYING ANY FILE:**
+1. **Check File Ownership Matrix** - Is this file in your domain?
+2. **Search for Recent Changes** - Has another agent modified this recently?
+3. **Coordinate if Necessary** - If file is shared, coordinate with other agent
+4. **Document Changes** - Clear commit messages with agent prefix
+
+**Agent Commit Message Format:**
+```
+[AGENT-NAME] Brief description of change
+
+- Specific change 1
+- Specific change 2
+- Files modified: list of files
+
+# Examples:
+[FRONTEND-BUILDER] Fix drag-drop performance issues
+[BACKEND-ARCHITECT] Add user authentication endpoints
+[TEMPLATE-DESIGNER] Create SaaS template collection
+```
+
+#### 5. Pull Request Protocol (AGENT ISOLATION)
+
+**PR Title Format:**
+```
+[{AGENT-NAME}] Feature: Brief description
+
+# Examples:
+[FRONTEND-BUILDER] Feature: Improved component library UI
+[BACKEND-ARCHITECT] Feature: User authentication system
+[TEMPLATE-DESIGNER] Feature: Premium SaaS templates
+```
+
+**PR Description Template:**
+```markdown
+## Agent: {AGENT-NAME}
+## Branch: {agent-type}/{agent-name}/{feature-description}
+
+### Changes Made
+- [ ] Change 1
+- [ ] Change 2
+- [ ] Change 3
+
+### Files Modified
+- `path/to/file1.tsx`
+- `path/to/file2.ts`
+
+### Agent Domain Compliance
+- [ ] All files are within my agent domain
+- [ ] No conflicts with other agent work
+- [ ] Followed file ownership matrix
+
+### Testing
+- [ ] Local testing completed
+- [ ] No breaking changes
+- [ ] Performance impact assessed
+
+### Merge Requirements
+- [ ] Ready for 5-minute review
+- [ ] No merge conflicts
+- [ ] Agent isolation maintained
+```
+
+#### 6. Merge Conflict Prevention System
+
+**Daily Branch Sync Protocol:**
+```bash
+# Every morning before starting work:
+git checkout main
+git pull origin main
+git checkout {your-agent-branch}
+git rebase main
+
+# If conflicts arise:
+1. Check if conflicting files are in your domain
+2. If NOT in your domain → coordinate with owning agent
+3. If in your domain → resolve and continue
+4. Document resolution in commit message
+```
+
+**Shared File Coordination:**
+For files that multiple agents need to modify:
+1. **Create Shared Branch**: `shared/{feature-name}`
+2. **Collaborate in Real-time**: Both agents work together
+3. **Quick Merge**: <2 hour collaboration window
+4. **Individual PRs**: Separate PRs from shared branch
+
+#### 7. Agent Handoff Procedures
+
+**When Agent A needs Agent B to continue work:**
+
+```bash
+# Agent A completes their part
+git checkout agent-a/work-branch
+git push origin agent-a/work-branch
+
+# Agent A creates handoff branch
+git checkout -b handoff/agent-a-to-agent-b/feature-name
+git push -u origin handoff/agent-a-to-agent-b/feature-name
+
+# Agent B picks up work
+git checkout handoff/agent-a-to-agent-b/feature-name
+git checkout -b agent-b/agent-name/continue-feature
+# Continue work...
+```
+
+**Handoff Documentation:**
+```markdown
+## Handoff: {Agent A} → {Agent B}
+## Feature: {Feature Name}
+## Branch: handoff/{agent-a}-to-{agent-b}/{feature-name}
+
+### Work Completed by {Agent A}
+- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+### Remaining Work for {Agent B}
+- [ ] Task 4
+- [ ] Task 5
+- [ ] Task 6
+
+### Key Files
+- `file1.tsx` - Completed by Agent A
+- `file2.ts` - Needs Agent B work
+- `file3.tsx` - Shared file, coordinate changes
+
+### Dependencies
+- API endpoint: /api/feature (Agent A)
+- Frontend component: FeatureComponent (Agent B)
+- Integration: WorkflowConnection (Agent B)
+
+### Notes
+- Specific implementation details
+- Edge cases to consider
+- Testing requirements
+```
+
+#### 8. Emergency Conflict Resolution
+
+**If Merge Conflicts Occur Despite Isolation:**
+
+1. **STOP ALL WORK** on conflicted files
+2. **Identify Conflict Owner** via file ownership matrix
+3. **Coordinate Resolution** in <30 minutes
+4. **Document Resolution** in shared commit
+5. **Update Ownership Matrix** if needed
+
+**Escalation Protocol:**
+- **Level 1**: Direct agent-to-agent coordination (30 min)
+- **Level 2**: Lead Developer intervention (15 min)
+- **Level 3**: Orchestrator decision (5 min)
+
+#### 9. Branch Cleanup Protocol
+
+**After PR Merge:**
+```bash
+# Delete local branch
+git branch -d {agent-type}/{agent-name}/{feature-name}
+
+# Delete remote branch
+git push origin --delete {agent-type}/{agent-name}/{feature-name}
+
+# Update local main
+git checkout main
+git pull origin main
+```
+
+**Weekly Branch Audit:**
+- Remove stale agent branches
+- Update file ownership matrix
+- Review conflict patterns
+- Adjust agent domains if needed
+
+### Agent Isolation Success Metrics
+
+**Zero-Conflict Goals:**
+- 0 merge conflicts per sprint
+- <5 minute PR review times
+- 100% agent domain compliance
+- <2 hour handoff completion
+
+**Monitoring Dashboard:**
+- Branch creation per agent
+- File modification patterns
+- Conflict frequency by agent
+- Handoff success rate
+
+This agent isolation system ensures **parallel development without conflicts**, **clear ownership boundaries**, and **efficient collaboration when needed**.

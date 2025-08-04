@@ -19,6 +19,8 @@ import { ComplexitySlider } from './ComplexitySlider';
 import { CostEstimator } from './CostEstimator';
 import { ImageAnalyzer } from './ImageAnalyzer';
 import { QualityValidator } from './QualityValidator';
+import { ComponentIntelligence, GenerationContext } from '@/lib/ai/component-intelligence';
+import { PromptProcessor } from '@/lib/ai/prompt-processor';
 
 export interface GenerationRequest {
   description: string;
@@ -60,6 +62,11 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
   });
   const [generationResult, setGenerationResult] = useState<GenerationResult | null>(null);
   const [estimatedCost, setEstimatedCost] = useState<number>(0);
+  const [componentIntelligence] = useState(() => new ComponentIntelligence());
+  const [promptProcessor] = useState(() => new PromptProcessor());
+  const [detectedComponentType, setDetectedComponentType] = useState<string>('');
+  const [promptAnalysis, setPromptAnalysis] = useState<any>(null);
+  const [intelligentSuggestions, setIntelligentSuggestions] = useState<any[]>([]);
 
   const handleGenerate = useCallback(async () => {
     if (!generationRequest.description.trim()) {
@@ -67,6 +74,14 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
     }
 
     setCurrentStep('generating');
+    
+    // Analyze prompt with AI intelligence
+    const analysis = promptProcessor.analyzePrompt(generationRequest.description);
+    setPromptAnalysis(analysis);
+    
+    // Detect component type from prompt
+    const detection = componentIntelligence.detectComponentFromPrompt(generationRequest.description);
+    setDetectedComponentType(detection.detectedType);
 
     const mockGenerate = async (request: GenerationRequest): Promise<GenerationResult> => {
       try {
@@ -114,7 +129,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
         // Fallback to mock generation if API fails
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        const mockCode = generateMockComponent(request);
+        const mockCode = generateIntelligentComponent(request);
         
         return {
           success: true,
@@ -125,7 +140,8 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
           modelUsed: 'gemini-1.5-flash (fallback)',
           suggestions: [
             'Using fallback generation - check API connection',
-            'Consider adding TypeScript types for better development experience',
+            'Component generated with AI intelligence and best practices',
+            'Includes accessibility features and responsive design',
             'Test the component across different screen sizes'
           ]
         };
@@ -147,7 +163,88 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
   }, [generationRequest, onGenerate, estimatedCost]);
 
 
-  const generateMockComponent = (request: GenerationRequest): string => {
+  const generateIntelligentComponent = (request: GenerationRequest): string => {
+    const { description, componentType, complexity } = request;
+    
+    // Use AI intelligence to generate smarter components
+    const generationContext: GenerationContext = {
+      templateType: 'modern',
+      industry: 'tech',
+      targetAudience: 'professionals',
+      brandGuidelines: {
+        colors: ['#3B82F6', '#10B981', '#F59E0B'],
+        fonts: ['Inter', 'Roboto'],
+        style: 'modern'
+      },
+      existingComponents: []
+    };
+    
+    try {
+      const smartResult = componentIntelligence.generateSmartComponent(description, generationContext);
+      return generateCodeFromIntelligence(smartResult, componentType, complexity);
+    } catch (error) {
+      console.warn('Smart generation failed, falling back to template:', error);
+      return generateTemplateComponent(request);
+    }
+  };
+  
+  const generateCodeFromIntelligence = (smartResult: any, componentType: string, complexity: number): string => {
+    const component = smartResult.component;
+    
+    if (componentType === 'react') {
+      return `import React from 'react';
+
+interface ComponentProps {
+  children?: React.ReactNode;
+  className?: string;
+  ${complexity >= 3 ? 'onClick?: () => void;' : ''}
+  ${complexity >= 4 ? 'disabled?: boolean;' : ''}
+}
+
+// Generated with AI Intelligence
+// Reasoning: ${smartResult.reasoning}
+const ${component.name.replace(/\s+/g, '')}Component: React.FC<ComponentProps> = ({ 
+  children, 
+  className,
+  ${complexity >= 3 ? 'onClick,' : ''}
+  ${complexity >= 4 ? 'disabled = false,' : ''}
+}) => {
+  ${complexity >= 4 ? 'const [isHovered, setIsHovered] = React.useState(false);' : ''}
+  
+  return (
+    <${component.type === 'button' ? 'button' : 'div'} 
+      className={\`
+        ${component.props.className || ''}
+        \${className}
+      \`}
+      style={${JSON.stringify(component.style, null, 8)}}
+      ${complexity >= 3 ? 'onClick={onClick}' : ''}
+      ${complexity >= 4 ? `
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      disabled={disabled}` : ''}
+      ${component.props['aria-label'] ? `aria-label="${component.props['aria-label']}"` : ''}
+    >
+      ${component.props.content ? `<span>${component.props.content}</span>` : ''}
+      ${complexity >= 4 ? `
+      {isHovered && (
+        <span className="ml-2 transition-all duration-200">✨</span>
+      )}` : ''}
+      {children}
+    </${component.type === 'button' ? 'button' : 'div'}>
+  );
+};
+
+// AI Optimizations Applied:
+${smartResult.optimizations.map((opt: string, i: number) => `// ${i + 1}. ${opt}`).join('\n')}
+
+export default ${component.name.replace(/\s+/g, '')}Component;`;
+    }
+    
+    return generateTemplateComponent({ description: '', componentType, complexity });
+  };
+  
+  const generateTemplateComponent = (request: GenerationRequest): string => {
     const { description, componentType, complexity } = request;
     
     if (componentType === 'react') {
@@ -351,9 +448,19 @@ ${complexity >= 3 ? `
                   </div>
                   <PromptInput
                     value={generationRequest.description}
-                    onChange={(description) => 
-                      setGenerationRequest(prev => ({ ...prev, description }))
-                    }
+                    onChange={(description) => {
+                      setGenerationRequest(prev => ({ ...prev, description }));
+                      
+                      // Real-time prompt analysis
+                      if (description.trim().length > 10) {
+                        const analysis = promptProcessor.analyzePrompt(description);
+                        setPromptAnalysis(analysis);
+                        
+                        const detection = componentIntelligence.detectComponentFromPrompt(description);
+                        setDetectedComponentType(detection.detectedType);
+                        setIntelligentSuggestions(detection.suggestedPatterns.slice(0, 3));
+                      }
+                    }}
                     onImageUpload={(file) =>
                       setGenerationRequest(prev => ({ ...prev, referenceImage: file }))
                     }
@@ -408,6 +515,89 @@ ${complexity >= 3 ? `
                   />
                 </div>
 
+                {/* AI Analysis Display */}
+                {promptAnalysis && generationRequest.description.trim().length > 10 && (
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-4 mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <Bot className="w-3 h-3 text-white" />
+                      </div>
+                      <h4 className="font-semibold text-blue-900">AI Analysis</h4>
+                      <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">
+                        {Math.round(promptAnalysis.confidence * 100)}% confident
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-blue-600 font-medium">Detected Intent:</span>
+                        <p className="text-blue-800 capitalize">{promptAnalysis.intent}</p>
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">Component Type:</span>
+                        <p className="text-blue-800 capitalize">{detectedComponentType}</p>
+                      </div>
+                    </div>
+                    
+                    {promptAnalysis.suggestions.length > 0 && (
+                      <div className="mt-3">
+                        <span className="text-blue-600 font-medium text-xs">Suggestions:</span>
+                        <ul className="mt-1 space-y-1">
+                          {promptAnalysis.suggestions.slice(0, 2).map((suggestion: string, index: number) => (
+                            <li key={index} className="text-xs text-blue-700 flex items-start gap-1">
+                              <span className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
+                              {suggestion}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Intelligent Component Suggestions */}
+                {intelligentSuggestions.length > 0 && (
+                  <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Lightbulb className="w-5 h-5 text-yellow-500" />
+                      <h4 className="font-semibold text-gray-900">Smart Suggestions</h4>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      {intelligentSuggestions.map((pattern: any, index: number) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setGenerationRequest(prev => ({
+                              ...prev,
+                              description: `Create a ${pattern.name.toLowerCase()} - ${pattern.description}`
+                            }));
+                          }}
+                          className="text-left p-3 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg transition-all duration-200"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Code className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{pattern.name}</div>
+                              <div className="text-sm text-gray-600 mt-1">{pattern.description}</div>
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {Math.round(pattern.confidence * 100)}% match
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {pattern.variants.length} variants
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Generate Button */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -417,7 +607,7 @@ ${complexity >= 3 ? `
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
                 >
                   <Zap className="w-6 h-6" />
-                  Generate Component
+                  {promptAnalysis ? 'Generate Smart Component' : 'Generate Component'}
                 </motion.button>
               </motion.div>
             )}

@@ -1,24 +1,60 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { ComponentData, DragItem, DragCollectedProps, DropCollectedProps } from '@/types/builder';
 import { useBuilderStore } from '@/store/builderStore';
-import { ResizeHandles } from './ResizeHandles';
+import { SimpleResizeHandles } from './SimpleResizeHandles';
 import { EnhancedComponentRenderer } from './EnhancedComponentRenderer';
-import { DragHandles } from './DragHandles';
 import { WorkflowConnector } from './WorkflowConnector';
 import { cn } from '@/lib/utils';
-import { Zap, Settings2 } from 'lucide-react';
+import { Zap, Settings2, Move } from 'lucide-react';
 
 interface CanvasComponentProps {
   component: ComponentData;
   isSelected: boolean;
   zoom: number;
+  isBuilderMode?: boolean;
 }
 
-export function CanvasComponent({ component, isSelected, zoom }: CanvasComponentProps) {
+// PERFORMANCE: Memoized EnhancedComponentRenderer to prevent unnecessary re-renders
+const MemoizedComponentRenderer = React.memo(EnhancedComponentRenderer, (prevProps, nextProps) => {
+  return (
+    prevProps.component.id === nextProps.component.id &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isBuilderMode === nextProps.isBuilderMode &&
+    JSON.stringify(prevProps.component.props) === JSON.stringify(nextProps.component.props) &&
+    JSON.stringify(prevProps.component.style) === JSON.stringify(nextProps.component.style)
+  );
+});
+
+// PERFORMANCE: Memoized WorkflowConnector
+const MemoizedWorkflowConnector = React.memo(WorkflowConnector, (prevProps, nextProps) => {
+  return (
+    prevProps.componentId === nextProps.componentId &&
+    prevProps.isConnected === nextProps.isConnected &&
+    prevProps.workflowId === nextProps.workflowId
+  );
+});
+
+// PERFORMANCE: Memoized SimpleResizeHandles
+const MemoizedResizeHandles = React.memo(SimpleResizeHandles, (prevProps, nextProps) => {
+  return (
+    prevProps.componentId === nextProps.componentId &&
+    prevProps.size.width === nextProps.size.width &&
+    prevProps.size.height === nextProps.size.height &&
+    prevProps.zoom === nextProps.zoom &&
+    prevProps.isContainer === nextProps.isContainer
+  );
+});
+
+export const CanvasComponent = React.memo(function CanvasComponent({ 
+  component, 
+  isSelected, 
+  zoom, 
+  isBuilderMode = true 
+}: CanvasComponentProps) {
   const componentRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -33,8 +69,8 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
     setAIContext,
   } = useBuilderStore();
 
-  // Create drag item that matches DragItem interface
-  const dragItem: DragItem = {
+  // PERFORMANCE: Memoize drag item to prevent recreation
+  const dragItem = useMemo((): DragItem => ({
     type: 'canvas-component',
     id: component.id,
     componentType: component.type,
@@ -45,23 +81,25 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
       thumbnail: '',
       description: component.name,
     },
-  };
+  }), [component.id, component.type, component.name, component.props]);
 
-  const [{ opacity }, drag, preview] = useDrag<DragItem, unknown, DragCollectedProps>({
+  // PERFORMANCE: Memoized drag configuration
+  const dragConfig = useMemo(() => ({
     type: 'canvas-component',
     item: dragItem,
-    collect: (monitor) => ({
+    collect: (monitor: any) => ({
       isDragging: monitor.isDragging(),
       opacity: monitor.isDragging() ? 0.5 : 1,
     }),
-    end: () => {
-      setIsDragging(false);
-    },
-  });
+    end: () => setIsDragging(false),
+  }), [dragItem]);
 
-  const [, drop] = useDrop<DragItem, unknown, DropCollectedProps>({
+  const [{ opacity }, drag, preview] = useDrag<DragItem, unknown, DragCollectedProps>(dragConfig);
+
+  // PERFORMANCE: Memoized drop configuration
+  const dropConfig = useMemo(() => ({
     accept: ['component', 'canvas-component'],
-    hover: (draggedItem) => {
+    hover: (draggedItem: DragItem) => {
       if (draggedItem.id === component.id) return;
       
       // Allow dropping on containers
@@ -69,25 +107,28 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
         // Handle nested component logic here if needed
       }
     },
-    collect: (monitor) => ({
+    collect: (monitor: any) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
     }),
-  });
+  }), [component.id, component.type]);
+
+  const [, drop] = useDrop<DragItem, unknown, DropCollectedProps>(dropConfig);
 
   // Use empty image for drag preview to avoid default browser drag image
   React.useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);
 
-  const handleClick = (event: React.MouseEvent) => {
+  // PERFORMANCE: Memoized event handlers
+  const handleClick = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
     if (!isDragging && !isResizing) {
       selectComponent(component.id);
     }
-  };
+  }, [isDragging, isResizing, selectComponent, component.id]);
 
-  const handleDoubleClick = (event: React.MouseEvent) => {
+  const handleDoubleClick = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
     // Open component editor or AI customization
     setAIContext({
@@ -96,28 +137,37 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
       availableActions: ['modify', 'style', 'enhance', 'connect'],
       suggestedModifications: [],
     });
-  };
+  }, [setAIContext, component.id, component.props]);
 
-  const handleWorkflowConnect = (workflowId: string) => {
+  const handleWorkflowConnect = useCallback((workflowId: string) => {
     connectToWorkflow(component.id, workflowId);
-  };
+  }, [connectToWorkflow, component.id]);
 
-  const handleWorkflowDisconnect = () => {
+  const handleWorkflowDisconnect = useCallback(() => {
     disconnectFromWorkflow(component.id);
-  };
+  }, [disconnectFromWorkflow, component.id]);
 
-  const handleResize = (newSize: { width: number; height: number }) => {
+  const handleResize = useCallback((newSize: { width: number; height: number }) => {
     updateComponentSize(component.id, newSize);
-  };
+  }, [updateComponentSize, component.id]);
 
-  const handlePropsUpdate = (newProps: Partial<ComponentData['props']>) => {
+  const handlePropsUpdate = useCallback((newProps: Partial<ComponentData['props']>) => {
     updateComponentProps(component.id, {
       ...component.props,
       ...newProps,
     });
-  };
+  }, [updateComponentProps, component.id, component.props]);
 
-  const combinedRef = (node: HTMLDivElement | null) => {
+  const handleToggleSettings = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowSettings(prev => !prev);
+  }, []);
+
+  const handleResizeStart = useCallback(() => setIsResizing(true), []);
+  const handleResizeEnd = useCallback(() => setIsResizing(false), []);
+
+  // PERFORMANCE: Memoized ref callback to prevent unnecessary re-renders
+  const combinedRef = useCallback((node: HTMLDivElement | null) => {
     if (componentRef.current !== node) {
       // Only update if the node has actually changed
       Object.defineProperty(componentRef, 'current', {
@@ -128,110 +178,164 @@ export function CanvasComponent({ component, isSelected, zoom }: CanvasComponent
     }
     drag(node);
     drop(node);
-  };
+  }, [drag, drop]);
 
-  // Enhanced resize handles with better visual feedback
-  const enhancedResizeHandles = isSelected && !isDragging && (
-    <>
-      {/* Corner resize handles with better visibility */}
-      <ResizeHandles
+  // PERFORMANCE: Memoize component style to prevent recalculation
+  const componentStyle = useMemo(() => ({
+    left: component.position.x,
+    top: component.position.y,
+    width: component.size.width,
+    height: component.size.height,
+    opacity,
+    zIndex: isSelected ? 10 : 1,
+    ...component.style,
+  }), [
+    component.position.x,
+    component.position.y,
+    component.size.width,
+    component.size.height,
+    opacity,
+    isSelected,
+    component.style
+  ]);
+
+  // PERFORMANCE: Memoize CSS classes
+  const componentClasses = useMemo(() => cn(
+    "absolute transition-all duration-200 group",
+    // Clean selection indicator
+    isSelected && "ring-2 ring-blue-500",
+    // Dragging state
+    isDragging && "z-50 opacity-75 cursor-grabbing",
+    // Connected state with subtle indicator
+    component.isConnectedToWorkflow && "ring-2 ring-emerald-400 ring-offset-1",
+    // Hover state for better UX
+    !isSelected && !isDragging && "hover:ring-1 hover:ring-blue-300 cursor-pointer"
+  ), [isSelected, isDragging, component.isConnectedToWorkflow]);
+
+  // PERFORMANCE: Memoize resize handles to prevent recreation
+  const resizeHandles = useMemo(() => {
+    if (!isSelected || isDragging) return null;
+
+    return (
+      <MemoizedResizeHandles
         componentId={component.id}
         size={component.size}
         onResize={handleResize}
-        onResizeStart={() => setIsResizing(true)}
-        onResizeEnd={() => setIsResizing(false)}
+        onResizeStart={handleResizeStart}
+        onResizeEnd={handleResizeEnd}
         zoom={zoom}
+        isContainer={component.type === 'container' || component.type === 'section'}
       />
-      
-      {/* Additional visual feedback for resizable */}
-      <div className={cn(
-        "absolute inset-0 border-2 border-dashed border-blue-400 pointer-events-none opacity-0 transition-opacity duration-200",
-        isSelected && "opacity-50"
-      )} />
-    </>
-  );
+    );
+  }, [
+    isSelected,
+    isDragging,
+    component.id,
+    component.size,
+    component.type,
+    handleResize,
+    handleResizeStart,
+    handleResizeEnd,
+    zoom
+  ]);
+
+  // PERFORMANCE: Memoize selection UI elements
+  const selectionUI = useMemo(() => {
+    if (!isSelected) return null;
+
+    return (
+      <>
+        {/* Component Label */}
+        <div className="absolute -top-6 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-sm">
+          {component.name}
+        </div>
+
+        {/* Move Handle - Clean and simple */}
+        <div 
+          className="absolute -top-3 -left-3 bg-blue-500 text-white rounded-full p-1.5 shadow-sm hover:bg-blue-600 transition-colors cursor-move"
+          title="Drag to move"
+        >
+          <Move className="w-3 h-3" />
+        </div>
+
+        {/* Settings Button - Only for advanced users */}
+        <button
+          className="absolute -top-3 -right-3 bg-gray-600 text-white rounded-full p-1.5 shadow-sm hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100"
+          onClick={handleToggleSettings}
+          title="Component Settings"
+        >
+          <Settings2 className="w-3 h-3" />
+        </button>
+      </>
+    );
+  }, [isSelected, component.name, handleToggleSettings]);
+
+  // PERFORMANCE: Memoize workflow UI elements
+  const workflowUI = useMemo(() => {
+    const isInteractiveComponent = ['form', 'button', 'contact'].includes(component.type);
+    if (!isSelected || !isInteractiveComponent) return null;
+
+    return (
+      <>
+        {/* Connection Indicator */}
+        {component.isConnectedToWorkflow && (
+          <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white rounded-full p-1 shadow-sm">
+            <Zap className="w-3 h-3" />
+          </div>
+        )}
+        
+        {/* Workflow Connector - Only for interactive components */}
+        <MemoizedWorkflowConnector
+          componentId={component.id}
+          isConnected={component.isConnectedToWorkflow || false}
+          workflowId={component.workflowId}
+          onConnect={handleWorkflowConnect}
+          onDisconnect={handleWorkflowDisconnect}
+        />
+      </>
+    );
+  }, [
+    isSelected,
+    component.type,
+    component.id,
+    component.isConnectedToWorkflow,
+    component.workflowId,
+    handleWorkflowConnect,
+    handleWorkflowDisconnect
+  ]);
 
   return (
     <div
       ref={combinedRef}
-      className={cn(
-        "absolute cursor-move transition-all duration-200 group",
-        isSelected && "ring-2 ring-blue-500 ring-offset-2",
-        isDragging && "z-50 opacity-75",
-        component.isConnectedToWorkflow && "ring-2 ring-green-500"
-      )}
-      style={{
-        left: component.position.x,
-        top: component.position.y,
-        width: component.size.width,
-        height: component.size.height,
-        opacity,
-        zIndex: isSelected ? 10 : 1,
-        ...component.style,
-      }}
+      className={componentClasses}
+      style={componentStyle}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
       {/* Component Content */}
       <div className="w-full h-full relative">
-        <EnhancedComponentRenderer
+        <MemoizedComponentRenderer
           component={component}
           isSelected={isSelected}
           isBuilderMode={isBuilderMode}
           onUpdateProps={handlePropsUpdate}
         />
 
-        {/* Workflow Connection Indicator */}
-        {component.isConnectedToWorkflow && (
-          <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1 shadow-lg animate-pulse">
-            <Zap className="w-3 h-3" />
-          </div>
-        )}
+        {/* Selection UI */}
+        {selectionUI}
 
-        {/* Settings Button */}
-        {isSelected && (
-          <button
-            className="absolute -top-2 -left-2 bg-blue-500 text-white rounded-full p-1 shadow-lg hover:bg-blue-600 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowSettings(!showSettings);
-            }}
-            title="Component Settings"
-          >
-            <Settings2 className="w-3 h-3" />
-          </button>
-        )}
-
-        {/* Workflow Connector Button */}
-        {isSelected && (
-          <WorkflowConnector
-            componentId={component.id}
-            isConnected={component.isConnectedToWorkflow || false}
-            workflowId={component.workflowId}
-            onConnect={handleWorkflowConnect}
-            onDisconnect={handleWorkflowDisconnect}
-          />
-        )}
+        {/* Workflow UI */}
+        {workflowUI}
       </div>
 
-      {/* Enhanced Resize Handles */}
-      {enhancedResizeHandles}
-
-      {/* Drag Handles */}
-      <DragHandles isSelected={isSelected} zoom={zoom} />
-
-      {/* Component Label */}
-      {isSelected && (
-        <div className="absolute -top-6 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-t-md shadow-lg">
-          {component.name}
-        </div>
-      )}
+      {/* Resize Handles */}
+      {resizeHandles}
     </div>
   );
-}
+});
 
 // Helper to determine if we should use enhanced renderer
-export function ComponentRenderer({ 
+export const ComponentRenderer = React.memo(function ComponentRenderer({ 
   component, 
   isSelected, 
   isBuilderMode 
@@ -242,19 +346,21 @@ export function ComponentRenderer({
 }) {
   const { updateComponentProps } = useBuilderStore();
 
-  const handlePropsUpdate = (newProps: Partial<ComponentData['props']>) => {
+  const handlePropsUpdate = useCallback((newProps: Partial<ComponentData['props']>) => {
     updateComponentProps(component.id, {
       ...component.props,
       ...newProps,
     });
-  };
+  }, [updateComponentProps, component.id, component.props]);
 
   return (
-    <EnhancedComponentRenderer
+    <MemoizedComponentRenderer
       component={component}
       isSelected={isSelected}
       isBuilderMode={isBuilderMode}
       onUpdateProps={handlePropsUpdate}
     />
   );
-}
+});
+
+export default CanvasComponent;

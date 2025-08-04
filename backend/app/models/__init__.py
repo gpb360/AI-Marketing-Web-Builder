@@ -1,7 +1,7 @@
 """Database models for the AI Web Builder Platform."""
 
 from .base import BaseModel, TimestampMixin
-from .users import User
+from .user import User
 from .sites import Site, Component, Template
 from .workflows import Workflow, WorkflowExecution, WorkflowNode
 from .crm import Contact, ContactActivity, EmailCampaign, EmailSend

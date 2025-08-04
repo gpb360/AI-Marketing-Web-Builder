@@ -5,6 +5,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosResponse } from 'axios';
 import Cookies from 'js-cookie';
 import type { APIResponse, APIError } from './types';
+import { errorHandler, isNetworkError } from './error-handler';
 
 // Constants
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -128,7 +129,7 @@ export class APIClient {
   }
 
   /**
-   * Execute request with retry logic
+   * Execute request with enhanced retry logic and error handling
    */
   private async executeWithRetry<T>(
     requestFn: () => Promise<T>,
@@ -138,17 +139,31 @@ export class APIClient {
       return await requestFn();
     } catch (error) {
       const axiosError = error as AxiosError;
-      
+
+      // Handle network errors with enhanced error handler
+      if (isNetworkError(axiosError)) {
+        try {
+          return await errorHandler.handleFetchError(
+            axiosError,
+            requestFn,
+            { method: 'API_REQUEST' }
+          );
+        } catch (handledError) {
+          throw this.transformError(axiosError);
+        }
+      }
+
+      // Original retry logic for other errors
       if (retries > 0 && isRetryableError(axiosError)) {
         const delayMs = RETRY_DELAY * (MAX_RETRIES - retries + 1); // Exponential backoff
         if (process.env.NODE_ENV === 'development') {
           console.log(`Retrying request, ${retries} attempts remaining...`);
         }
-        
+
         await delay(delayMs);
         return this.executeWithRetry(requestFn, retries - 1);
       }
-      
+
       throw this.transformError(axiosError);
     }
   }

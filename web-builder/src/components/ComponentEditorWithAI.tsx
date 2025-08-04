@@ -28,17 +28,23 @@ import {
   Copy,
   History,
   Undo,
-  Redo
+  Redo,
+  Send
 } from 'lucide-react';
 import { useBuilderStore } from '@/store/builderStore';
 import { cn } from '@/lib/utils';
 
+// CONSOLIDATED: Combined ComponentEditor and ComponentEditorWithAI interfaces
 interface ComponentEditorWithAIProps {
   initialCode: string;
   componentType: 'react' | 'html' | 'vue';
   onCodeChange?: (code: string) => void;
   componentId?: string;
   className?: string;
+  // Enhanced props for AI functionality
+  enableAI?: boolean;
+  showAIPanel?: boolean;
+  enableAdvancedFeatures?: boolean;
 }
 
 type ViewportSize = 'mobile' | 'tablet' | 'desktop';
@@ -55,12 +61,16 @@ interface AIEdit {
   description: string;
 }
 
+// CONSOLIDATED: Enhanced component editor with optional AI features
 export function ComponentEditorWithAI({ 
   initialCode, 
   componentType, 
   onCodeChange,
   componentId,
-  className = '' 
+  className = '',
+  enableAI = true,
+  showAIPanel: initialShowAIPanel = false,
+  enableAdvancedFeatures = true
 }: ComponentEditorWithAIProps) {
   const [code, setCode] = useState(initialCode);
   const [previewCode, setPreviewCode] = useState(initialCode);
@@ -70,12 +80,14 @@ export function ComponentEditorWithAI({
   const [showGrid, setShowGrid] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
   const [editorTheme, setEditorTheme] = useState<'light' | 'dark'>('light');
+  
+  // AI-specific state
   const [aiAssistMode, setAiAssistMode] = useState<AIAssistMode>('sidebar');
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiEdits, setAiEdits] = useState<AIEdit[]>([]);
   const [currentEditIndex, setCurrentEditIndex] = useState(-1);
-  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [showAiPanel, setShowAiPanel] = useState(enableAI && initialShowAIPanel);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   
   const editorRef = useRef<any>(null);
@@ -108,8 +120,10 @@ export function ComponentEditorWithAI({
   const resetCode = () => {
     setCode(initialCode);
     setPreviewCode(initialCode);
-    setAiEdits([]);
-    setCurrentEditIndex(-1);
+    if (enableAI) {
+      setAiEdits([]);
+      setCurrentEditIndex(-1);
+    }
   };
 
   const getViewportDimensions = () => {
@@ -136,9 +150,9 @@ export function ComponentEditorWithAI({
     }
   };
 
-  // AI Integration Functions
+  // CONSOLIDATED: AI Integration Functions (only active when enableAI is true)
   const handleAiPrompt = async () => {
-    if (!aiPrompt.trim()) return;
+    if (!enableAI || !aiPrompt.trim()) return;
 
     setIsAiProcessing(true);
     const originalCode = code;
@@ -170,7 +184,7 @@ export function ComponentEditorWithAI({
   };
 
   const simulateAIEdit = async (originalCode: string, prompt: string): Promise<string> => {
-    // Simulate AI response based on prompt
+    // Enhanced simulation based on prompt keywords
     return new Promise((resolve) => {
       setTimeout(() => {
         let modifiedCode = originalCode;
@@ -205,25 +219,34 @@ export function ComponentEditorWithAI({
           );
         }
         
+        if (prompt.toLowerCase().includes('gradient')) {
+          modifiedCode = modifiedCode.replace(
+            /bg-\w+-\d+/g,
+            'bg-gradient-to-r from-blue-500 to-purple-600'
+          );
+        }
+        
         resolve(modifiedCode);
       }, 1500);
     });
   };
 
   const applyAiEdit = (editIndex: number) => {
-    if (editIndex >= 0 && editIndex < aiEdits.length) {
-      const edit = aiEdits[editIndex];
-      setCode(edit.modifiedCode);
-      setPreviewCode(edit.modifiedCode);
-      
-      setAiEdits(prev => 
-        prev.map((e, idx) => idx === editIndex ? { ...e, applied: true } : e)
-      );
-      setCurrentEditIndex(editIndex);
-    }
+    if (!enableAI || editIndex < 0 || editIndex >= aiEdits.length) return;
+    
+    const edit = aiEdits[editIndex];
+    setCode(edit.modifiedCode);
+    setPreviewCode(edit.modifiedCode);
+    
+    setAiEdits(prev => 
+      prev.map((e, idx) => idx === editIndex ? { ...e, applied: true } : e)
+    );
+    setCurrentEditIndex(editIndex);
   };
 
   const undoAiEdit = () => {
+    if (!enableAI) return;
+    
     if (currentEditIndex > -1 && aiEdits.length > 0) {
       const previousEdit = aiEdits[currentEditIndex - 1];
       if (previousEdit) {
@@ -240,6 +263,8 @@ export function ComponentEditorWithAI({
   };
 
   const redoAiEdit = () => {
+    if (!enableAI) return;
+    
     if (currentEditIndex < aiEdits.length - 1) {
       const nextEdit = aiEdits[currentEditIndex + 1];
       setCode(nextEdit.modifiedCode);
@@ -254,7 +279,10 @@ export function ComponentEditorWithAI({
       "Add hover animations",
       "Improve spacing and padding",
       "Change to modern gradient style",
-      "Optimize for mobile responsiveness"
+      "Optimize for mobile responsiveness",
+      "Add shadow effects",
+      "Improve typography",
+      "Make it more accessible"
     ];
   };
 
@@ -262,10 +290,12 @@ export function ComponentEditorWithAI({
 
   return (
     <div className={`bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm ${className}`}>
-      {/* Enhanced Header with AI Controls */}
+      {/* Enhanced Header */}
       <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center gap-4">
-          <h3 className="font-semibold text-gray-800">AI Component Editor</h3>
+          <h3 className="font-semibold text-gray-800">
+            {enableAI ? 'AI Component Editor' : 'Component Editor'}
+          </h3>
           
           {/* Preview Mode Toggle */}
           <div className="flex bg-white rounded-lg p-1 border border-gray-200">
@@ -310,42 +340,46 @@ export function ComponentEditorWithAI({
             </motion.button>
           )}
 
-          {/* AI Toggle */}
-          <button
-            onClick={() => setShowAiPanel(!showAiPanel)}
-            className={`
-              flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-              ${showAiPanel
-                ? 'bg-purple-500 text-white shadow-sm'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }
-            `}
-          >
-            <Bot className="w-3 h-3" />
-            AI Assistant
-          </button>
+          {/* AI Toggle - Only show if AI is enabled */}
+          {enableAI && (
+            <button
+              onClick={() => setShowAiPanel(!showAiPanel)}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                ${showAiPanel
+                  ? 'bg-purple-500 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }
+              `}
+            >
+              <Bot className="w-3 h-3" />
+              AI Assistant
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Undo/Redo */}
-          <div className="flex bg-white rounded-lg p-1 border border-gray-200">
-            <button
-              onClick={undoAiEdit}
-              disabled={currentEditIndex < -1}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Undo"
-            >
-              <Undo className="w-4 h-4" />
-            </button>
-            <button
-              onClick={redoAiEdit}
-              disabled={currentEditIndex >= aiEdits.length - 1}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Redo"
-            >
-              <Redo className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Undo/Redo - Enhanced for AI */}
+          {enableAI && enableAdvancedFeatures && (
+            <div className="flex bg-white rounded-lg p-1 border border-gray-200">
+              <button
+                onClick={undoAiEdit}
+                disabled={currentEditIndex < -1}
+                className="p-2 rounded-md text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Undo AI Edit"
+              >
+                <Undo className="w-4 h-4" />
+              </button>
+              <button
+                onClick={redoAiEdit}
+                disabled={currentEditIndex >= aiEdits.length - 1}
+                className="p-2 rounded-md text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Redo AI Edit"
+              >
+                <Redo className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           {/* Viewport Size Controls */}
           <div className="flex bg-white rounded-lg p-1 border border-gray-200">
@@ -438,9 +472,9 @@ export function ComponentEditorWithAI({
       `}>
         {/* Code Editor + AI Panel */}
         <div className={`${isPreviewVisible ? 'w-1/2' : 'w-full'} border-r border-gray-200 flex`}>
-          {/* AI Sidebar */}
+          {/* AI Sidebar - Only show if AI is enabled */}
           <AnimatePresence>
-            {showAiPanel && (
+            {enableAI && showAiPanel && (
               <motion.div
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: 300, opacity: 1 }}
@@ -632,13 +666,13 @@ export function ComponentEditorWithAI({
         </AnimatePresence>
       </div>
 
-      {/* Status Bar with AI Indicators */}
+      {/* Enhanced Status Bar */}
       <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
         <div className="flex items-center gap-4">
           <span>Lines: {code.split('\n').length}</span>
           <span>Characters: {code.length}</span>
           <span>Language: {getLanguage()}</span>
-          {aiEdits.length > 0 && (
+          {enableAI && aiEdits.length > 0 && (
             <span className="text-purple-600">
               {aiEdits.filter(e => e.applied).length}/{aiEdits.length} AI edits applied
             </span>
@@ -740,6 +774,7 @@ function EnhancedMockPreview({
   const hasImage = code.toLowerCase().includes('img') || code.toLowerCase().includes('image');
   const hasCard = code.toLowerCase().includes('card');
   const hasModal = code.toLowerCase().includes('modal');
+  const hasGradient = code.toLowerCase().includes('gradient');
 
   return (
     <div className="space-y-4">
@@ -776,7 +811,7 @@ function EnhancedMockPreview({
         </div>
       </div>
 
-      {/* Mock Component Rendering */}
+      {/* Enhanced Mock Component Rendering */}
       <div className="space-y-4">
         {hasModal && (
           <div className="bg-gray-900 bg-opacity-50 rounded-lg p-8 relative">
@@ -784,7 +819,7 @@ function EnhancedMockPreview({
               <h3 className="text-lg font-semibold mb-4">Modal Component</h3>
               <p className="text-gray-600 mb-4">This is a preview of your modal component with backdrop and animations.</p>
               <div className="flex gap-3">
-                <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <button className={`px-6 py-3 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl ${hasGradient ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
                   Confirm
                 </button>
                 <button className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300">
@@ -799,7 +834,7 @@ function EnhancedMockPreview({
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start gap-4">
               {hasImage && (
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+                <div className={`w-16 h-16 rounded-lg flex items-center justify-center ${hasGradient ? 'bg-gradient-to-br from-blue-400 to-purple-500' : 'bg-blue-500'}`}>
                   <span className="text-white text-2xl">🖼️</span>
                 </div>
               )}
@@ -810,7 +845,7 @@ function EnhancedMockPreview({
                 </p>
                 {hasButtons && (
                   <button 
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    className={`px-4 py-2 text-white rounded-lg transition-colors ${hasGradient ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' : 'bg-blue-500 hover:bg-blue-600'}`}
                     onMouseEnter={() => setHoverElement('button')}
                     onMouseLeave={() => setHoverElement(null)}
                   >
@@ -847,7 +882,7 @@ function EnhancedMockPreview({
                 </select>
               </div>
               <button 
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                className={`w-full px-4 py-2 text-white rounded-lg disabled:opacity-50 transition-colors ${hasGradient ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' : 'bg-blue-500 hover:bg-blue-600'}`}
                 disabled={!isInteractive}
               >
                 Submit Form
@@ -860,7 +895,7 @@ function EnhancedMockPreview({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-gray-800">Button Component</h3>
             <div className="flex gap-3 flex-wrap">
-              <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <button className={`px-8 py-4 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl ${hasGradient ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' : 'bg-blue-500 hover:bg-blue-600'}`}>
                 Primary Button
               </button>
               <button className="px-8 py-4 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl font-bold text-lg hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300">
@@ -888,7 +923,7 @@ function EnhancedMockPreview({
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center"
+                className={`w-12 h-12 rounded-lg flex items-center justify-center ${hasGradient ? 'bg-gradient-to-br from-purple-500 to-blue-500' : 'bg-purple-500'}`}
               >
                 <span className="text-white">✨</span>
               </motion.div>
@@ -904,7 +939,7 @@ function EnhancedMockPreview({
           </div>
         )}
 
-        {/* Code Analysis */}
+        {/* Enhanced Code Analysis */}
         <div className="bg-gray-50 rounded-lg p-4">
           <h5 className="font-medium text-gray-700 mb-3">Component Analysis</h5>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -921,6 +956,10 @@ function EnhancedMockPreview({
                 <div className={`w-2 h-2 rounded-full ${hasAnimation ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                 <span className={hasAnimation ? 'text-green-700' : 'text-gray-500'}>Animations</span>
               </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${hasGradient ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <span className={hasGradient ? 'text-green-700' : 'text-gray-500'}>Gradients</span>
+              </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -935,6 +974,10 @@ function EnhancedMockPreview({
                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
                 <span className="text-green-700">Responsive Design</span>
               </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span className="text-green-700">Modern Styling</span>
+              </div>
             </div>
           </div>
         </div>
@@ -942,3 +985,14 @@ function EnhancedMockPreview({
     </div>
   );
 }
+
+// CONSOLIDATED: Export both the enhanced version and a simplified version for backward compatibility
+export const ComponentEditor = (props: Omit<ComponentEditorWithAIProps, 'enableAI' | 'showAIPanel' | 'enableAdvancedFeatures'>) => 
+  ComponentEditorWithAI({ 
+    ...props, 
+    enableAI: false, 
+    showAIPanel: false, 
+    enableAdvancedFeatures: false 
+  });
+
+export default ComponentEditorWithAI;

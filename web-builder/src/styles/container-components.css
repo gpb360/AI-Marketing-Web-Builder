@@ -1,0 +1,202 @@
+/* Clean Container Components Styles */
+
+/* Base container styling */
+.container-component {
+  @apply relative transition-all duration-200 ease-in-out;
+}
+
+/* Selection states */
+.container-selected {
+  @apply ring-2 ring-blue-500;
+}
+
+.container-hover:not(.container-selected) {
+  @apply ring-1 ring-blue-300;
+}
+
+/* Connected workflow indicator */
+.container-connected {
+  @apply ring-2 ring-emerald-400 ring-offset-1;
+}
+
+/* Resize handles */
+.resize-handle {
+  @apply absolute w-3 h-3 bg-blue-500 border border-white rounded-full shadow-sm;
+  @apply hover:bg-blue-600 hover:scale-110 transition-all duration-150 cursor-pointer;
+}
+
+.resize-handle:hover {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.resize-handle.active {
+  @apply bg-blue-600 scale-110;
+}
+
+/* Resize handle positions */
+.resize-handle-se {
+  @apply bottom-0 right-0;
+  transform: translate(50%, 50%);
+  cursor: nwse-resize;
+}
+
+.resize-handle-sw {
+  @apply bottom-0 left-0;
+  transform: translate(-50%, 50%);
+  cursor: nesw-resize;
+}
+
+.resize-handle-ne {
+  @apply top-0 right-0;
+  transform: translate(50%, -50%);
+  cursor: nesw-resize;
+}
+
+.resize-handle-nw {
+  @apply top-0 left-0;
+  transform: translate(-50%, -50%);
+  cursor: nwse-resize;
+}
+
+.resize-handle-e {
+  @apply top-1/2 right-0;
+  transform: translate(50%, -50%);
+  cursor: ew-resize;
+}
+
+.resize-handle-s {
+  @apply bottom-0 left-1/2;
+  transform: translate(-50%, 50%);
+  cursor: ns-resize;
+}
+
+/* Control buttons */
+.control-button {
+  @apply absolute rounded-full p-1.5 shadow-sm transition-all duration-200;
+  @apply text-white hover:scale-105;
+}
+
+.control-button-move {
+  @apply -top-3 -left-3 bg-blue-500 hover:bg-blue-600;
+}
+
+.control-button-settings {
+  @apply -top-3 -right-3 bg-gray-600 hover:bg-gray-700;
+  @apply opacity-0 group-hover:opacity-100;
+}
+
+.control-button-workflow {
+  @apply -bottom-2 -right-2 bg-emerald-500 hover:bg-emerald-600;
+}
+
+/* Container variants */
+.container-empty {
+  @apply border-2 border-dashed border-gray-300 bg-gray-50/50;
+  @apply hover:border-blue-300 hover:bg-blue-50/30;
+  @apply flex items-center justify-center min-h-[120px];
+}
+
+.container-section {
+  @apply bg-white border border-gray-200 rounded-lg p-6;
+}
+
+.container-hero {
+  @apply bg-gradient-to-br from-blue-50 to-indigo-100;
+  @apply border border-blue-200 rounded-lg p-8;
+}
+
+.container-feature {
+  @apply bg-gray-50 border border-gray-200 rounded-lg p-6;
+}
+
+.container-cta {
+  @apply bg-gradient-to-r from-blue-500 to-purple-600;
+  @apply text-white rounded-lg p-8;
+}
+
+.container-testimonial {
+  @apply bg-white border-2 border-gray-100 rounded-xl p-6 shadow-sm;
+}
+
+.container-footer {
+  @apply bg-gray-900 text-white rounded-lg p-8;
+}
+
+/* Empty state content */
+.container-empty-content {
+  @apply text-center p-8;
+}
+
+.container-empty-title {
+  @apply text-gray-400 text-sm font-medium mb-2;
+}
+
+.container-empty-description {
+  @apply text-gray-500 text-xs;
+}
+
+/* Component label */
+.component-label {
+  @apply absolute -top-6 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-sm;
+}
+
+/* Size indicator during resize */
+.size-indicator {
+  @apply absolute -top-8 left-1/2 -translate-x-1/2;
+  @apply bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-sm;
+}
+
+/* Workflow connector button */
+.workflow-connector {
+  @apply absolute -bottom-7 left-1/2 transform -translate-x-1/2;
+  @apply px-2 py-1 rounded text-xs font-medium transition-all duration-200;
+  @apply flex items-center space-x-1 shadow-sm border;
+}
+
+.workflow-connector-disconnected {
+  @apply bg-white text-gray-600 border-gray-200;
+  @apply hover:bg-gray-50 hover:border-blue-300;
+}
+
+.workflow-connector-connected {
+  @apply bg-emerald-50 text-emerald-700 border-emerald-200;
+  @apply hover:bg-emerald-100;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .resize-handle {
+    @apply w-4 h-4; /* Slightly larger on mobile for better touch targets */
+  }
+  
+  .control-button {
+    @apply p-2; /* Larger touch targets */
+  }
+  
+  .container-section,
+  .container-hero,
+  .container-feature,
+  .container-cta,
+  .container-testimonial,
+  .container-footer {
+    @apply p-4; /* Reduced padding on mobile */
+  }
+}
+
+/* Animation keyframes */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.workflow-pulse::before {
+  content: '';
+  @apply absolute inset-0 rounded-full bg-emerald-400 opacity-20;
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}

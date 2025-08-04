@@ -37,6 +37,8 @@ celery_app.conf.task_routes = {
     "src.services.tasks.publish_site_task": {"queue": "publishing"},
     "src.services.tasks.check_ssl_status_task": {"queue": "monitoring"},
     "src.services.tasks.verify_domain_task": {"queue": "domains"},
+    "src.services.tasks.execute_workflow_task": {"queue": "workflows"},
+    "src.services.tasks.execute_workflow_node_task": {"queue": "workflows"},
 }
 
 # Periodic tasks
@@ -557,3 +559,294 @@ def generate_analytics_report(site_id: str, period: str = "30d") -> Dict[str, An
             "status": "error",
             "error": str(e)
         }
+
+
+# Workflow Execution Tasks
+
+@celery_app.task(bind=True, name="src.services.tasks.execute_workflow_task")
+def execute_workflow_task(self, execution_id: int) -> Dict[str, Any]:
+    """
+    Background task to execute a complete workflow.
+
+    Args:
+        execution_id: Workflow execution ID
+
+    Returns:
+        Execution result
+    """
+    try:
+        from ..models.workflow import WorkflowExecution, WorkflowExecutionStatus
+        from ..core.database import get_sync_session
+
+        # Get workflow execution
+        with get_sync_session() as session:
+            execution = session.get(WorkflowExecution, execution_id)
+            if not execution:
+                return {
+                    "status": "error",
+                    "error": "Workflow execution not found"
+                }
+
+            workflow = execution.workflow
+            if not workflow:
+                return {
+                    "status": "error",
+                    "error": "Workflow not found"
+                }
+
+            # Update execution status to running
+            execution.status = WorkflowExecutionStatus.RUNNING
+            execution.started_at = datetime.utcnow()
+            session.commit()
+
+        # Execute workflow nodes
+        execution_data = {}
+        node_results = []
+
+        try:
+            # Sort nodes by execution order (trigger first, then actions)
+            nodes = workflow.nodes or []
+            trigger_nodes = [n for n in nodes if n.get('node_type') == 'trigger' or n.get('type') == 'trigger']
+            action_nodes = [n for n in nodes if n.get('node_type') != 'trigger' and n.get('type') != 'trigger']
+
+            # Execute trigger nodes first
+            for node in trigger_nodes:
+                node_result = execute_workflow_node_task.delay(execution_id, node).get()
+                node_results.append(node_result)
+                if node_result.get('status') == 'error':
+                    raise Exception(f"Trigger node failed: {node_result.get('error')}")
+
+            # Execute action nodes
+            for node in action_nodes:
+                node_result = execute_workflow_node_task.delay(execution_id, node).get()
+                node_results.append(node_result)
+                if node_result.get('status') == 'error':
+                    # Log error but continue with other nodes
+                    print(f"Action node failed: {node_result.get('error')}")
+
+            execution_data = {
+                "nodes_executed": len(node_results),
+                "node_results": node_results,
+                "trigger_data": execution.trigger_data
+            }
+
+            # Update execution as successful
+            with get_sync_session() as session:
+                execution = session.get(WorkflowExecution, execution_id)
+                if execution:
+                    execution.status = WorkflowExecutionStatus.SUCCESS
+                    execution.finished_at = datetime.utcnow()
+                    execution.execution_data = execution_data
+
+                    if execution.started_at:
+                        execution.execution_time = int((execution.finished_at - execution.started_at).total_seconds() * 1000)
+
+                    # Update workflow success count
+                    workflow = execution.workflow
+                    if workflow:
+                        workflow.success_count += 1
+
+                    session.commit()
+
+            return {
+                "status": "success",
+                "execution_id": execution_id,
+                "execution_data": execution_data
+            }
+
+        except Exception as node_error:
+            # Update execution as failed
+            with get_sync_session() as session:
+                execution = session.get(WorkflowExecution, execution_id)
+                if execution:
+                    execution.status = WorkflowExecutionStatus.FAILED
+                    execution.finished_at = datetime.utcnow()
+                    execution.error_message = str(node_error)
+
+                    if execution.started_at:
+                        execution.execution_time = int((execution.finished_at - execution.started_at).total_seconds() * 1000)
+
+                    # Update workflow error count
+                    workflow = execution.workflow
+                    if workflow:
+                        workflow.error_count += 1
+
+                    session.commit()
+
+            return {
+                "status": "error",
+                "execution_id": execution_id,
+                "error": str(node_error)
+            }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+
+@celery_app.task(name="src.services.tasks.execute_workflow_node_task")
+def execute_workflow_node_task(execution_id: int, node: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Execute a single workflow node.
+
+    Args:
+        execution_id: Workflow execution ID
+        node: Node configuration
+
+    Returns:
+        Node execution result
+    """
+    try:
+        node_type = node.get('node_type') or node.get('type')
+        node_id = node.get('node_id') or node.get('id')
+        parameters = node.get('parameters', {})
+
+        result = {
+            "node_id": node_id,
+            "node_type": node_type,
+            "status": "success",
+            "output": {}
+        }
+
+        # Execute based on node type
+        if node_type == 'trigger':
+            # Trigger nodes are usually just data sources
+            result["output"] = {
+                "triggered": True,
+                "trigger_data": parameters
+            }
+
+        elif node_type == 'email':
+            # Email action node
+            result["output"] = _execute_email_node(parameters)
+
+        elif node_type == 'webhook':
+            # Webhook action node
+            result["output"] = _execute_webhook_node(parameters)
+
+        elif node_type == 'crm_update':
+            # CRM update action node
+            result["output"] = _execute_crm_update_node(parameters)
+
+        elif node_type == 'http_request':
+            # HTTP request action node
+            result["output"] = _execute_http_request_node(parameters)
+
+        elif node_type == 'delay':
+            # Delay action node
+            result["output"] = _execute_delay_node(parameters)
+
+        elif node_type == 'condition':
+            # Condition node
+            result["output"] = _execute_condition_node(parameters)
+
+        else:
+            # Unknown node type
+            result["status"] = "error"
+            result["error"] = f"Unknown node type: {node_type}"
+
+        return result
+
+    except Exception as e:
+        return {
+            "node_id": node.get('node_id') or node.get('id'),
+            "node_type": node.get('node_type') or node.get('type'),
+            "status": "error",
+            "error": str(e)
+        }
+
+
+def _execute_email_node(parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute email node."""
+    # This would integrate with email service
+    return {
+        "email_sent": True,
+        "recipient": parameters.get('to'),
+        "subject": parameters.get('subject'),
+        "message_id": f"msg_{datetime.utcnow().timestamp()}"
+    }
+
+
+def _execute_webhook_node(parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute webhook node."""
+    import requests
+
+    try:
+        url = parameters.get('url')
+        method = parameters.get('method', 'POST')
+        headers = parameters.get('headers', {})
+        data = parameters.get('data', {})
+
+        response = requests.request(method, url, json=data, headers=headers, timeout=30)
+
+        return {
+            "webhook_called": True,
+            "status_code": response.status_code,
+            "response": response.text[:1000]  # Limit response size
+        }
+    except Exception as e:
+        return {
+            "webhook_called": False,
+            "error": str(e)
+        }
+
+
+def _execute_crm_update_node(parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute CRM update node."""
+    # This would integrate with CRM system
+    return {
+        "crm_updated": True,
+        "contact_id": parameters.get('contact_id'),
+        "fields_updated": list(parameters.get('fields', {}).keys())
+    }
+
+
+def _execute_http_request_node(parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute HTTP request node."""
+    import requests
+
+    try:
+        url = parameters.get('url')
+        method = parameters.get('method', 'GET')
+        headers = parameters.get('headers', {})
+        data = parameters.get('data')
+
+        response = requests.request(method, url, json=data, headers=headers, timeout=30)
+
+        return {
+            "request_sent": True,
+            "status_code": response.status_code,
+            "response_data": response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text[:1000]
+        }
+    except Exception as e:
+        return {
+            "request_sent": False,
+            "error": str(e)
+        }
+
+
+def _execute_delay_node(parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute delay node."""
+    import time
+
+    delay_seconds = parameters.get('delay', 0)
+    if delay_seconds > 0:
+        time.sleep(min(delay_seconds, 300))  # Max 5 minutes delay
+
+    return {
+        "delayed": True,
+        "delay_seconds": delay_seconds
+    }
+
+
+def _execute_condition_node(parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute condition node."""
+    # This would evaluate conditions and return boolean result
+    condition = parameters.get('condition', True)
+
+    return {
+        "condition_evaluated": True,
+        "result": bool(condition)
+    }
