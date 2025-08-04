@@ -367,4 +367,3 @@ export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
   );
 });
 
-export { Canvas };

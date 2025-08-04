@@ -533,4 +533,4 @@ export class AISuggestionEngine {
   }
 }
 
-export { AIContext, AISuggestion, PageContext, LayoutPattern, ColorPalette, TypographyPairing };
+export { AISuggestion, PageContext, LayoutPattern, ColorPalette, TypographyPairing };
