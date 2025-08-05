@@ -775,7 +775,7 @@ export class LayoutIntelligence {
   }
 }
 
-export {
+export type {
   LayoutPattern,
   LayoutStructure,
   LayoutVariant,

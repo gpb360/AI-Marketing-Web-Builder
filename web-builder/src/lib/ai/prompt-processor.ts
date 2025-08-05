@@ -424,4 +424,4 @@ export class PromptProcessor {
   }
 }
 
-export { PromptAnalysis, PromptTemplate };
+export type { PromptAnalysis, PromptTemplate };

@@ -723,4 +723,4 @@ export class ComponentIntelligence {
   }
 }
 
-export { ComponentPattern, ComponentVariant, GenerationContext, SmartGenerationResult };
+export type { ComponentPattern, ComponentVariant, GenerationContext, SmartGenerationResult };
