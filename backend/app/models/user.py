@@ -6,10 +6,10 @@ from typing import Optional, List
 from sqlalchemy import String, Boolean, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
-class User(Base, TimestampMixin):
+class User(Base, TimestampMixin, UUIDMixin):
     """User model for authentication and profile management."""
     
     __tablename__ = "users"

@@ -2,9 +2,10 @@
 
 from .base import BaseModel, TimestampMixin
 from .user import User
-from .sites import Site, Component, Template
-from .workflows import Workflow, WorkflowExecution, WorkflowNode
+from .sites import Site, Component
+from .workflow import Workflow, WorkflowExecution, WorkflowNode
 from .crm import Contact, ContactActivity, EmailCampaign, EmailSend
+from .template import Template, TemplateComponent
 
 __all__ = [
     "BaseModel",
@@ -13,6 +14,7 @@ __all__ = [
     "Site",
     "Component", 
     "Template",
+    "TemplateComponent",
     "Workflow",
     "WorkflowExecution",
     "WorkflowNode",

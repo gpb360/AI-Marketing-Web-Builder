@@ -280,10 +280,10 @@ class Component(BaseModel, UUIDMixin, TimestampMixin):
         return len(self.workflows_connected) > 0
 
 
-class Template(BaseModel, UUIDMixin, TimestampMixin):
+class SiteTemplate(BaseModel, UUIDMixin, TimestampMixin):
     """Site template definition."""
     
-    __tablename__ = "templates"
+    __tablename__ = "site_templates"
     
     # Template metadata
     name = Column(String(255), nullable=False)

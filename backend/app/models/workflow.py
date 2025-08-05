@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from datetime import datetime
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
 class WorkflowStatus(str, enum.Enum):
@@ -65,7 +65,7 @@ class TriggerType(str, enum.Enum):
     MANUAL = "manual"
 
 
-class Workflow(Base, TimestampMixin):
+class Workflow(Base, TimestampMixin, UUIDMixin):
     """Workflow automation model."""
 
     __tablename__ = "workflows"
@@ -114,7 +114,7 @@ class Workflow(Base, TimestampMixin):
         return f"<Workflow(id={self.id}, name='{self.name}', status='{self.status}', category='{self.category}')>"
 
 
-class WorkflowExecution(Base, TimestampMixin):
+class WorkflowExecution(Base, TimestampMixin, UUIDMixin):
     """Workflow execution history and logs."""
     
     __tablename__ = "workflow_executions"
@@ -142,7 +142,7 @@ class WorkflowExecution(Base, TimestampMixin):
         return f"<WorkflowExecution(id={self.id}, workflow_id={self.workflow_id}, status='{self.status}')>"
 
 
-class WorkflowNode(Base, TimestampMixin):
+class WorkflowNode(Base, TimestampMixin, UUIDMixin):
     """Individual workflow node configuration."""
     
     __tablename__ = "workflow_nodes"

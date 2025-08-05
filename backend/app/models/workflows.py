@@ -57,7 +57,7 @@ class ActionType(str, enum.Enum):
 class Workflow(BaseModel, UUIDMixin, TimestampMixin):
     """Visual workflow definition."""
     
-    __tablename__ = "workflows"
+    __tablename__ = "site_workflows"
     
     site_id = Column(String(36), ForeignKey("sites.id"), nullable=False)
     name = Column(String(255), nullable=False)
@@ -99,7 +99,7 @@ class Workflow(BaseModel, UUIDMixin, TimestampMixin):
 class WorkflowExecution(BaseModel, UUIDMixin, TimestampMixin):
     """Individual workflow execution record."""
     
-    __tablename__ = "workflow_executions"
+    __tablename__ = "site_workflow_executions"
     
     workflow_id = Column(String(36), ForeignKey("workflows.id"), nullable=False)
     
@@ -137,7 +137,7 @@ class WorkflowExecution(BaseModel, UUIDMixin, TimestampMixin):
 class WorkflowNode(BaseModel, UUIDMixin, TimestampMixin):
     """Individual node in a workflow graph."""
     
-    __tablename__ = "workflow_nodes"
+    __tablename__ = "site_workflow_nodes"
     
     workflow_id = Column(String(36), ForeignKey("workflows.id"), nullable=False)
     
