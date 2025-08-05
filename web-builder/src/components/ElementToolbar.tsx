@@ -167,13 +167,13 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
               <div className="flex gap-2">
                 <input
                   type="color"
-                  value={element?.style.backgroundColor || '#ffffff'}
+                  value={(element?.style?.backgroundColor as string) || '#ffffff'}
                   onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
                   className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
                 />
                 <input
                   type="text"
-                  value={element?.style.backgroundColor || '#ffffff'}
+                  value={(element?.style?.backgroundColor as string) || '#ffffff'}
                   onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
                   className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="#ffffff"
@@ -190,13 +190,13 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                 <div className="flex gap-2">
                   <input
                     type="color"
-                    value={element?.style.color || '#000000'}
+                    value={(element?.style?.color as string) || '#000000'}
                     onChange={(e) => handleStyleChange('color', e.target.value)}
                     className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={element?.style.color || '#000000'}
+                    value={(element?.style?.color as string) || '#000000'}
                     onChange={(e) => handleStyleChange('color', e.target.value)}
                     className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="#000000"
@@ -216,12 +216,12 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                     type="range"
                     min="10"
                     max="72"
-                    value={parseInt(element?.style.fontSize?.replace('px', '') || '16')}
+                    value={parseInt(((element?.style?.fontSize as string) || '16px').replace('px', ''))}
                     onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`)}
                     className="flex-1"
                   />
                   <span className="text-sm text-gray-600 min-w-[3rem]">
-                    {element?.style.fontSize || '16px'}
+                    {(element?.style?.fontSize as string) || '16px'}
                   </span>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
               </label>
               <input
                 type="text"
-                value={element?.style.padding || '0'}
+                value={(element?.style?.padding as string) || '0'}
                 onChange={(e) => handleStyleChange('padding', e.target.value)}
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="20px or 20px 10px"
@@ -251,12 +251,12 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   type="range"
                   min="0"
                   max="50"
-                  value={parseInt(element?.style.borderRadius?.replace('px', '') || '0')}
+                  value={parseInt(((element?.style?.borderRadius as string) || '0px').replace('px', ''))}
                   onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`)}
                   className="flex-1"
                 />
                 <span className="text-sm text-gray-600 min-w-[3rem]">
-                  {element?.style.borderRadius || '0px'}
+                  {(element?.style?.borderRadius as string) || '0px'}
                 </span>
               </div>
             </div>
@@ -267,7 +267,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                 Width
               </label>
               <select
-                value={element?.style.width || '100%'}
+                value={(element?.style?.width as string) || '100%'}
                 onChange={(e) => handleStyleChange('width', e.target.value)}
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -293,7 +293,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   <input
                     type="text"
                     value={element?.props.href || ''}
-                    onChange={(e) => updateElement(elementId, {
+                    onChange={(e) => updateComponent(elementId, {
                       props: { ...element?.props, href: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -306,7 +306,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   </label>
                   <select
                     value={element?.props.target || '_self'}
-                    onChange={(e) => updateElement(elementId, {
+                    onChange={(e) => updateComponent(elementId, {
                       props: { ...element?.props, target: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -330,7 +330,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   <input
                     type="text"
                     value={element?.props.src || ''}
-                    onChange={(e) => updateElement(elementId, {
+                    onChange={(e) => updateComponent(elementId, {
                       props: { ...element?.props, src: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -344,7 +344,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   <input
                     type="text"
                     value={element?.props.alt || ''}
-                    onChange={(e) => updateElement(elementId, {
+                    onChange={(e) => updateComponent(elementId, {
                       props: { ...element?.props, alt: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"

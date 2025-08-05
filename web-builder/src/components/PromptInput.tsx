@@ -9,7 +9,7 @@ interface PromptInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  onImageUpload?: (file: File) => void;
+  onImageUpload?: (file: File | null) => void;
   uploadedImage?: File | null;
   className?: string;
   showAnalysis?: boolean;
@@ -83,7 +83,7 @@ export function PromptInput({
 
   const removeImage = () => {
     if (onImageUpload) {
-      onImageUpload(null as File | null);
+      onImageUpload(null);
     }
   };
 

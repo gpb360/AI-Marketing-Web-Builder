@@ -576,11 +576,13 @@ export function ComponentEditorWithAI({
           {/* Code Editor */}
           <div className="flex-1">
             <Editor
-              ref={editorRef}
               value={code}
               onChange={handleCodeChange}
               language={getLanguage()}
               theme={editorTheme === 'dark' ? 'vs-dark' : 'vs'}
+              onMount={(editor) => {
+                editorRef.current = editor;
+              }}
               options={{
                 minimap: { enabled: isFullscreen },
                 scrollBeyondLastLine: false,

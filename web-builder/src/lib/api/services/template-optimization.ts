@@ -29,6 +29,7 @@ export interface ABTestVariant {
   name: string;
   conversionRate: number;
   views: number;
+  conversions: number;
   isWinner: boolean;
   isControl: boolean;
 }

@@ -10,6 +10,7 @@ import type {
   TemplateFilters,
   PaginatedResponse
 } from '../types';
+import { templateOptimizationApi, type OptimizationInsight, type PerformanceMetrics, type ABTest } from './template-optimization';
 
 export class TemplateService {
   /**
@@ -238,6 +239,39 @@ export class TemplateService {
   async importTemplate(templateFile: File): Promise<Template> {
     try {
       return await apiClient.uploadFile('/templates/import', templateFile);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Get optimization insights for template
+   */
+  async getOptimizationInsights(templateId: number): Promise<{ insights: OptimizationInsight[] }> {
+    try {
+      return await templateOptimizationApi.getOptimizationInsights(templateId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Get performance metrics for template
+   */
+  async getPerformanceMetrics(templateId: number): Promise<{ metrics: PerformanceMetrics }> {
+    try {
+      return await templateOptimizationApi.getPerformanceMetrics(templateId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Get A/B tests for template
+   */
+  async getABTests(templateId: number): Promise<{ tests: ABTest[] }> {
+    try {
+      return await templateOptimizationApi.getABTests(templateId);
     } catch (error) {
       throw error;
     }

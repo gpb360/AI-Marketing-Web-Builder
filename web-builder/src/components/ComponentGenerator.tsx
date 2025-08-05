@@ -10,7 +10,9 @@ import {
   Sparkles,
   Zap,
   Settings,
-  HelpCircle
+  HelpCircle,
+  Bot,
+  Lightbulb
 } from 'lucide-react';
 import { ComponentPreview } from './ComponentPreview';
 import { PromptInput } from './PromptInput';
@@ -31,7 +33,7 @@ export interface GenerationRequest {
     theme?: 'light' | 'dark' | 'auto';
     layout?: 'minimal' | 'standard' | 'detailed';
   };
-  referenceImage?: File;
+  referenceImage?: File | null;
 }
 
 export interface GenerationResult {
@@ -188,7 +190,7 @@ export function ComponentGenerator({ onGenerate, className = '' }: ComponentGene
     }
   };
   
-  const generateCodeFromIntelligence = (smartResult: any, componentType: string, complexity: number): string => {
+  const generateCodeFromIntelligence = (smartResult: any, componentType: 'react' | 'html' | 'vue', complexity: number): string => {
     const component = smartResult.component;
     
     if (componentType === 'react') {

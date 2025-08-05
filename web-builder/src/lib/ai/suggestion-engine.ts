@@ -139,7 +139,7 @@ export class AIContext {
   }
 
   private identifyImprovementAreas(): string[] {
-    const areas = [];
+    const areas: string[] = [];
     const components = this.pageContext.existingComponents;
     
     // Check for responsive design

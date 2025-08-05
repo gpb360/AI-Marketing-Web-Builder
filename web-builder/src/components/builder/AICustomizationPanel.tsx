@@ -34,7 +34,7 @@ interface AICustomizationPanelProps {
   onOpenEditor?: () => void;
 }
 
-interface AIEditHistory {
+export interface AIEditHistory {
   id: string;
   prompt: string;
   changes: any;
@@ -57,6 +57,7 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
   const [promptAnalysis, setPromptAnalysis] = useState<any>(null);
   
   const {
+    components,
     aiContext,
     setAIContext,
     requestAICustomization,
@@ -110,7 +111,7 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
     };
 
     // Generate contextual recommendations
-    const recommendations = [];
+    const recommendations: string[] = [];
     
     if (analysis.hasButton) {
       recommendations.push('button-enhancement');
@@ -376,7 +377,7 @@ export function AICustomizationPanel({ className, onOpenEditor }: AICustomizatio
   const getBasicSuggestions = () => {
     if (!selectedComponent) return [];
     
-    const suggestions = [];
+    const suggestions: string[] = [];
     
     if (selectedComponent.type === 'button') {
       suggestions.push(

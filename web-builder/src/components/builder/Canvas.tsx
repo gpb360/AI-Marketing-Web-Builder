@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 interface CanvasProps {
   className?: string;
+  onComponentSelect?: (componentId: string | null) => void;
 }
 
 // PERFORMANCE: Memoized CanvasComponent to prevent unnecessary re-renders
@@ -98,8 +99,20 @@ function useThrottledCanvasResize(components: ComponentData[], canvasSize: { wid
   }, [components, canvasSize, setCanvasSize]);
 }
 
-export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
-  const canvasRef = useRef<HTMLDivElement>(null);
+export const Canvas = React.memo(React.forwardRef<HTMLDivElement, CanvasProps>(function Canvas({ className, onComponentSelect }, ref) {
+  const internalRef = useRef<HTMLDivElement>(null);
+  const canvasRef = typeof ref === 'function' ? internalRef : (ref || internalRef);
+  
+  const setRef = useCallback((element: HTMLDivElement | null) => {
+    if (internalRef.current) {
+      internalRef.current = element;
+    }
+    if (typeof ref === 'function') {
+      ref(element);
+    } else if (ref) {
+      ref.current = element;
+    }
+  }, [ref]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   
@@ -192,7 +205,8 @@ export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
       // Update drag position for preview
       if (dragState) {
         const offset = monitor.getClientOffset();
-        const canvasRect = canvasRef.current?.getBoundingClientRect();
+        const currentRef = typeof canvasRef === 'object' ? canvasRef.current : null;
+        const canvasRect = currentRef?.getBoundingClientRect();
         
         if (offset && canvasRect) {
           const position = {
@@ -217,10 +231,12 @@ export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
 
   // PERFORMANCE: Memoized click handler
   const handleCanvasClick = useCallback((event: React.MouseEvent) => {
-    if (event.target === canvasRef.current) {
+    const currentRef = typeof canvasRef === 'object' ? canvasRef.current : null;
+    if (event.target === currentRef) {
       selectComponent(null);
+      onComponentSelect?.(null);
     }
-  }, [selectComponent]);
+  }, [selectComponent, onComponentSelect, canvasRef]);
 
   // PERFORMANCE: Optimized keyboard handler with memoization
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -273,7 +289,7 @@ export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
     };
   }, [handleKeyDown]);
 
-  drop(canvasRef);
+  drop(setRef);
 
   // PERFORMANCE: Memoized canvas stats
   const canvasStats = useMemo(() => ({
@@ -286,7 +302,7 @@ export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
     <div className={cn("relative overflow-auto bg-gray-50", className)}>
       {/* Canvas Container */}
       <div
-        ref={canvasRef}
+        ref={setRef}
         className={cn(
           "relative bg-white border-2 border-dashed transition-colors duration-200",
           isOver && canDrop ? "border-blue-400 bg-blue-50/50" : "border-gray-300",
@@ -365,5 +381,5 @@ export const Canvas = React.memo(function Canvas({ className }: CanvasProps) {
       </div>
     </div>
   );
-});
+}));
 

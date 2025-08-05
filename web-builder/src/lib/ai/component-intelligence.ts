@@ -18,6 +18,7 @@ interface ComponentVariant {
   props: Record<string, any>;
   style: Record<string, any>;
   className?: string;
+  score?: number;
 }
 
 interface GenerationContext {
@@ -664,7 +665,7 @@ export class ComponentIntelligence {
     }
     
     // Brand consistency
-    if (context.brandGuidelines && !context.brandGuidelines.colors.includes(component.style?.backgroundColor)) {
+    if (context.brandGuidelines && component.style?.backgroundColor && !context.brandGuidelines.colors.includes(component.style.backgroundColor)) {
       optimizations.push('Align colors with brand guidelines');
     }
     

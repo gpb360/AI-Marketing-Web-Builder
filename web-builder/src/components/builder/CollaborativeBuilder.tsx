@@ -11,7 +11,7 @@ import { CollaborationProvider } from '../collaboration/CollaborationProvider';
 import { Canvas } from './Canvas';
 import { ComponentPalette } from './ComponentPalette';
 import { BuilderToolbar } from './BuilderToolbar';
-import { ComponentEditor } from '../ComponentEditor';
+import { ComponentEditorWithAI as ComponentEditor } from '../ComponentEditorWithAI';
 
 interface CollaborativeBuilderProps {
   projectId: string;
@@ -105,9 +105,11 @@ export const CollaborativeBuilder: React.FC<CollaborativeBuilderProps> = ({
         {isComponentEditorOpen && selectedComponent && (
           <div className="w-80 border-l border-gray-200 bg-white">
             <ComponentEditor
-              component={selectedComponent}
-              onClose={handleComponentEditorClose}
-              onUpdate={(updates) => {
+              componentId={selectedComponent.id}
+              initialCode={`// Component: ${selectedComponent.name}\n// Type: ${selectedComponent.type}`}
+              componentType="react"
+              enableAI={true}
+              onCodeChange={(code) => {
                 // Updates will be synchronized automatically
                 // through the collaboration system
               }}
