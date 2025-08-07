@@ -304,11 +304,11 @@ const premiumSaasTemplate: EnhancedTemplate = {
 
 // Import VoTemplate
 import { voSaaSTemplate } from './templates/voSaaSTemplate';
-
 // Enhanced sample template data
 export const sampleTemplates: EnhancedTemplate[] = [
   voSaaSTemplate as EnhancedTemplate,
   premiumSaasTemplate,
+
   {
     id: 'landing-hero-1',
     name: 'Modern Hero Landing',

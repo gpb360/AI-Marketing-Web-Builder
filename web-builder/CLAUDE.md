@@ -67,6 +67,12 @@ AI Marketing Web Builder Platform
 - Ensure smooth handoffs between engineering, design, and AI agents
 - Monitor progress toward AI Marketing Web Builder platform goals
 - Facilitate 6-day sprint cycles with agent-specific priorities
+- Maintain GitHub Project board (Ready/In Progress/Review/Done columns)
+- Create tasks from specifications in `/spec` and `/agents` folder
+- Ensure Ready column has 5-10 actionable tasks
+- Monitor team velocity and remove blockers
+- Enforce 5-minute maximum work periods without progress updates
+
 
 **Token Limit**: 3-5k tokens per task creation session
 **Communication**: Direct updates to Orchestrator every 30 minutes

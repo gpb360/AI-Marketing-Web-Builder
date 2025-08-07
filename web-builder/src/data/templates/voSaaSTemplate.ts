@@ -43,6 +43,7 @@ export const voSaaSTemplate: Template = {
       name: 'AI SaaS Hero',
       content: 'Unleash the Power of AI Agents',
       description: 'Accelerate your development workflow with intelligent AI agents that write, review, and optimize your code.',
+
       style: {
         height: '810px',
         background: 'linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--muted-foreground)) 100%)',
@@ -76,7 +77,9 @@ export const voSaaSTemplate: Template = {
       type: 'dashboard-preview',
       name: 'Product Dashboard',
       content: 'Real-time AI Agent Dashboard',
+
       style: {
+
         position: 'absolute',
         bottom: '-400px',
         left: '50%',
@@ -99,6 +102,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-logos-001',
       type: 'social-proof',
       name: 'Trusted by Industry Leaders',
+
       style: {
         marginTop: '400px',
         padding: '48px 24px',
@@ -131,6 +135,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-features-001',
       type: 'feature-grid',
       name: 'AI-Powered Features',
+
       style: {
         maxWidth: '1320px',
         margin: '0 auto',
@@ -189,7 +194,9 @@ export const voSaaSTemplate: Template = {
       id: 'vo-testimonial-large',
       type: 'testimonial',
       name: 'Featured Customer',
+
       style: {
+
         maxWidth: '1320px',
         margin: '0 auto',
         padding: '0 24px',
@@ -209,6 +216,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-pricing-001',
       type: 'pricing',
       name: 'Simple Pricing',
+
       style: {
         maxWidth: '1320px',
         margin: '0 auto',
@@ -284,6 +292,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-testimonials-grid',
       type: 'testimonial-grid',
       name: 'Customer Success Stories',
+
       style: {
         maxWidth: '1320px',
         margin: '0 auto',
@@ -324,6 +333,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-faq-001',
       type: 'faq',
       name: 'Frequently Asked Questions',
+
       style: {
         maxWidth: '1320px',
         margin: '0 auto',
@@ -363,6 +373,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-cta-001',
       type: 'cta',
       name: 'Final Call to Action',
+
       style: {
         maxWidth: '1320px',
         margin: '0 auto',
@@ -398,6 +409,7 @@ export const voSaaSTemplate: Template = {
       id: 'vo-footer-001',
       type: 'footer',
       name: 'Landing Footer',
+
       style: {
         maxWidth: '1320px',
         margin: '0 auto',
