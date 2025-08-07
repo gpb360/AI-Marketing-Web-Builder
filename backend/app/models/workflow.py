@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from datetime import datetime
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
 class WorkflowStatus(str, enum.Enum):
@@ -41,36 +41,80 @@ class NodeType(str, enum.Enum):
     DELAY = "delay"
 
 
-class Workflow(Base, TimestampMixin):
+class WorkflowCategory(str, enum.Enum):
+    """Workflow categories for Magic Connector."""
+    MARKETING = "marketing"
+    SUPPORT = "support"
+    SALES = "sales"
+    AUTOMATION = "automation"
+    ANALYTICS = "analytics"
+    INTEGRATION = "integration"
+
+
+class TriggerType(str, enum.Enum):
+    """Workflow trigger types."""
+    FORM_SUBMIT = "form-submit"
+    BUTTON_CLICK = "button-click"
+    PAGE_VIEW = "page-view"
+    CHAT_MESSAGE = "chat-message"
+    CONTACT_FORM = "contact-form"
+    EMAIL_OPEN = "email-open"
+    EMAIL_CLICK = "email-click"
+    WEBHOOK = "webhook"
+    SCHEDULE = "schedule"
+    MANUAL = "manual"
+
+
+class Workflow(Base, TimestampMixin, UUIDMixin):
     """Workflow automation model."""
-    
+
     __tablename__ = "workflows"
-    
+
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
     status: Mapped[WorkflowStatus] = mapped_column(Enum(WorkflowStatus), default=WorkflowStatus.DRAFT)
-    
+
+    # Magic Connector fields
+    category: Mapped[WorkflowCategory] = mapped_column(Enum(WorkflowCategory), default=WorkflowCategory.AUTOMATION)
+    trigger_type: Mapped[TriggerType] = mapped_column(Enum(TriggerType), default=TriggerType.MANUAL)
+    template_id: Mapped[Optional[str]] = mapped_column(String(100))  # Reference to workflow template
+    component_id: Mapped[Optional[str]] = mapped_column(String(100))  # Connected component ID
+
     # Workflow configuration
     nodes: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
     connections: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
     settings: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    
+
     # Execution settings
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     trigger_count: Mapped[int] = mapped_column(Integer, default=0)
     success_count: Mapped[int] = mapped_column(Integer, default=0)
     error_count: Mapped[int] = mapped_column(Integer, default=0)
-    
+
     # Workflow relationships
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     owner: Mapped["User"] = relationship("User", back_populates="workflows")
     executions: Mapped[List["WorkflowExecution"]] = relationship("WorkflowExecution", back_populates="workflow")
-    
+
+    @property
+    def success_rate(self) -> float:
+        """Calculate workflow success rate."""
+        if self.trigger_count == 0:
+            return 0.0
+        return (self.success_count / self.trigger_count) * 100
+
+    @property
+    def error_rate(self) -> float:
+        """Calculate workflow error rate."""
+        if self.trigger_count == 0:
+            return 0.0
+        return (self.error_count / self.trigger_count) * 100
+
     def __repr__(self) -> str:
-        return f"<Workflow(id={self.id}, name='{self.name}', status='{self.status}')>"
+        return f"<Workflow(id={self.id}, name='{self.name}', status='{self.status}', category='{self.category}')>"
 
 
-class WorkflowExecution(Base, TimestampMixin):
+class WorkflowExecution(Base, TimestampMixin, UUIDMixin):
     """Workflow execution history and logs."""
     
     __tablename__ = "workflow_executions"
@@ -98,7 +142,7 @@ class WorkflowExecution(Base, TimestampMixin):
         return f"<WorkflowExecution(id={self.id}, workflow_id={self.workflow_id}, status='{self.status}')>"
 
 
-class WorkflowNode(Base, TimestampMixin):
+class WorkflowNode(Base, TimestampMixin, UUIDMixin):
     """Individual workflow node configuration."""
     
     __tablename__ = "workflow_nodes"

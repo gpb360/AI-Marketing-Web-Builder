@@ -1,13 +1,12 @@
 """Site and component models for the web builder."""
 
 from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Integer, Enum as SQLEnum, Float
-from sqlalchemy.dialects.postgresql import JSON, UUID
+from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
 
-from ..core.database import Base
-from .base import UUIDMixin, TimestampMixin
+from .base import BaseModel, UUIDMixin, TimestampMixin
 
 
 class SiteStatus(str, enum.Enum):
@@ -69,13 +68,13 @@ class DomainStatus(str, enum.Enum):
     DNS_ERROR = "dns_error"
 
 
-class Site(Base, UUIDMixin, TimestampMixin):
+class Site(BaseModel, UUIDMixin, TimestampMixin):
     """User's website/site."""
     
     __tablename__ = "sites"
     
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    template_id = Column(UUID(as_uuid=True), ForeignKey("templates.id"))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    template_id = Column(String(36), ForeignKey("templates.id"))
     
     # Basic site info
     name = Column(String(255), nullable=False)
@@ -126,12 +125,12 @@ class Site(Base, UUIDMixin, TimestampMixin):
         return self.status == SiteStatus.PUBLISHED
 
 
-class PublishedSite(Base, UUIDMixin, TimestampMixin):
+class PublishedSite(BaseModel, UUIDMixin, TimestampMixin):
     """Published site deployment information."""
     
     __tablename__ = "published_sites"
     
-    site_id = Column(UUID(as_uuid=True), ForeignKey("sites.id"), nullable=False)
+    site_id = Column(String(36), ForeignKey("sites.id"), nullable=False)
     
     # Domain configuration
     domain = Column(String(255), nullable=False, index=True)
@@ -187,12 +186,12 @@ class PublishedSite(Base, UUIDMixin, TimestampMixin):
         return f"https://{self.domain}"
 
 
-class DeploymentHistory(Base, UUIDMixin, TimestampMixin):
+class DeploymentHistory(BaseModel, UUIDMixin, TimestampMixin):
     """Deployment history and version control."""
     
     __tablename__ = "deployment_history"
     
-    published_site_id = Column(UUID(as_uuid=True), ForeignKey("published_sites.id"), nullable=False)
+    published_site_id = Column(String(36), ForeignKey("published_sites.id"), nullable=False)
     
     # Version information
     version = Column(String(50), nullable=False)
@@ -234,12 +233,12 @@ class DeploymentHistory(Base, UUIDMixin, TimestampMixin):
         return self.build_status == BuildStatus.SUCCESS
 
 
-class Component(Base, UUIDMixin, TimestampMixin):
+class Component(BaseModel, UUIDMixin, TimestampMixin):
     """Smart component instance on a site."""
     
     __tablename__ = "components"
     
-    site_id = Column(UUID(as_uuid=True), ForeignKey("sites.id"), nullable=False)
+    site_id = Column(String(36), ForeignKey("sites.id"), nullable=False)
     
     # Component identification
     component_id = Column(String(100), nullable=False)  # Unique within site
@@ -281,10 +280,10 @@ class Component(Base, UUIDMixin, TimestampMixin):
         return len(self.workflows_connected) > 0
 
 
-class Template(Base, UUIDMixin, TimestampMixin):
+class SiteTemplate(BaseModel, UUIDMixin, TimestampMixin):
     """Site template definition."""
     
-    __tablename__ = "templates"
+    __tablename__ = "site_templates"
     
     # Template metadata
     name = Column(String(255), nullable=False)

@@ -179,7 +179,7 @@ export class APIConnectionTester {
       { name: 'CRM Endpoint', test: this.testCRMEndpoint },
     ];
 
-    const results = [];
+    const results: Array<{ test: string; success: boolean; message: string; details: any }> = [];
     let allPassed = true;
 
     for (const testCase of tests) {

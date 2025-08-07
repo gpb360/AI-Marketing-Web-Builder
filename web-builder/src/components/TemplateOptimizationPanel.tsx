@@ -18,7 +18,7 @@ import {
   Award
 } from 'lucide-react';
 import { useBuilderStore } from '@/store/builderStore';
-import { templateApi } from '@/lib/api/services/templates';
+import templateApi from '@/lib/api/services/templates';
 
 interface OptimizationInsight {
   id: string;

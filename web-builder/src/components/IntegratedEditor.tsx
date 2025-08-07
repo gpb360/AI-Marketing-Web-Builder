@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBuilderStore } from '@/store/builderStore';
 import { useAIEditor } from '@/hooks/useAIEditor';
-import { ComponentEditorWithAI } from './ComponentEditorWithAI';
+import ComponentEditorWithAI from './ComponentEditorWithAI'; // CONSOLIDATED: Using unified editor
 import { AICustomizationPanel } from './builder/AICustomizationPanel';
 import { 
   Code, 
@@ -51,7 +51,7 @@ export function IntegratedEditor({ className, onClose }: IntegratedEditorProps) 
 
   useEffect(() => {
     const component = getSelectedComponent();
-    setSelectedComponent(component);
+    setSelectedComponent(component || null);
     
     if (component && editorMode === 'code') {
       // Auto-open AI editor when switching to code mode
@@ -103,6 +103,91 @@ export function IntegratedEditor({ className, onClose }: IntegratedEditorProps) 
       case 'image':
         return `<img src="${props?.src || ''}" alt="${props?.alt || ''}"${classNameProp}${styleProp} ${baseProps} />`;
 
+      // CONSOLIDATED: Enhanced with new component types
+      case 'hero':
+        return `<section${classNameProp}${styleProp} ${baseProps}>
+  <div className="max-w-4xl mx-auto text-center">
+    <h1 className="text-4xl md:text-6xl font-bold mb-6">
+      ${content || props?.title || 'Hero Title'}
+    </h1>
+    <p className="text-xl md:text-2xl mb-8 opacity-90">
+      ${props?.subtitle || 'Your compelling hero subtitle goes here'}
+    </p>
+    <div className="space-x-4">
+      <button className="bg-white text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+        ${props?.primaryButtonText || 'Get Started'}
+      </button>
+      <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-gray-900 hover:scale-105 transition-all duration-300 shadow-lg backdrop-blur-sm">
+        ${props?.secondaryButtonText || 'Learn More'}
+      </button>
+    </div>
+  </div>
+</section>`;
+
+      case 'card':
+        return `<div${classNameProp}${styleProp} ${baseProps}>
+  <h3 className="text-lg font-semibold mb-2">${props?.title || 'Card Title'}</h3>
+  <p className="text-gray-600 mb-4">
+    ${content || props?.description || 'Card description goes here.'}
+  </p>
+  <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
+    ${props?.buttonText || 'Action'}
+  </button>
+</div>`;
+
+      case 'form':
+        return `<form${classNameProp}${styleProp} ${baseProps}>
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        ${props?.nameLabel || 'Name'}
+      </label>
+      <input
+        type="text"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="${props?.namePlaceholder || 'Enter your name'}"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        ${props?.emailLabel || 'Email'}
+      </label>
+      <input
+        type="email"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="${props?.emailPlaceholder || 'Enter your email'}"
+      />
+    </div>
+    <button
+      type="submit"
+      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 px-6 rounded-lg font-semibold hover:scale-[1.02] transition-all duration-300 shadow-md hover:shadow-lg"
+    >
+      ${props?.submitText || 'Submit'}
+    </button>
+  </div>
+</form>`;
+
+      case 'navigation':
+      case 'navbar':
+        return `<nav${classNameProp}${styleProp} ${baseProps}>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center h-16">
+      <div className="font-bold text-xl text-gray-900">
+        ${props?.logo || 'Logo'}
+      </div>
+      <div className="hidden md:flex space-x-8">
+        <a href="#" className="text-gray-700 hover:text-gray-900 transition-colors">Home</a>
+        <a href="#" className="text-gray-700 hover:text-gray-900 transition-colors">About</a>
+        <a href="#" className="text-gray-700 hover:text-gray-900 transition-colors">Services</a>
+        <a href="#" className="text-gray-700 hover:text-gray-900 transition-colors">Contact</a>
+      </div>
+      <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
+        ${props?.ctaText || 'Get Started'}
+      </button>
+    </div>
+  </div>
+</nav>`;
+
       default:
         return `<div${classNameProp}${styleProp} ${baseProps}>
   ${content || 'Component'}
@@ -138,52 +223,40 @@ export function IntegratedEditor({ className, onClose }: IntegratedEditorProps) 
         );
 
       case 'code':
+        // CONSOLIDATED: Using the unified ComponentEditorWithAI with AI enabled
         return (
           <ComponentEditorWithAI
             initialCode={generateComponentCode(selectedComponent)}
             componentType="react"
             componentId={selectedComponent.id}
             onCodeChange={(newCode) => {
-              // Handle code changes
+              // Handle code changes - could update the component
               console.log('Code updated:', newCode);
             }}
             className="flex-1"
+            enableAI={true}
+            showAIPanel={false}
+            enableAdvancedFeatures={true}
           />
         );
 
       case 'ai':
+        // CONSOLIDATED: Using the unified ComponentEditorWithAI with AI panel open
         return (
           <div className="flex-1 flex">
             <div className="flex-1">
-              <AICustomizationPanel 
-                onOpenEditor={() => handleModeChange('code')}
+              <ComponentEditorWithAI
+                initialCode={generateComponentCode(selectedComponent)}
+                componentType="react"
+                componentId={selectedComponent.id}
+                onCodeChange={(newCode) => {
+                  console.log('AI Code updated:', newCode);
+                }}
+                className="h-full"
+                enableAI={true}
+                showAIPanel={true}
+                enableAdvancedFeatures={true}
               />
-            </div>
-            <div className="w-96 border-l border-gray-200">
-              <div className="p-4 bg-purple-50 border-b border-gray-200">
-                <h4 className="text-sm font-medium text-purple-900 flex items-center">
-                  <Bot className="w-4 h-4 mr-2" />
-                  AI Assistant
-                </h4>
-              </div>
-              <div className="p-4">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Quick Improvements</label>
-                    <div className="space-y-2">
-                      <button className="w-full p-2 text-left text-sm bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100">
-                        ✨ Make it modern and professional
-                      </button>
-                      <button className="w-full p-2 text-left text-sm bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100">
-                        🎨 Apply brand colors
-                      </button>
-                      <button className="w-full p-2 text-left text-sm bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100">
-                        ⚡ Add animations
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         );
@@ -195,12 +268,12 @@ export function IntegratedEditor({ className, onClose }: IntegratedEditorProps) 
 
   return (
     <div className={cn("bg-white rounded-lg shadow-lg overflow-hidden", className)}>
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center gap-4">
           <h3 className="font-semibold text-gray-800">Component Editor</h3>
           
-          {/* Mode Selector */}
+          {/* Enhanced Mode Selector */}
           <div className="flex bg-white rounded-lg p-1 border border-gray-200">
             <button
               onClick={() => handleModeChange('visual')}
@@ -231,12 +304,12 @@ export function IntegratedEditor({ className, onClose }: IntegratedEditorProps) 
               className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
                 editorMode === 'ai'
-                  ? 'bg-green-500 text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               )}
             >
               <Sparkles className="w-3 h-3" />
-              AI
+              AI Enhanced
             </button>
           </div>
         </div>
@@ -288,20 +361,23 @@ export function IntegratedEditor({ className, onClose }: IntegratedEditorProps) 
         </AnimatePresence>
       </div>
 
-      {/* Footer */}
+      {/* Enhanced Footer */}
       <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 text-xs text-gray-500 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span>Mode: {editorMode.charAt(0).toUpperCase() + editorMode.slice(1)}</span>
           {selectedComponent && (
             <span>Editing: {selectedComponent.name}</span>
           )}
+          {editorMode === 'ai' && (
+            <span className="text-purple-600">AI Enhanced Editing</span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
-          <button className="hover:text-gray-700">
+          <button className="hover:text-gray-700" title="Color Palette">
             <Palette className="w-3 h-3" />
           </button>
-          <button className="hover:text-gray-700">
+          <button className="hover:text-gray-700" title="Quick Actions">
             <Zap className="w-3 h-3" />
           </button>
         </div>

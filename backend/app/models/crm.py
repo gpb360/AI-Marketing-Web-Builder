@@ -1,12 +1,11 @@
 """CRM models for contact and email management."""
 
 from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Integer, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import JSON, UUID, ARRAY
+from sqlalchemy.types import JSON, ARRAY
 from sqlalchemy.orm import relationship
 import enum
 
-from ..core.database import Base
-from .base import UUIDMixin, TimestampMixin
+from .base import BaseModel, UUIDMixin, TimestampMixin
 
 
 class ContactStatus(str, enum.Enum):
@@ -60,12 +59,12 @@ class EmailStatus(str, enum.Enum):
     SPAM = "spam"
 
 
-class Contact(Base, UUIDMixin, TimestampMixin):
+class Contact(BaseModel, UUIDMixin, TimestampMixin):
     """CRM contact record."""
     
     __tablename__ = "contacts"
     
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     
     # Contact information
     email = Column(String(255), nullable=False, index=True)
@@ -77,13 +76,13 @@ class Contact(Base, UUIDMixin, TimestampMixin):
     
     # Source tracking
     source_component = Column(String(100))  # Component that captured this contact
-    source_workflow = Column(UUID(as_uuid=True))  # Workflow that created this contact
+    source_workflow = Column(String(36))  # Workflow that created this contact
     source_url = Column(String(500))  # URL where contact was captured
     source_campaign = Column(String(255))  # UTM campaign
     
     # Contact management
     status = Column(SQLEnum(ContactStatus), default=ContactStatus.ACTIVE)
-    tags = Column(ARRAY(String), default=list)
+    tags = Column(JSON, default=list)  # JSON array for SQLite compatibility
     custom_fields = Column(JSON, default=dict)
     
     # Scoring and segmentation
@@ -131,12 +130,12 @@ class Contact(Base, UUIDMixin, TimestampMixin):
         return self.last_email_opened > datetime.utcnow() - timedelta(days=30)
 
 
-class ContactActivity(Base, UUIDMixin, TimestampMixin):
+class ContactActivity(BaseModel, UUIDMixin, TimestampMixin):
     """Contact activity tracking."""
     
     __tablename__ = "contact_activities"
     
-    contact_id = Column(UUID(as_uuid=True), ForeignKey("contacts.id"), nullable=False)
+    contact_id = Column(String(36), ForeignKey("contacts.id"), nullable=False)
     
     # Activity details
     type = Column(SQLEnum(ActivityType), nullable=False)
@@ -159,13 +158,13 @@ class ContactActivity(Base, UUIDMixin, TimestampMixin):
         return f"<ContactActivity(type='{self.type}', contact_id='{self.contact_id}')>"
 
 
-class EmailCampaign(Base, UUIDMixin, TimestampMixin):
+class EmailCampaign(BaseModel, UUIDMixin, TimestampMixin):
     """Email campaign definition."""
     
     __tablename__ = "email_campaigns"
     
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("workflows.id"))  # Optional workflow trigger
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    workflow_id = Column(String(36), ForeignKey("workflows.id"))  # Optional workflow trigger
     
     # Campaign details
     name = Column(String(255), nullable=False)
@@ -185,7 +184,7 @@ class EmailCampaign(Base, UUIDMixin, TimestampMixin):
     sent_at = Column(DateTime)
     
     # Targeting
-    target_tags = Column(ARRAY(String), default=list)  # Target contacts with these tags
+    target_tags = Column(JSON, default=list)  # Target contacts with these tags, JSON array for SQLite
     target_segments = Column(JSON, default=dict)  # Advanced segmentation rules
     
     # A/B Testing
@@ -230,13 +229,13 @@ class EmailCampaign(Base, UUIDMixin, TimestampMixin):
         return (self.clicks_count / self.opens_count) * 100
 
 
-class EmailSend(Base, UUIDMixin, TimestampMixin):
+class EmailSend(BaseModel, UUIDMixin, TimestampMixin):
     """Individual email send record."""
     
     __tablename__ = "email_sends"
     
-    campaign_id = Column(UUID(as_uuid=True), ForeignKey("email_campaigns.id"), nullable=False)
-    contact_id = Column(UUID(as_uuid=True), ForeignKey("contacts.id"), nullable=False)
+    campaign_id = Column(String(36), ForeignKey("email_campaigns.id"), nullable=False)
+    contact_id = Column(String(36), ForeignKey("contacts.id"), nullable=False)
     
     # Send details
     status = Column(SQLEnum(EmailStatus), default=EmailStatus.PENDING)

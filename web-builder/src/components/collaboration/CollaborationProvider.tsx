@@ -14,6 +14,7 @@ import { PresenceBar } from './PresenceBar';
 import { UserCursors } from './UserCursors';
 import { ComponentLocks } from './ComponentLocks';
 import { CollaborationChat, ChatToggleButton } from './CollaborationChat';
+import { SyncPreferences } from '@/types/collaboration';
 
 interface CollaborationProviderProps {
   projectId: string;
@@ -24,6 +25,7 @@ interface CollaborationProviderProps {
   children: React.ReactNode;
   canvasRef?: React.RefObject<HTMLElement>;
   className?: string;
+  syncPreferences?: Partial<SyncPreferences>;
 }
 
 export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
@@ -164,13 +166,9 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
       {/* Presence bar */}
       {showPresenceBar && (
         <PresenceBar
-          currentUser={collaboration.currentUser}
           activeUsers={collaboration.activeUsers}
           connectionStatus={collaboration.connectionStatus}
           isConnected={collaboration.isConnected}
-          syncPreferences={collaboration.syncPreferences}
-          onUpdateSyncPreferences={collaboration.updateSyncPreferences}
-          onToggleChat={handleChatToggle}
         />
       )}
 

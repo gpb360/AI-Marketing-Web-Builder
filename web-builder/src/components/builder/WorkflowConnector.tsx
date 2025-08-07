@@ -82,22 +82,23 @@ export function WorkflowConnector({
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center space-x-1 shadow-lg",
+          "absolute -bottom-7 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center space-x-1 shadow-sm border",
           isConnected
-            ? "bg-green-500 text-white hover:bg-green-600"
-            : "bg-blue-500 text-white hover:bg-blue-600"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-blue-300"
         )}
+        title={isConnected ? 'Workflow connected' : 'Connect to workflow'}
       >
         <Zap className="w-3 h-3" />
-        <span>
-          {isConnected ? 'Connected' : 'Connect to Workflow'}
+        <span className="hidden group-hover:inline">
+          {isConnected ? 'Connected' : 'Connect'}
         </span>
       </button>
     );
   }
 
   return (
-    <div className="absolute -bottom-40 left-1/2 transform -translate-x-1/2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+    <div className="absolute -bottom-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">

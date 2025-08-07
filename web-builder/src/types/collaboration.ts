@@ -163,7 +163,7 @@ export interface ConflictResolution {
 // WebSocket connection state
 export interface CollaborationState {
   isConnected: boolean;
-  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
+  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting';
   currentUser: CollaborationUser | null;
   activeUsers: CollaborationUser[];
   userCursors: Map<string, UserCursor>;

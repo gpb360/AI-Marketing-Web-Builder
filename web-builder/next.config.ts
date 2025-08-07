@@ -1,12 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable access from all network interfaces (important for WSL)
+  env: {
+    HOSTNAME: '0.0.0.0',
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Server external packages (moved from experimental)
+  serverExternalPackages: [],
   turbopack: {
     rules: {
       '*.svg': {

@@ -4,29 +4,118 @@ Workflow service for workflow automation management.
 
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, func, or_
 from datetime import datetime
+from fastapi import HTTPException, status
 
-from app.models.workflow import Workflow, WorkflowExecution, WorkflowNode, WorkflowStatus, WorkflowExecutionStatus
+from app.models.workflow import (
+    Workflow, WorkflowExecution, WorkflowNode,
+    WorkflowStatus, WorkflowExecutionStatus, WorkflowCategory, TriggerType
+)
 from app.schemas.workflow import WorkflowCreate, WorkflowUpdate, WorkflowExecutionCreate, WorkflowNodeCreate, WorkflowNodeUpdate
 from app.services.base_service import BaseService
 
 
 class WorkflowService(BaseService[Workflow, WorkflowCreate, WorkflowUpdate]):
     """Workflow service for workflow management."""
-    
+
     def __init__(self, db: AsyncSession):
         super().__init__(Workflow, db)
-    
-    async def get_by_owner(self, owner_id: int, skip: int = 0, limit: int = 100) -> List[Workflow]:
-        """Get workflows by owner."""
-        result = await self.db.execute(
-            select(Workflow)
-            .where(Workflow.owner_id == owner_id)
-            .order_by(Workflow.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-        )
+
+    async def create(self, obj_in: WorkflowCreate, **kwargs) -> Workflow:
+        """Create a new workflow with validation."""
+        # Validate workflow data
+        self._validate_workflow_data(obj_in.nodes, obj_in.connections)
+
+        # Call parent create method
+        return await super().create(obj_in, **kwargs)
+
+    async def update(self, id: int, obj_in: WorkflowUpdate) -> Optional[Workflow]:
+        """Update workflow with validation."""
+        # Validate workflow data if provided
+        if obj_in.nodes is not None and obj_in.connections is not None:
+            self._validate_workflow_data(obj_in.nodes, obj_in.connections)
+
+        return await super().update(id, obj_in)
+
+    def _validate_workflow_data(self, nodes: List[Dict[str, Any]], connections: List[Dict[str, Any]]) -> None:
+        """Validate workflow nodes and connections."""
+        if not nodes:
+            return  # Empty workflow is valid
+
+        # Validate nodes
+        node_ids = set()
+        trigger_count = 0
+
+        for node in nodes:
+            if not isinstance(node, dict):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid node format"
+                )
+
+            node_id = node.get('node_id') or node.get('id')
+            if not node_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Node must have an ID"
+                )
+
+            if node_id in node_ids:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Duplicate node ID: {node_id}"
+                )
+
+            node_ids.add(node_id)
+
+            # Count trigger nodes
+            if node.get('node_type') == 'trigger' or node.get('type') == 'trigger':
+                trigger_count += 1
+
+        # Validate connections
+        for connection in connections:
+            if not isinstance(connection, dict):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid connection format"
+                )
+
+            source = connection.get('source') or connection.get('sourceId')
+            target = connection.get('target') or connection.get('targetId')
+
+            if not source or not target:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Connection must have source and target"
+                )
+
+            if source not in node_ids or target not in node_ids:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Connection references non-existent node"
+                )
+
+    async def get_by_owner(
+        self,
+        owner_id: int,
+        skip: int = 0,
+        limit: int = 100,
+        category: Optional[WorkflowCategory] = None,
+        status_filter: Optional[WorkflowStatus] = None
+    ) -> List[Workflow]:
+        """Get workflows by owner with optional filtering."""
+        query = select(Workflow).where(Workflow.owner_id == owner_id)
+
+        if category:
+            query = query.where(Workflow.category == category)
+
+        if status_filter:
+            query = query.where(Workflow.status == status_filter)
+
+        query = query.order_by(Workflow.created_at.desc()).offset(skip).limit(limit)
+
+        result = await self.db.execute(query)
         return result.scalars().all()
     
     async def get_active_workflows(self, owner_id: Optional[int] = None) -> List[Workflow]:
@@ -88,20 +177,73 @@ class WorkflowService(BaseService[Workflow, WorkflowCreate, WorkflowUpdate]):
             await self.db.refresh(workflow)
         return workflow
     
+    async def get_by_component(self, component_id: str, owner_id: Optional[int] = None) -> List[Workflow]:
+        """Get workflows connected to a specific component."""
+        query = select(Workflow).where(Workflow.component_id == component_id)
+
+        if owner_id:
+            query = query.where(Workflow.owner_id == owner_id)
+
+        result = await self.db.execute(query)
+        return result.scalars().all()
+
+    async def get_by_category(self, category: WorkflowCategory, owner_id: Optional[int] = None) -> List[Workflow]:
+        """Get workflows by category."""
+        query = select(Workflow).where(Workflow.category == category)
+
+        if owner_id:
+            query = query.where(Workflow.owner_id == owner_id)
+
+        result = await self.db.execute(query)
+        return result.scalars().all()
+
+    async def get_by_trigger_type(self, trigger_type: TriggerType, owner_id: Optional[int] = None) -> List[Workflow]:
+        """Get workflows by trigger type."""
+        query = select(Workflow).where(Workflow.trigger_type == trigger_type)
+
+        if owner_id:
+            query = query.where(Workflow.owner_id == owner_id)
+
+        result = await self.db.execute(query)
+        return result.scalars().all()
+
+    async def search_workflows(
+        self,
+        query_text: str,
+        owner_id: Optional[int] = None,
+        category: Optional[WorkflowCategory] = None
+    ) -> List[Workflow]:
+        """Search workflows by name or description."""
+        search_query = select(Workflow).where(
+            or_(
+                Workflow.name.ilike(f"%{query_text}%"),
+                Workflow.description.ilike(f"%{query_text}%")
+            )
+        )
+
+        if owner_id:
+            search_query = search_query.where(Workflow.owner_id == owner_id)
+
+        if category:
+            search_query = search_query.where(Workflow.category == category)
+
+        result = await self.db.execute(search_query)
+        return result.scalars().all()
+
     async def get_workflow_stats(self, owner_id: Optional[int] = None) -> Dict[str, Any]:
         """Get workflow statistics."""
         base_query = select(func.count(Workflow.id))
-        
+
         if owner_id:
             base_query = base_query.where(Workflow.owner_id == owner_id)
-        
+
         total_result = await self.db.execute(base_query)
         total_workflows = total_result.scalar()
-        
+
         active_query = base_query.where(Workflow.status == WorkflowStatus.ACTIVE)
         active_result = await self.db.execute(active_query)
         active_workflows = active_result.scalar()
-        
+
         return {
             "total_workflows": total_workflows,
             "active_workflows": active_workflows,
