@@ -63,6 +63,19 @@ class TriggerType(str, enum.Enum):
     WEBHOOK = "webhook"
     SCHEDULE = "schedule"
     MANUAL = "manual"
+    
+    # Epic 2: Advanced automation triggers
+    PR_CREATED = "pr-created"
+    PR_MERGED = "pr-merged"
+    PR_REVIEWED = "pr-reviewed"
+    COMMIT_PUSHED = "commit-pushed"
+    BUILD_FAILED = "build-failed"
+    BUILD_SUCCESS = "build-success"
+    TEST_FAILED = "test-failed"
+    SLA_VIOLATION = "sla-violation"
+    AGENT_IDLE = "agent-idle"
+    DEPLOYMENT_START = "deployment-start"
+    DEPLOYMENT_COMPLETE = "deployment-complete"
 
 
 class Workflow(Base, TimestampMixin, UUIDMixin):
@@ -90,6 +103,20 @@ class Workflow(Base, TimestampMixin, UUIDMixin):
     trigger_count: Mapped[int] = mapped_column(Integer, default=0)
     success_count: Mapped[int] = mapped_column(Integer, default=0)
     error_count: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Epic 2: Advanced automation settings
+    priority: Mapped[int] = mapped_column(Integer, default=1)  # 1-10 priority scale
+    timeout_seconds: Mapped[int] = mapped_column(Integer, default=3600)  # 1 hour default
+    retry_count: Mapped[int] = mapped_column(Integer, default=3)
+    sla_threshold_seconds: Mapped[Optional[int]] = mapped_column(Integer)  # SLA threshold
+    assigned_agent: Mapped[Optional[str]] = mapped_column(String(100))  # Assigned agent
+    agent_group: Mapped[Optional[str]] = mapped_column(String(100))  # Agent group
+    
+    # Epic 2: Performance tracking
+    average_duration: Mapped[float] = mapped_column(default=0.0)  # Average execution time
+    last_executed_at: Mapped[Optional[datetime]] = mapped_column()
+    last_success_at: Mapped[Optional[datetime]] = mapped_column()
+    last_failure_at: Mapped[Optional[datetime]] = mapped_column()
 
     # Workflow relationships
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
@@ -162,3 +189,101 @@ class WorkflowNode(Base, TimestampMixin, UUIDMixin):
     
     def __repr__(self) -> str:
         return f"<WorkflowNode(id={self.id}, node_id='{self.node_id}', type='{self.node_type}')>"
+
+
+# Epic 2: Additional automation models
+
+class SLAConfiguration(Base, TimestampMixin, UUIDMixin):
+    """Epic 2: SLA monitoring and escalation configuration."""
+    
+    __tablename__ = "sla_configurations"
+    
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    
+    # SLA parameters
+    metric_type: Mapped[str] = mapped_column(String(100), nullable=False)  # pr_review_time, build_time, etc.
+    threshold_value: Mapped[float] = mapped_column(nullable=False)
+    threshold_unit: Mapped[str] = mapped_column(String(50), nullable=False)  # seconds, minutes, hours
+    
+    # Escalation configuration
+    escalation_levels: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    notification_channels: Mapped[List[str]] = mapped_column(JSON, default=list)
+    
+    # Monitoring settings
+    check_interval_minutes: Mapped[int] = mapped_column(Integer, default=5)
+    grace_period_minutes: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    # Statistics
+    violation_count: Mapped[int] = mapped_column(Integer, default=0)
+    escalation_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_violation_at: Mapped[Optional[datetime]] = mapped_column()
+    
+    # Relationships
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    creator: Mapped["User"] = relationship("User")
+
+    def __repr__(self) -> str:
+        return f"<SLAConfiguration(id={self.id}, name='{self.name}', metric='{self.metric_type}')>"
+
+
+class AgentActivity(Base, TimestampMixin, UUIDMixin):
+    """Epic 2: Agent activity tracking for coordination and SLA monitoring."""
+    
+    __tablename__ = "agent_activities"
+    
+    agent_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    agent_type: Mapped[str] = mapped_column(String(100), nullable=False)  # frontend, backend, ai, etc.
+    
+    # Activity details
+    activity_type: Mapped[str] = mapped_column(String(100), nullable=False)  # task_start, task_complete, commit, pr_review
+    activity_data: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    
+    # Performance metrics
+    duration_seconds: Mapped[Optional[float]] = mapped_column()
+    status: Mapped[Optional[str]] = mapped_column(String(50))  # success, failure, timeout, cancelled
+    
+    # Context
+    repository: Mapped[Optional[str]] = mapped_column(String(255))
+    branch_name: Mapped[Optional[str]] = mapped_column(String(255))
+    pr_number: Mapped[Optional[int]] = mapped_column(Integer)
+    commit_sha: Mapped[Optional[str]] = mapped_column(String(50))
+    
+    # Timing
+    completed_at: Mapped[Optional[datetime]] = mapped_column()
+
+    def __repr__(self) -> str:
+        return f"<AgentActivity(id={self.id}, agent='{self.agent_name}', type='{self.activity_type}')>"
+
+
+class WorkflowTemplate(Base, TimestampMixin, UUIDMixin):
+    """Epic 2: Pre-built workflow templates for common automation patterns."""
+    
+    __tablename__ = "workflow_templates"
+    
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    category: Mapped[str] = mapped_column(String(100), default="automation")  # sla_monitoring, pr_automation, etc.
+    
+    # Template configuration
+    template_config: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    parameter_schema: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    tags: Mapped[List[str]] = mapped_column(JSON, default=list)
+    
+    # Usage and rating
+    usage_count: Mapped[int] = mapped_column(Integer, default=0)
+    rating_average: Mapped[float] = mapped_column(default=0.0)
+    rating_count: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Template metadata
+    version: Mapped[str] = mapped_column(String(20), default="1.0")
+    is_public: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)  # Verified by Epic 2 team
+    
+    # Relationships
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    creator: Mapped["User"] = relationship("User")
+
+    def __repr__(self) -> str:
+        return f"<WorkflowTemplate(id={self.id}, name='{self.name}', category='{self.category}')>"
