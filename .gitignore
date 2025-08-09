@@ -48,6 +48,14 @@ venv_new/
 
 # OS
 .DS_Store
+
+# Epic 2: Workflow Automation - Security exclusions
+/reports/
+*.env.local
+*.env.production
+**/config/secrets.json
+**/.secrets/
+.claude-code-router/
 .DS_Store?
 ._*
 .Spotlight-V100

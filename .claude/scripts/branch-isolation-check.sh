@@ -118,7 +118,7 @@ check_file_ownership() {
                         echo -e "${GREEN}✅ $file${NC} (within domain)"
                     else
                         echo -e "${RED}❌ $file${NC} (OUTSIDE domain)"
-                        ((VIOLATIONS++)
+                        ((VIOLATIONS++))
                     fi
                 fi
             done <<< "$MODIFIED_FILES"
