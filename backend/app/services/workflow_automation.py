@@ -14,9 +14,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
 from app.core.database import get_session
-from app.models.workflow import Workflow, WorkflowExecution, WorkflowTrigger
+from app.models.workflow import Workflow, WorkflowExecution, WorkflowTrigger, WorkflowExecutionStatus, NodeType
 from app.services.ai_service import AIService
 from app.services.github_integration import GitHubService
+
+# Import debugging service for real-time monitoring
+try:
+    from app.services.workflow_debug_service import WorkflowDebugService
+    DEBUGGING_ENABLED = True
+except ImportError:
+    DEBUGGING_ENABLED = False
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +105,7 @@ class WorkflowEngine:
         self.github_service = github_service or GitHubService()
         self.active_workflows: Dict[int, Workflow] = {}
         self.execution_queue = asyncio.Queue()
+        self.debug_service = None  # Will be initialized when needed
         
     async def start_engine(self):
         """Start the workflow automation engine"""
@@ -167,37 +175,81 @@ class WorkflowEngine:
         logger.info(f"🔄 Executing workflow: {workflow.name} (ID: {execution_id})")
         
         try:
+            # Initialize debug service if needed
+            if DEBUGGING_ENABLED and not self.debug_service:
+                # Note: This requires a database session, so it's created per execution
+                pass
+            
             # Create execution record
             with get_session() as session:
                 execution = WorkflowExecution(
                     workflow_id=workflow.id,
                     execution_id=execution_id,
-                    status="running",
-                    context_data=json.dumps(context),
+                    status=WorkflowExecutionStatus.RUNNING,
+                    trigger_data=context,
                     started_at=datetime.utcnow()
                 )
                 session.add(execution)
                 session.commit()
+                session.refresh(execution)
+                
+                # Notify debugging service of execution start
+                if DEBUGGING_ENABLED:
+                    try:
+                        from app.api.v1.endpoints.workflow_websocket import connection_manager
+                        await connection_manager.send_execution_started(workflow.id, execution.id, context)
+                    except Exception as e:
+                        logger.warning(f"Failed to send debug notification: {e}")
                 
             # Parse actions from configuration
             config = json.loads(workflow.configuration) if workflow.configuration else {}
             actions = config.get('actions', [])
             
-            # Execute each action
+            # Execute each action with debugging support
             success_count = 0
             total_actions = len(actions)
             
-            for action_data in actions:
+            for i, action_data in enumerate(actions):
                 action = WorkflowAction(**action_data)
+                node_id = f"action_{i}"  # Generate node ID for debugging
+                
+                # Notify debugging service of node start
+                if DEBUGGING_ENABLED:
+                    try:
+                        from app.api.v1.endpoints.workflow_websocket import connection_manager
+                        await connection_manager.send_execution_update(
+                            workflow.id, execution.id, node_id, 'running'
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to send debug notification: {e}")
                 
                 # Apply delay if specified
                 if action.delay_seconds > 0:
                     await asyncio.sleep(action.delay_seconds)
                     
                 # Execute action with retry logic
+                action_start_time = datetime.utcnow()
                 success = await self.execute_action(action, context, execution_id)
+                action_end_time = datetime.utcnow()
+                
+                # Calculate execution time
+                execution_time_ms = int((action_end_time - action_start_time).total_seconds() * 1000)
+                
                 if success:
                     success_count += 1
+                    
+                # Notify debugging service of node completion
+                if DEBUGGING_ENABLED:
+                    try:
+                        from app.api.v1.endpoints.workflow_websocket import connection_manager
+                        await connection_manager.send_execution_update(
+                            workflow.id, execution.id, node_id, 
+                            'success' if success else 'failed',
+                            execution_time_ms,
+                            None if success else f"Action {action.type.value} failed"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to send debug notification: {e}")
                     
             # Update execution status
             with get_session() as session:
@@ -206,14 +258,32 @@ class WorkflowEngine:
                 ).first()
                 
                 if execution:
-                    execution.status = "completed" if success_count == total_actions else "partial_failure"
-                    execution.completed_at = datetime.utcnow()
-                    execution.result_data = json.dumps({
+                    final_status = WorkflowExecutionStatus.SUCCESS if success_count == total_actions else WorkflowExecutionStatus.FAILED
+                    execution.status = final_status
+                    execution.finished_at = datetime.utcnow()
+                    
+                    # Calculate total execution time
+                    if execution.started_at and execution.finished_at:
+                        total_time = execution.finished_at - execution.started_at
+                        execution.execution_time = int(total_time.total_seconds() * 1000)
+                    
+                    execution.execution_data = {
                         "success_count": success_count,
                         "total_actions": total_actions,
                         "success_rate": success_count / total_actions if total_actions > 0 else 0
-                    })
+                    }
                     session.commit()
+                    
+                    # Notify debugging service of execution completion
+                    if DEBUGGING_ENABLED:
+                        try:
+                            from app.api.v1.endpoints.workflow_websocket import connection_manager
+                            await connection_manager.send_execution_completed(
+                                workflow.id, execution.id, final_status.value,
+                                execution.execution_time or 0, success_count, total_actions
+                            )
+                        except Exception as e:
+                            logger.warning(f"Failed to send debug notification: {e}")
                     
             logger.info(f"✅ Workflow execution completed: {success_count}/{total_actions} actions successful")
             
@@ -227,10 +297,27 @@ class WorkflowEngine:
                 ).first()
                 
                 if execution:
-                    execution.status = "failed"
-                    execution.completed_at = datetime.utcnow()
+                    execution.status = WorkflowExecutionStatus.FAILED
+                    execution.finished_at = datetime.utcnow()
                     execution.error_message = str(e)
+                    
+                    # Calculate total execution time
+                    if execution.started_at and execution.finished_at:
+                        total_time = execution.finished_at - execution.started_at
+                        execution.execution_time = int(total_time.total_seconds() * 1000)
+                    
                     session.commit()
+                    
+                    # Notify debugging service of execution failure
+                    if DEBUGGING_ENABLED:
+                        try:
+                            from app.api.v1.endpoints.workflow_websocket import connection_manager
+                            await connection_manager.send_execution_completed(
+                                workflow.id, execution.id, WorkflowExecutionStatus.FAILED.value,
+                                execution.execution_time or 0, 0, total_actions
+                            )
+                        except Exception as e:
+                            logger.warning(f"Failed to send debug notification: {e}")
                     
     async def execute_action(self, action: WorkflowAction, context: Dict[str, Any], execution_id: str) -> bool:
         """Execute a specific action with retry logic"""

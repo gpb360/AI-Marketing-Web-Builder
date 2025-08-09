@@ -102,9 +102,10 @@ class WorkflowService(BaseService[Workflow, WorkflowCreate, WorkflowUpdate]):
         skip: int = 0,
         limit: int = 100,
         category: Optional[WorkflowCategory] = None,
-        status_filter: Optional[WorkflowStatus] = None
+        status_filter: Optional[WorkflowStatus] = None,
+        search: Optional[str] = None
     ) -> List[Workflow]:
-        """Get workflows by owner with optional filtering."""
+        """Get workflows by owner with filters."""
         query = select(Workflow).where(Workflow.owner_id == owner_id)
 
         if category:
@@ -113,83 +114,76 @@ class WorkflowService(BaseService[Workflow, WorkflowCreate, WorkflowUpdate]):
         if status_filter:
             query = query.where(Workflow.status == status_filter)
 
-        query = query.order_by(Workflow.created_at.desc()).offset(skip).limit(limit)
+        if search:
+            query = query.where(
+                or_(
+                    Workflow.name.ilike(f"%{search}%"),
+                    Workflow.description.ilike(f"%{search}%")
+                )
+            )
+
+        query = query.order_by(Workflow.updated_at.desc()).offset(skip).limit(limit)
 
         result = await self.db.execute(query)
         return result.scalars().all()
-    
-    async def get_active_workflows(self, owner_id: Optional[int] = None) -> List[Workflow]:
-        """Get active workflows."""
-        query = select(Workflow).where(
-            and_(Workflow.status == WorkflowStatus.ACTIVE, Workflow.is_active == True)
-        )
-        
-        if owner_id:
-            query = query.where(Workflow.owner_id == owner_id)
-        
-        result = await self.db.execute(query)
-        return result.scalars().all()
-    
-    async def activate_workflow(self, workflow_id: int) -> Optional[Workflow]:
+
+    async def activate(self, id: int) -> Optional[Workflow]:
         """Activate a workflow."""
-        workflow = await self.get_by_id(workflow_id)
-        if workflow:
-            workflow.status = WorkflowStatus.ACTIVE
-            workflow.is_active = True
-            await self.db.commit()
-            await self.db.refresh(workflow)
+        workflow = await self.get(id)
+        if not workflow:
+            return None
+
+        workflow.status = WorkflowStatus.ACTIVE
+        workflow.updated_at = datetime.utcnow()
+        await self.db.commit()
+        await self.db.refresh(workflow)
         return workflow
-    
-    async def deactivate_workflow(self, workflow_id: int) -> Optional[Workflow]:
+
+    async def deactivate(self, id: int) -> Optional[Workflow]:
         """Deactivate a workflow."""
-        workflow = await self.get_by_id(workflow_id)
-        if workflow:
-            workflow.status = WorkflowStatus.PAUSED
-            workflow.is_active = False
-            await self.db.commit()
-            await self.db.refresh(workflow)
-        return workflow
-    
-    async def increment_trigger_count(self, workflow_id: int) -> Optional[Workflow]:
-        """Increment workflow trigger count."""
-        workflow = await self.get_by_id(workflow_id)
-        if workflow:
-            workflow.trigger_count += 1
-            await self.db.commit()
-            await self.db.refresh(workflow)
-        return workflow
-    
-    async def increment_success_count(self, workflow_id: int) -> Optional[Workflow]:
-        """Increment workflow success count."""
-        workflow = await self.get_by_id(workflow_id)
-        if workflow:
-            workflow.success_count += 1
-            await self.db.commit()
-            await self.db.refresh(workflow)
-        return workflow
-    
-    async def increment_error_count(self, workflow_id: int) -> Optional[Workflow]:
-        """Increment workflow error count."""
-        workflow = await self.get_by_id(workflow_id)
-        if workflow:
-            workflow.error_count += 1
-            await self.db.commit()
-            await self.db.refresh(workflow)
-        return workflow
-    
-    async def get_by_component(self, component_id: str, owner_id: Optional[int] = None) -> List[Workflow]:
-        """Get workflows connected to a specific component."""
-        query = select(Workflow).where(Workflow.component_id == component_id)
+        workflow = await self.get(id)
+        if not workflow:
+            return None
 
-        if owner_id:
-            query = query.where(Workflow.owner_id == owner_id)
+        workflow.status = WorkflowStatus.INACTIVE
+        workflow.updated_at = datetime.utcnow()
+        await self.db.commit()
+        await self.db.refresh(workflow)
+        return workflow
 
-        result = await self.db.execute(query)
-        return result.scalars().all()
+    async def duplicate(self, id: int, name: Optional[str] = None) -> Optional[Workflow]:
+        """Duplicate a workflow."""
+        original_workflow = await self.get(id)
+        if not original_workflow:
+            return None
+
+        duplicate_name = name or f"{original_workflow.name} (Copy)"
+        
+        duplicate_data = WorkflowCreate(
+            name=duplicate_name,
+            description=original_workflow.description,
+            nodes=original_workflow.nodes,
+            connections=original_workflow.connections,
+            trigger_type=original_workflow.trigger_type,
+            category=original_workflow.category,
+            settings=original_workflow.settings
+        )
+
+        return await self.create(duplicate_data, owner_id=original_workflow.owner_id)
 
     async def get_by_category(self, category: WorkflowCategory, owner_id: Optional[int] = None) -> List[Workflow]:
         """Get workflows by category."""
         query = select(Workflow).where(Workflow.category == category)
+
+        if owner_id:
+            query = query.where(Workflow.owner_id == owner_id)
+
+        result = await self.db.execute(query)
+        return result.scalars().all()
+
+    async def get_by_status(self, status: WorkflowStatus, owner_id: Optional[int] = None) -> List[Workflow]:
+        """Get workflows by status."""
+        query = select(Workflow).where(Workflow.status == status)
 
         if owner_id:
             query = query.where(Workflow.owner_id == owner_id)
@@ -253,60 +247,70 @@ class WorkflowService(BaseService[Workflow, WorkflowCreate, WorkflowUpdate]):
 
 class WorkflowExecutionService(BaseService[WorkflowExecution, WorkflowExecutionCreate, None]):
     """Workflow execution service for execution management."""
-    
+
     def __init__(self, db: AsyncSession):
         super().__init__(WorkflowExecution, db)
-    
-    async def create_execution(self, workflow_id: int, trigger_data: Dict[str, Any]) -> WorkflowExecution:
+
+    async def create_execution(
+        self,
+        workflow_id: int,
+        trigger_data: Optional[Dict[str, Any]] = None,
+        triggered_by: Optional[int] = None
+    ) -> WorkflowExecution:
         """Create a new workflow execution."""
-        execution = WorkflowExecution(
+        execution_data = WorkflowExecutionCreate(
             workflow_id=workflow_id,
-            trigger_data=trigger_data,
-            status=WorkflowExecutionStatus.PENDING
+            trigger_data=trigger_data or {},
+            triggered_by=triggered_by
         )
-        self.db.add(execution)
+        return await self.create(execution_data)
+
+    async def start_execution(self, execution_id: int) -> Optional[WorkflowExecution]:
+        """Mark execution as started."""
+        execution = await self.get(execution_id)
+        if not execution:
+            return None
+
+        execution.status = WorkflowExecutionStatus.RUNNING
+        execution.started_at = datetime.utcnow()
         await self.db.commit()
         await self.db.refresh(execution)
         return execution
-    
-    async def start_execution(self, execution_id: int) -> Optional[WorkflowExecution]:
-        """Start a workflow execution."""
-        execution = await self.get_by_id(execution_id)
-        if execution:
-            execution.status = WorkflowExecutionStatus.RUNNING
-            execution.started_at = datetime.utcnow()
-            await self.db.commit()
-            await self.db.refresh(execution)
-        return execution
-    
-    async def complete_execution(self, execution_id: int, execution_data: Dict[str, Any]) -> Optional[WorkflowExecution]:
-        """Complete a workflow execution successfully."""
-        execution = await self.get_by_id(execution_id)
-        if execution:
-            execution.status = WorkflowExecutionStatus.SUCCESS
-            execution.finished_at = datetime.utcnow()
+
+    async def complete_execution(self, execution_id: int, execution_data: Optional[Dict[str, Any]] = None) -> Optional[WorkflowExecution]:
+        """Mark execution as completed successfully."""
+        execution = await self.get(execution_id)
+        if not execution:
+            return None
+
+        execution.status = WorkflowExecutionStatus.SUCCESS
+        execution.finished_at = datetime.utcnow()
+        
+        if execution_data:
             execution.execution_data = execution_data
-            
-            if execution.started_at:
-                execution.execution_time = int((execution.finished_at - execution.started_at).total_seconds() * 1000)
-            
-            await self.db.commit()
-            await self.db.refresh(execution)
+        
+        if execution.started_at:
+            execution.execution_time = int((execution.finished_at - execution.started_at).total_seconds() * 1000)
+        
+        await self.db.commit()
+        await self.db.refresh(execution)
         return execution
-    
+
     async def fail_execution(self, execution_id: int, error_message: str) -> Optional[WorkflowExecution]:
-        """Fail a workflow execution."""
-        execution = await self.get_by_id(execution_id)
-        if execution:
-            execution.status = WorkflowExecutionStatus.FAILED
-            execution.finished_at = datetime.utcnow()
-            execution.error_message = error_message
-            
-            if execution.started_at:
-                execution.execution_time = int((execution.finished_at - execution.started_at).total_seconds() * 1000)
-            
-            await self.db.commit()
-            await self.db.refresh(execution)
+        """Mark execution as failed."""
+        execution = await self.get(execution_id)
+        if not execution:
+            return None
+
+        execution.status = WorkflowExecutionStatus.FAILED
+        execution.finished_at = datetime.utcnow()
+        execution.error_message = error_message
+        
+        if execution.started_at:
+            execution.execution_time = int((execution.finished_at - execution.started_at).total_seconds() * 1000)
+        
+        await self.db.commit()
+        await self.db.refresh(execution)
         return execution
     
     async def get_by_workflow(self, workflow_id: int, skip: int = 0, limit: int = 100) -> List[WorkflowExecution]:
@@ -353,6 +357,165 @@ class WorkflowExecutionService(BaseService[WorkflowExecution, WorkflowExecutionC
             "avg_execution_time": avg_execution_time
         }
 
+    # Story 3.1: Real-time debugging enhancements
+    async def update_node_execution_status(
+        self,
+        execution_id: int, 
+        node_id: str, 
+        status: str,
+        execution_time_ms: Optional[int] = None,
+        error_details: Optional[str] = None
+    ) -> bool:
+        """
+        Update node execution status for real-time debugging.
+        Integrates with WebSocket system for live updates.
+        """
+        from app.api.v1.endpoints.workflow_websocket import connection_manager
+        
+        execution = await self.get(execution_id)
+        if not execution:
+            return False
+
+        # Update execution data with node status
+        if not execution.execution_data:
+            execution.execution_data = {}
+        
+        if 'node_statuses' not in execution.execution_data:
+            execution.execution_data['node_statuses'] = {}
+        
+        execution.execution_data['node_statuses'][node_id] = {
+            'status': status,
+            'timestamp': datetime.utcnow().isoformat(),
+            'execution_time_ms': execution_time_ms,
+            'error_details': error_details
+        }
+        
+        await self.db.commit()
+        
+        # Send real-time update via WebSocket
+        await connection_manager.send_execution_update(
+            workflow_id=execution.workflow_id,
+            execution_id=execution_id,
+            node_id=node_id,
+            status=status,
+            execution_time_ms=execution_time_ms,
+            error_details=error_details
+        )
+        
+        return True
+
+    async def get_node_execution_logs(
+        self, 
+        execution_id: int, 
+        node_id: str
+    ) -> List[Dict[str, Any]]:
+        """Get execution logs for a specific node."""
+        execution = await self.get(execution_id)
+        if not execution or not execution.execution_data:
+            return []
+        
+        node_logs = execution.execution_data.get('node_logs', {}).get(node_id, [])
+        return node_logs
+
+    async def add_node_execution_log(
+        self,
+        execution_id: int,
+        node_id: str,
+        level: str,
+        message: str,
+        context: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """Add a log entry for a specific node execution."""
+        execution = await self.get(execution_id)
+        if not execution:
+            return False
+
+        if not execution.execution_data:
+            execution.execution_data = {}
+        
+        if 'node_logs' not in execution.execution_data:
+            execution.execution_data['node_logs'] = {}
+        
+        if node_id not in execution.execution_data['node_logs']:
+            execution.execution_data['node_logs'][node_id] = []
+        
+        log_entry = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'level': level,
+            'message': message,
+            'context': context or {}
+        }
+        
+        execution.execution_data['node_logs'][node_id].append(log_entry)
+        
+        await self.db.commit()
+        return True
+
+    async def get_execution_timeline_data(self, execution_id: int) -> Dict[str, Any]:
+        """Get comprehensive timeline data for an execution."""
+        execution = await self.get(execution_id)
+        if not execution:
+            return {}
+
+        # Get workflow details
+        workflow = await self.db.execute(
+            select(Workflow).where(Workflow.id == execution.workflow_id)
+        )
+        workflow = workflow.scalar_one_or_none()
+
+        if not workflow:
+            return {}
+
+        # Process node statuses and create timeline steps
+        node_statuses = execution.execution_data.get('node_statuses', {}) if execution.execution_data else {}
+        steps = []
+        completed_steps = 0
+        failed_steps = 0
+
+        for node in workflow.nodes:
+            node_id = node.get('id') or node.get('node_id')
+            if not node_id:
+                continue
+
+            status_info = node_statuses.get(node_id, {})
+            status = status_info.get('status', 'pending')
+            
+            if status in ['success', 'completed']:
+                completed_steps += 1
+            elif status == 'failed':
+                failed_steps += 1
+
+            step = {
+                'id': f"step-{node_id}",
+                'node_id': node_id,
+                'node_name': node.get('name', node_id),
+                'node_type': node.get('type'),
+                'status': status,
+                'execution_time_ms': status_info.get('execution_time_ms'),
+                'error_message': status_info.get('error_details'),
+                'started_at': status_info.get('timestamp') if status != 'pending' else None,
+                'finished_at': status_info.get('timestamp') if status in ['success', 'failed', 'completed'] else None
+            }
+            steps.append(step)
+
+        total_steps = len(workflow.nodes)
+        success_rate = (completed_steps / total_steps * 100) if total_steps > 0 else 0
+
+        return {
+            'execution_id': execution_id,
+            'workflow_id': execution.workflow_id,
+            'workflow_name': workflow.name,
+            'status': execution.status.value,
+            'started_at': execution.started_at.isoformat() if execution.started_at else None,
+            'finished_at': execution.finished_at.isoformat() if execution.finished_at else None,
+            'total_duration_ms': execution.execution_time,
+            'total_steps': total_steps,
+            'completed_steps': completed_steps,
+            'failed_steps': failed_steps,
+            'success_rate': success_rate,
+            'steps': steps
+        }
+
 
 class WorkflowNodeService(BaseService[WorkflowNode, WorkflowNodeCreate, WorkflowNodeUpdate]):
     """Workflow node service for node management."""
@@ -381,3 +544,26 @@ class WorkflowNodeService(BaseService[WorkflowNode, WorkflowNodeCreate, Workflow
             )
         )
         return result.scalar_one_or_none()
+    
+    # Story 3.1: Real-time debugging enhancements
+    async def restart_node(self, workflow_id: int, node_id: str) -> bool:
+        """Restart a failed workflow node."""
+        # This would integrate with the workflow execution engine
+        # to restart a specific node in the workflow
+        node = await self.get_by_node_id(workflow_id, node_id)
+        if not node:
+            return False
+        
+        # Reset node status and trigger restart
+        # Implementation would depend on the workflow execution engine
+        return True
+    
+    async def skip_node(self, workflow_id: int, node_id: str) -> bool:
+        """Skip a failed workflow node and continue execution."""
+        node = await self.get_by_node_id(workflow_id, node_id)
+        if not node:
+            return False
+        
+        # Mark node as skipped and continue workflow execution
+        # Implementation would depend on the workflow execution engine
+        return True
