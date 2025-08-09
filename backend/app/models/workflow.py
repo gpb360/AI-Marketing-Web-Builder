@@ -164,6 +164,7 @@ class WorkflowExecution(Base, TimestampMixin, UUIDMixin):
     
     # Relationships
     workflow: Mapped["Workflow"] = relationship("Workflow", back_populates="executions")
+    execution_steps: Mapped[List["WorkflowExecutionStep"]] = relationship("WorkflowExecutionStep", back_populates="execution")
     
     def __repr__(self) -> str:
         return f"<WorkflowExecution(id={self.id}, workflow_id={self.workflow_id}, status='{self.status}')>"
@@ -287,3 +288,126 @@ class WorkflowTemplate(Base, TimestampMixin, UUIDMixin):
 
     def __repr__(self) -> str:
         return f"<WorkflowTemplate(id={self.id}, name='{self.name}', category='{self.category}')>"
+
+
+# Story 3.1: Visual Workflow Debugging Models
+
+class WorkflowExecutionStep(Base, TimestampMixin, UUIDMixin):
+    """Individual step/node execution within a workflow execution."""
+    
+    __tablename__ = "workflow_execution_steps"
+    
+    execution_id: Mapped[int] = mapped_column(ForeignKey("workflow_executions.id"), nullable=False)
+    node_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    node_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    node_type: Mapped[NodeType] = mapped_column(Enum(NodeType), nullable=False)
+    
+    # Step execution status
+    status: Mapped[WorkflowExecutionStatus] = mapped_column(
+        Enum(WorkflowExecutionStatus),
+        default=WorkflowExecutionStatus.PENDING
+    )
+    
+    # Timing information
+    started_at: Mapped[Optional[datetime]] = mapped_column()
+    finished_at: Mapped[Optional[datetime]] = mapped_column()
+    execution_time_ms: Mapped[Optional[int]] = mapped_column(Integer)  # Execution time in milliseconds
+    
+    # Step details
+    input_data: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    output_data: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    error_message: Mapped[Optional[str]] = mapped_column(Text)
+    error_stack_trace: Mapped[Optional[str]] = mapped_column(Text)
+    
+    # Performance metrics
+    memory_usage_mb: Mapped[Optional[float]] = mapped_column()  # Memory usage in MB
+    cpu_usage_percent: Mapped[Optional[float]] = mapped_column()  # CPU usage percentage
+    
+    # Debug information
+    debug_logs: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    retry_count: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Relationships
+    execution: Mapped["WorkflowExecution"] = relationship("WorkflowExecution", back_populates="execution_steps")
+    
+    @property
+    def is_completed(self) -> bool:
+        """Check if step execution is completed (success or failed)."""
+        return self.status in [WorkflowExecutionStatus.SUCCESS, WorkflowExecutionStatus.FAILED]
+    
+    @property
+    def duration_ms(self) -> Optional[int]:
+        """Calculate execution duration in milliseconds."""
+        if self.started_at and self.finished_at:
+            delta = self.finished_at - self.started_at
+            return int(delta.total_seconds() * 1000)
+        return None
+    
+    def __repr__(self) -> str:
+        return f"<WorkflowExecutionStep(id={self.id}, node_id='{self.node_id}', status='{self.status}')>"
+
+
+class WorkflowDebugSession(Base, TimestampMixin, UUIDMixin):
+    """Debug session for tracking workflow debugging activities."""
+    
+    __tablename__ = "workflow_debug_sessions"
+    
+    workflow_id: Mapped[int] = mapped_column(ForeignKey("workflows.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    
+    # Session details
+    session_name: Mapped[Optional[str]] = mapped_column(String(200))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    # Debugging configuration
+    debug_level: Mapped[str] = mapped_column(String(20), default="INFO")  # DEBUG, INFO, WARN, ERROR
+    capture_logs: Mapped[bool] = mapped_column(Boolean, default=True)
+    capture_metrics: Mapped[bool] = mapped_column(Boolean, default=True)
+    capture_data_flow: Mapped[bool] = mapped_column(Boolean, default=False)  # Can be resource-intensive
+    
+    # Session statistics
+    executions_monitored: Mapped[int] = mapped_column(Integer, default=0)
+    errors_detected: Mapped[int] = mapped_column(Integer, default=0)
+    performance_issues: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Timing
+    started_at: Mapped[Optional[datetime]] = mapped_column()
+    ended_at: Mapped[Optional[datetime]] = mapped_column()
+    
+    # Relationships
+    workflow: Mapped["Workflow"] = relationship("Workflow")
+    user: Mapped["User"] = relationship("User")
+    
+    def __repr__(self) -> str:
+        return f"<WorkflowDebugSession(id={self.id}, workflow_id={self.workflow_id}, active={self.is_active})>"
+
+
+class WorkflowPerformanceMetric(Base, TimestampMixin, UUIDMixin):
+    """Performance metrics for workflow executions and nodes."""
+    
+    __tablename__ = "workflow_performance_metrics"
+    
+    workflow_id: Mapped[int] = mapped_column(ForeignKey("workflows.id"), nullable=False)
+    execution_id: Mapped[Optional[int]] = mapped_column(ForeignKey("workflow_executions.id"))
+    node_id: Mapped[Optional[str]] = mapped_column(String(100))  # NULL for workflow-level metrics
+    
+    # Metric details
+    metric_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    metric_value: Mapped[float] = mapped_column(nullable=False)
+    metric_unit: Mapped[str] = mapped_column(String(20), nullable=False)  # ms, mb, percent, count
+    
+    # Metric metadata
+    measurement_timestamp: Mapped[datetime] = mapped_column(nullable=False, index=True)
+    measurement_context: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    
+    # Thresholds and alerts
+    threshold_value: Mapped[Optional[float]] = mapped_column()
+    is_threshold_exceeded: Mapped[bool] = mapped_column(Boolean, default=False)
+    alert_sent: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    # Relationships
+    workflow: Mapped["Workflow"] = relationship("Workflow")
+    execution: Mapped[Optional["WorkflowExecution"]] = relationship("WorkflowExecution")
+    
+    def __repr__(self) -> str:
+        return f"<WorkflowPerformanceMetric(metric='{self.metric_name}', value={self.metric_value}, unit='{self.metric_unit}')>"

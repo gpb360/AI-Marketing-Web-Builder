@@ -4,7 +4,7 @@ API router for version 1 endpoints.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, templates, workflows, crm, publishing, collaboration, template_optimization, migration
+from app.api.v1.endpoints import auth, templates, workflows, crm, publishing, collaboration, template_optimization, migration, workflow_debug, workflow_websocket
 
 api_router = APIRouter()
 
@@ -12,6 +12,8 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(templates.router, prefix="/templates", tags=["Templates"])
 api_router.include_router(workflows.router, prefix="/workflows", tags=["Workflows"])
+api_router.include_router(workflow_debug.router, prefix="/workflows", tags=["Workflow Debugging"])
+api_router.include_router(workflow_websocket.router, prefix="/ws", tags=["Workflow WebSocket"])
 api_router.include_router(crm.router, prefix="/crm", tags=["CRM"])
 api_router.include_router(publishing.router, prefix="/publishing", tags=["Site Publishing"])
 api_router.include_router(collaboration.router, prefix="/collaboration", tags=["Real-time Collaboration"])
