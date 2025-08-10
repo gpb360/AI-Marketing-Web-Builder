@@ -1,0 +1,11 @@
+# This file ensures the .bmad-core directory is tracked by Git
+# and prevents accidental deletion of the entire BMad configuration system.
+#
+# BMad Core contains critical project infrastructure:
+# - Agent configurations and workflows
+# - Templates and checklists  
+# - Tasks and automation scripts
+# - Documentation and user guides
+#
+# ⚠️  DO NOT DELETE THIS DIRECTORY ⚠️
+# It contains customized project methodology and agent coordination systems.
