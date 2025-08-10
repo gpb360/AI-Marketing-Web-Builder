@@ -42,10 +42,11 @@ class NodeType(str, enum.Enum):
 
 
 class WorkflowCategory(str, enum.Enum):
-    """Workflow categories for Magic Connector."""
+    """Workflow categories for Magic Connector and Business Customization."""
     MARKETING = "marketing"
     SUPPORT = "support"
     SALES = "sales"
+    ECOMMERCE = "ecommerce"  # Added for Story #106
     AUTOMATION = "automation"
     ANALYTICS = "analytics"
     INTEGRATION = "integration"
