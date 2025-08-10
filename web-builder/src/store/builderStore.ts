@@ -10,6 +10,9 @@ import {
   ComponentElement
 } from '@/types/builder';
 
+// Export types that other components need
+export type { ComponentData, Template };
+
 interface BuilderStore extends CanvasState {
   // Template Management
   currentTemplate: Template | null;

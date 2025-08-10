@@ -2,10 +2,12 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useBuilderStore } from '@/stores/builderStore';
+import { useBuilderStore } from '@/store/builderStore';
 
 export function DropIndicator() {
-  const { draggedElementType, isDropTarget } = useBuilderStore();
+  const { draggedComponent } = useBuilderStore();
+  const draggedElementType = draggedComponent?.componentType;
+  const isDropTarget = false; // TODO: Implement drop target logic
 
   return (
     <AnimatePresence>

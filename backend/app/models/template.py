@@ -7,7 +7,7 @@ from sqlalchemy import String, Text, Boolean, JSON, Enum, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
 class TemplateCategory(str, enum.Enum):
@@ -33,7 +33,7 @@ class TemplateStatus(str, enum.Enum):
     ARCHIVED = "archived"
 
 
-class Template(Base, TimestampMixin):
+class Template(Base, TimestampMixin, UUIDMixin):
     """Website template model."""
     
     __tablename__ = "templates"
@@ -70,7 +70,7 @@ class Template(Base, TimestampMixin):
         return f"<Template(id={self.id}, name='{self.name}', category='{self.category}')>"
 
 
-class TemplateComponent(Base, TimestampMixin):
+class TemplateComponent(Base, TimestampMixin, UUIDMixin):
     """Individual template component model."""
     
     __tablename__ = "template_components"

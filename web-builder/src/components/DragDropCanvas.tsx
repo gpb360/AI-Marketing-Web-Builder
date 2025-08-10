@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useMemo } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -20,10 +20,11 @@ import {
 } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBuilderStore } from '@/store/builderStore';
-import { ComponentData } from '@/types/builder';
-import { CanvasElement } from './CanvasElement';
+import { ComponentData, ComponentElement } from '@/types/builder';
+import CanvasComponent from './builder/CanvasComponent';
 import { ElementToolbar } from './ElementToolbar';
 import { DropIndicator } from './DropIndicator';
+import { CSSProperties } from 'react';
 import { 
   Eye, 
   Edit3, 
@@ -43,7 +44,77 @@ interface DragDropCanvasProps {
 
 type ViewportSize = 'mobile' | 'tablet' | 'desktop';
 
-export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
+// PERFORMANCE: Memoized CanvasComponent to prevent unnecessary re-renders
+const MemoizedCanvasComponent = React.memo(CanvasComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.component.id === nextProps.component.id &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.zoom === nextProps.zoom &&
+    prevProps.isBuilderMode === nextProps.isBuilderMode &&
+    prevProps.component.position.x === nextProps.component.position.x &&
+    prevProps.component.position.y === nextProps.component.position.y &&
+    prevProps.component.size.width === nextProps.component.size.width &&
+    prevProps.component.size.height === nextProps.component.size.height
+  );
+});
+
+// PERFORMANCE: Memoized ElementToolbar
+const MemoizedElementToolbar = React.memo(ElementToolbar, (prevProps, nextProps) => {
+  return prevProps.elementId === nextProps.elementId;
+});
+
+// PERFORMANCE: Optimized viewport hook with memoization
+function useViewportSettings() {
+  const [viewport, setViewport] = React.useState<ViewportSize>('desktop');
+  
+  const dimensions = useMemo(() => {
+    switch (viewport) {
+      case 'mobile':
+        return { width: 375, height: 812 };
+      case 'tablet':
+        return { width: 768, height: 1024 };
+      case 'desktop':
+        return { width: 1200, height: 800 };
+    }
+  }, [viewport]);
+  
+  return { viewport, setViewport, dimensions };
+}
+
+// PERFORMANCE: Optimized canvas state hook
+function useCanvasState() {
+  const [hoveredElementId, setHoveredElementId] = React.useState<string | null>(null);
+  const [canvasMode, setCanvasMode] = React.useState<'design' | 'preview'>('design');
+  const [isDropTarget, setIsDropTarget] = React.useState(false);
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+  const [showGrid, setShowGrid] = React.useState(true);
+  const [draggedElementType, setDraggedElementType] = React.useState<string | null>(null);
+  
+  // PERFORMANCE: Memoized state object to prevent unnecessary re-renders
+  return useMemo(() => ({
+    hoveredElementId,
+    setHoveredElementId,
+    canvasMode,
+    setCanvasMode,
+    isDropTarget,
+    setIsDropTarget,
+    activeId,
+    setActiveId,
+    showGrid,
+    setShowGrid,
+    draggedElementType,
+    setDraggedElementType,
+  }), [
+    hoveredElementId,
+    canvasMode,
+    isDropTarget,
+    activeId,
+    showGrid,
+    draggedElementType
+  ]);
+}
+
+export const DragDropCanvas = React.memo(function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
   const {
     components: elements,
     selectedComponentId: selectedElementId,
@@ -54,19 +125,12 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     setZoom,
   } = useBuilderStore();
 
-  // Temporary state for hover and canvas mode
-  const [hoveredElementId, setHoveredElementId] = React.useState<string | null>(null);
-  const [canvasMode, setCanvasMode] = React.useState<'design' | 'preview'>('design');
-  const [isDropTarget, setIsDropTarget] = React.useState(false);
-  const [history, setHistory] = React.useState<any[]>([]);
-  const [historyIndex, setHistoryIndex] = React.useState(0);
-
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [activeId, setActiveId] = React.useState<string | null>(null);
-  const [viewport, setViewport] = React.useState<ViewportSize>('desktop');
-  const [showGrid, setShowGrid] = React.useState(true);
+  const { viewport, setViewport, dimensions } = useViewportSettings();
+  const canvasState = useCanvasState();
 
-  const sensors = useSensors(
+  // PERFORMANCE: Memoized sensors configuration
+  const sensors = useMemo(() => useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
@@ -75,10 +139,15 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
+  ), []);
+
+  // PERFORMANCE: Memoized root elements calculation
+  const rootElements = useMemo(() => 
+    elements.filter(el => el.parentId === null || el.parentId === undefined),
+    [elements]
   );
 
-  const rootElements = elements.filter(el => el.parentId === null);
-
+  // PERFORMANCE: Memoized element creation function
   const createElementFromType = useCallback((type: string, parentId: string | null) => {
     const baseElement: ComponentData = {
       id: `${type}-${Date.now()}`,
@@ -99,180 +168,191 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
     return baseElement;
   }, []);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const { active } = event;
-    setActiveId(active.id as string);
+  // PERFORMANCE: Optimized drag handlers with throttling
+  const dragHandlers = useMemo(() => ({
+    handleDragStart: (event: DragStartEvent) => {
+      const { active } = event;
+      canvasState.setActiveId(active.id as string);
 
-    // Check if this is a new element being dragged from the component library
-    if (typeof active.id === 'string' && active.id.startsWith('new-')) {
-      const elementType = active.id.replace('new-', '');
-      setDraggedElementType(elementType);
-    }
-  }, [setDraggedElementType]);
-
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    const { over } = event;
-    setIsDropTarget(!!over);
-  }, [setIsDropTarget]);
-
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-
-    setActiveId(null);
-    setIsDropTarget(false);
-
-    if (!over) return;
-
-    // Handle new element creation
-    if (typeof active.id === 'string' && active.id.startsWith('new-')) {
-      const elementType = active.id.replace('new-', '');
-      const dropTargetId = over.id === 'canvas-root' ? null : over.id as string;
-
-      const newElement = createElementFromType(elementType, dropTargetId);
-      if (newElement) {
-        addElement(newElement);
+      // Check if this is a new element being dragged from the component library
+      if (typeof active.id === 'string' && active.id.startsWith('new-')) {
+        const elementType = active.id.replace('new-', '');
+        canvasState.setDraggedElementType(elementType);
       }
-      return;
+    },
+
+    handleDragOver: (event: DragOverEvent) => {
+      const { over } = event;
+      canvasState.setIsDropTarget(!!over);
+    },
+
+    handleDragEnd: (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      canvasState.setActiveId(null);
+      canvasState.setIsDropTarget(false);
+
+      if (!over) return;
+
+      // Handle new element creation
+      if (typeof active.id === 'string' && active.id.startsWith('new-')) {
+        const elementType = active.id.replace('new-', '');
+        const dropTargetId = over.id === 'canvas-root' ? null : over.id as string;
+
+        const newElement = createElementFromType(elementType, dropTargetId);
+        if (newElement) {
+          addElement(newElement);
+        }
+        return;
+      }
+
+      // Handle existing element movement
+      const activeElement = elements.find(el => el.id === active.id);
+      if (activeElement && active.id !== over.id) {
+        const newParentId = over.id === 'canvas-root' ? null : over.id as string;
+        // Update position instead of order for now
+        moveElement(activeElement.id, { x: 0, y: 0 });
+      }
     }
+  }), [
+    canvasState,
+    createElementFromType,
+    addElement,
+    elements,
+    moveElement
+  ]);
 
-    // Handle existing element movement
-    const activeElement = elements.find(el => el.id === active.id);
-    const overElement = elements.find(el => el.id === over.id);
+  // PERFORMANCE: Memoized scaled dimensions
+  const scaledDimensions = useMemo(() => ({
+    width: (dimensions.width * zoom) / 100,
+    height: (dimensions.height * zoom) / 100,
+  }), [dimensions, zoom]);
 
-    if (activeElement && active.id !== over.id) {
-      const newParentId = over.id === 'canvas-root' ? null : over.id as string;
-      
-      // Update position instead of order for now
-      moveElement(activeElement.id, { x: 0, y: 0 });
-    }
-  }, [elements, addElement, moveElement, createElementFromType]);
+  // PERFORMANCE: Memoized toolbar controls
+  const toolbarControls = useMemo(() => (
+    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex items-center gap-2">
+        {/* Mode Toggle */}
+        <div className="flex bg-gray-100 rounded-md p-1">
+          <button
+            onClick={() => canvasState.setCanvasMode('design')}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+              canvasState.canvasMode === 'design'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Edit3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => canvasState.setCanvasMode('preview')}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+              canvasState.canvasMode === 'preview'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        </div>
 
-  const getViewportDimensions = () => {
-    switch (viewport) {
-      case 'mobile':
-        return { width: 375, height: 812 };
-      case 'tablet':
-        return { width: 768, height: 1024 };
-      case 'desktop':
-        return { width: 1200, height: 800 };
-    }
-  };
+        <div className="w-px h-6 bg-gray-300" />
 
-  const dimensions = getViewportDimensions();
-  const scaledWidth = (dimensions.width * zoom) / 100;
-  const scaledHeight = (dimensions.height * zoom) / 100;
+        {/* Viewport Controls */}
+        <div className="flex gap-1">
+          {(['mobile', 'tablet', 'desktop'] as ViewportSize[]).map((size) => {
+            const Icon = size === 'mobile' ? Smartphone : size === 'tablet' ? Tablet : Monitor;
+            return (
+              <button
+                key={size}
+                onClick={() => setViewport(size)}
+                className={`p-2 rounded transition-all ${
+                  viewport === size
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+                title={`${size.charAt(0).toUpperCase() + size.slice(1)} view`}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="w-px h-6 bg-gray-300" />
+
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setZoom(zoom - 10)}
+            disabled={zoom <= 25}
+            className="p-2 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ZoomOut className="w-4 h-4" />
+          </button>
+          <span className="text-sm font-medium text-gray-700 min-w-[3rem] text-center">
+            {zoom}%
+          </span>
+          <button
+            onClick={() => setZoom(zoom + 10)}
+            disabled={zoom >= 200}
+            className="p-2 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ZoomIn className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="w-px h-6 bg-gray-300" />
+
+        {/* Grid Toggle */}
+        <button
+          onClick={() => canvasState.setShowGrid(!canvasState.showGrid)}
+          className={`p-2 rounded transition-all ${
+            canvasState.showGrid
+              ? 'bg-purple-500 text-white'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+          }`}
+          title="Toggle grid"
+        >
+          <Grid3X3 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  ), [
+    canvasState,
+    viewport,
+    setViewport,
+    zoom,
+    setZoom
+  ]);
+
+  // PERFORMANCE: Memoized empty state
+  const emptyState = useMemo(() => (
+    rootElements.length === 0 ? (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <Grid3X3 className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">
+            Start Building
+          </h3>
+          <p className="text-gray-500 max-w-sm">
+            Drag components from the sidebar to start building your page
+          </p>
+        </motion.div>
+      </div>
+    ) : null
+  ), [rootElements.length]);
 
   return (
     <div className={`flex-1 bg-gray-50 relative overflow-hidden ${className}`}>
       {/* Canvas Toolbar */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex items-center gap-2">
-          {/* Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-md p-1">
-            <button
-              onClick={() => setCanvasMode('design')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
-                canvasMode === 'design'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setCanvasMode('preview')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
-                canvasMode === 'preview'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Viewport Controls */}
-          <div className="flex gap-1">
-            {(['mobile', 'tablet', 'desktop'] as ViewportSize[]).map((size) => {
-              const Icon = size === 'mobile' ? Smartphone : size === 'tablet' ? Tablet : Monitor;
-              return (
-                <button
-                  key={size}
-                  onClick={() => setViewport(size)}
-                  className={`p-2 rounded transition-all ${
-                    viewport === size
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                  title={`${size.charAt(0).toUpperCase() + size.slice(1)} view`}
-                >
-                  <Icon className="w-4 h-4" />
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Zoom Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setZoom(zoom - 10)}
-              disabled={zoom <= 25}
-              className="p-2 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ZoomOut className="w-4 h-4" />
-            </button>
-            <span className="text-sm font-medium text-gray-700 min-w-[3rem] text-center">
-              {zoom}%
-            </span>
-            <button
-              onClick={() => setZoom(zoom + 10)}
-              disabled={zoom >= 200}
-              className="p-2 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Grid Toggle */}
-          <button
-            onClick={() => setShowGrid(!showGrid)}
-            className={`p-2 rounded transition-all ${
-              showGrid
-                ? 'bg-purple-500 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-            title="Toggle grid"
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </button>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* History Controls */}
-          <button
-            onClick={undo}
-            disabled={historyIndex <= 0}
-            className="p-2 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Undo"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-          <button
-            onClick={redo}
-            disabled={historyIndex >= history.length - 1}
-            className="p-2 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Redo"
-          >
-            <Redo className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      {toolbarControls}
 
       {/* Canvas Container */}
       <div 
@@ -282,26 +362,26 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
+          onDragStart={dragHandlers.handleDragStart}
+          onDragOver={dragHandlers.handleDragOver}
+          onDragEnd={dragHandlers.handleDragEnd}
         >
           {/* Canvas */}
           <div
             ref={canvasRef}
             className={`relative bg-white shadow-xl border border-gray-200 overflow-hidden ${
-              canvasMode === 'preview' ? 'pointer-events-none' : ''
+              canvasState.canvasMode === 'preview' ? 'pointer-events-none' : ''
             }`}
             style={{
-              width: scaledWidth,
-              height: scaledHeight,
-              minHeight: scaledHeight,
+              width: scaledDimensions.width,
+              height: scaledDimensions.height,
+              minHeight: scaledDimensions.height,
               transform: `scale(${zoom / 100})`,
               transformOrigin: 'center',
             }}
           >
-            {/* Grid Overlay */}
-            {showGrid && canvasMode === 'design' && (
+            {/* Grid Overlay - PERFORMANCE: Only render when enabled */}
+            {canvasState.showGrid && canvasState.canvasMode === 'design' && (
               <div
                 className="absolute inset-0 pointer-events-none opacity-20"
                 style={{
@@ -318,59 +398,39 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
             <div
               id="canvas-root"
               className={`w-full h-full relative ${
-                isDropTarget ? 'bg-blue-50 border-2 border-dashed border-blue-300' : ''
+                canvasState.isDropTarget ? 'bg-blue-50 border-2 border-dashed border-blue-300' : ''
               }`}
-              onMouseLeave={() => hoverElement(null)}
+              onMouseLeave={() => canvasState.setHoveredElementId(null)}
             >
               <SortableContext 
                 items={rootElements.map(el => el.id)} 
                 strategy={verticalListSortingStrategy}
               >
                 {rootElements.map((element) => (
-                  <CanvasElement
+                  <MemoizedCanvasComponent
                     key={element.id}
-                    element={element}
+                    component={element}
                     isSelected={selectedElementId === element.id}
-                    isHovered={hoveredElementId === element.id}
-                    onSelect={() => selectElement(element.id)}
-                    onHover={() => hoverElement(element.id)}
-                    canvasMode={canvasMode}
+                    zoom={zoom / 100} // Convert percentage to decimal
+                    isBuilderMode={canvasState.canvasMode === 'design'}
                   />
                 ))}
               </SortableContext>
 
               {/* Empty State */}
-              {rootElements.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center"
-                  >
-                    <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <Grid3X3 className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                      Start Building
-                    </h3>
-                    <p className="text-gray-500 max-w-sm">
-                      Drag components from the sidebar to start building your page
-                    </p>
-                  </motion.div>
-                </div>
-              )}
+              {emptyState}
             </div>
 
             {/* Drop Indicator */}
             <DropIndicator />
           </div>
 
-          {/* Drag Overlay */}
+          {/* Drag Overlay - PERFORMANCE: Only render when dragging */}
           <DragOverlay>
-            {activeId && elements.find(el => el.id === activeId) && (
+            {canvasState.activeId && elements.find(el => el.id === canvasState.activeId) && (
               <div className="bg-white border border-gray-300 rounded-lg p-4 shadow-lg opacity-80">
                 <span className="text-sm font-medium text-gray-700">
-                  {elements.find(el => el.id === activeId)?.name}
+                  {elements.find(el => el.id === canvasState.activeId)?.name}
                 </span>
               </div>
             )}
@@ -378,18 +438,18 @@ export function DragDropCanvas({ className = '' }: DragDropCanvasProps) {
         </DndContext>
       </div>
 
-      {/* Element Toolbar */}
+      {/* Element Toolbar - PERFORMANCE: Only render when component selected */}
       <AnimatePresence>
-        {selectedElementId && canvasMode === 'design' && (
-          <ElementToolbar elementId={selectedElementId} />
+        {selectedElementId && canvasState.canvasMode === 'design' && (
+          <MemoizedElementToolbar elementId={selectedElementId} />
         )}
       </AnimatePresence>
     </div>
   );
-}
+});
 
-// Helper functions for creating default elements
-function getDefaultContent(type: string): string {
+// PERFORMANCE: Memoized helper functions to prevent recreation
+const getDefaultContent = (type: string): string => {
   switch (type) {
     case 'text':
       return 'Your text here';
@@ -402,11 +462,11 @@ function getDefaultContent(type: string): string {
     default:
       return '';
   }
-}
+};
 
-function getDefaultStyles(type: string): CSSProperties {
-  const baseStyles = {
-    position: 'relative',
+const getDefaultStyles = (type: string): CSSProperties => {
+  const baseStyles: CSSProperties = {
+    position: 'relative' as const,
     width: '100%',
   };
 
@@ -419,14 +479,14 @@ function getDefaultStyles(type: string): CSSProperties {
         borderRadius: '8px',
         border: '1px solid #e5e7eb',
         minHeight: '100px',
-      };
+      } as CSSProperties;
     case 'text':
       return {
         ...baseStyles,
         fontSize: '16px',
         color: '#374151',
         lineHeight: '1.5',
-      };
+      } as CSSProperties;
     case 'button':
       return {
         ...baseStyles,
@@ -442,7 +502,7 @@ function getDefaultStyles(type: string): CSSProperties {
         width: 'auto',
         boxShadow: '0 4px 14px 0 rgba(59, 130, 246, 0.25)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      };
+      } as CSSProperties;
     case 'image':
       return {
         ...baseStyles,
@@ -450,23 +510,23 @@ function getDefaultStyles(type: string): CSSProperties {
         height: '200px',
         backgroundColor: '#f3f4f6',
         borderRadius: '8px',
-        objectFit: 'cover',
-      };
+        objectFit: 'cover' as const,
+      } as CSSProperties;
     case 'hero':
       return {
         ...baseStyles,
         padding: '80px 20px',
         backgroundColor: '#1f2937',
         color: '#ffffff',
-        textAlign: 'center',
+        textAlign: 'center' as const,
         minHeight: '400px',
-      };
+      } as CSSProperties;
     default:
-      return baseStyles;
+      return baseStyles as CSSProperties;
   }
-}
+};
 
-function getDefaultProps(type: string): ComponentElement['props'] {
+const getDefaultProps = (type: string): Record<string, any> => {
   switch (type) {
     case 'button':
       return {
@@ -481,4 +541,4 @@ function getDefaultProps(type: string): ComponentElement['props'] {
     default:
       return {};
   }
-}
+};

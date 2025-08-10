@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useBuilderStore } from '@/stores/builderStore';
+import { useBuilderStore } from '@/store/builderStore';
 import { 
   Copy, 
   Trash2, 
@@ -20,41 +20,47 @@ interface ElementToolbarProps {
 
 export function ElementToolbar({ elementId }: ElementToolbarProps) {
   const { 
-    getElementById, 
-    updateElement, 
-    deleteElement, 
-    duplicateElement,
-    selectElement 
+    getComponentById, 
+    updateComponent, 
+    removeComponent, 
+    duplicateComponent,
+    selectComponent 
   } = useBuilderStore();
 
-  const element = getElementById(elementId);
+  const element = getComponentById(elementId);
 
   if (!element) return null;
 
   const handleDelete = () => {
-    deleteElement(elementId);
-    selectElement(null);
+    removeComponent(elementId);
+    selectComponent(null);
   };
 
   const handleDuplicate = () => {
-    duplicateElement(elementId);
+    duplicateComponent(elementId);
   };
 
   const handleStyleChange = (property: string, value: string) => {
-    updateElement(elementId, {
-      styles: {
-        ...element.styles,
+    if (!element) return;
+    updateComponent(elementId, {
+      style: {
+        ...element.style,
         [property]: value,
       },
     });
   };
 
   const handleContentChange = (content: string) => {
-    updateElement(elementId, { content });
+    updateComponent(elementId, {
+      props: {
+        ...element?.props,
+        content
+      }
+    });
   };
 
   const handleNameChange = (name: string) => {
-    updateElement(elementId, { name });
+    updateComponent(elementId, { name });
   };
 
   return (
@@ -74,11 +80,11 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
             <div>
               <input
                 type="text"
-                value={element.name}
+                value={element?.name || ''}
                 onChange={(e) => handleNameChange(e.target.value)}
                 className="font-semibold text-gray-900 bg-transparent border-none outline-none focus:bg-gray-50 rounded px-1"
               />
-              <p className="text-sm text-gray-500 capitalize">{element.type} element</p>
+              <p className="text-sm text-gray-500 capitalize">{element?.type} element</p>
             </div>
           </div>
           
@@ -125,15 +131,15 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
         {/* Content Tab */}
         <div className="space-y-4">
           {/* Content Editor */}
-          {(element.type === 'text' || element.type === 'button' || element.type === 'hero') && (
+          {element && (element?.type === 'text' || element?.type === 'button' || element?.type === 'hero') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Type className="w-4 h-4 inline mr-1" />
                 Content
               </label>
-              {element.type === 'text' ? (
+              {element?.type === 'text' ? (
                 <textarea
-                  value={element.content}
+                  value={element?.props?.content || ''}
                   onChange={(e) => handleContentChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   rows={3}
@@ -142,10 +148,10 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
               ) : (
                 <input
                   type="text"
-                  value={element.content}
+                  value={element?.props?.content || ''}
                   onChange={(e) => handleContentChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={element.type === 'button' ? 'Button text' : 'Hero title'}
+                  placeholder={element?.type === 'button' ? 'Button text' : 'Hero title'}
                 />
               )}
             </div>
@@ -161,13 +167,13 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
               <div className="flex gap-2">
                 <input
                   type="color"
-                  value={element.styles.backgroundColor || '#ffffff'}
+                  value={(element?.style?.backgroundColor as string) || '#ffffff'}
                   onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
                   className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
                 />
                 <input
                   type="text"
-                  value={element.styles.backgroundColor || '#ffffff'}
+                  value={(element?.style?.backgroundColor as string) || '#ffffff'}
                   onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
                   className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="#ffffff"
@@ -176,7 +182,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
             </div>
 
             {/* Text Color */}
-            {element.type !== 'container' && element.type !== 'image' && (
+            {element?.type !== 'container' && element?.type !== 'image' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Text Color
@@ -184,13 +190,13 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                 <div className="flex gap-2">
                   <input
                     type="color"
-                    value={element.styles.color || '#000000'}
+                    value={(element?.style?.color as string) || '#000000'}
                     onChange={(e) => handleStyleChange('color', e.target.value)}
                     className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={element.styles.color || '#000000'}
+                    value={(element?.style?.color as string) || '#000000'}
                     onChange={(e) => handleStyleChange('color', e.target.value)}
                     className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="#000000"
@@ -200,7 +206,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
             )}
 
             {/* Font Size */}
-            {element.type !== 'container' && element.type !== 'image' && (
+            {element?.type !== 'container' && element?.type !== 'image' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Font Size
@@ -210,12 +216,12 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                     type="range"
                     min="10"
                     max="72"
-                    value={parseInt(element.styles.fontSize?.replace('px', '') || '16')}
+                    value={parseInt(((element?.style?.fontSize as string) || '16px').replace('px', ''))}
                     onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`)}
                     className="flex-1"
                   />
                   <span className="text-sm text-gray-600 min-w-[3rem]">
-                    {element.styles.fontSize || '16px'}
+                    {(element?.style?.fontSize as string) || '16px'}
                   </span>
                 </div>
               </div>
@@ -228,7 +234,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
               </label>
               <input
                 type="text"
-                value={element.styles.padding || '0'}
+                value={(element?.style?.padding as string) || '0'}
                 onChange={(e) => handleStyleChange('padding', e.target.value)}
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="20px or 20px 10px"
@@ -245,12 +251,12 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   type="range"
                   min="0"
                   max="50"
-                  value={parseInt(element.styles.borderRadius?.replace('px', '') || '0')}
+                  value={parseInt(((element?.style?.borderRadius as string) || '0px').replace('px', ''))}
                   onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`)}
                   className="flex-1"
                 />
                 <span className="text-sm text-gray-600 min-w-[3rem]">
-                  {element.styles.borderRadius || '0px'}
+                  {(element?.style?.borderRadius as string) || '0px'}
                 </span>
               </div>
             </div>
@@ -261,7 +267,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                 Width
               </label>
               <select
-                value={element.styles.width || '100%'}
+                value={(element?.style?.width as string) || '100%'}
                 onChange={(e) => handleStyleChange('width', e.target.value)}
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -276,7 +282,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
           </div>
 
           {/* Element-specific controls */}
-          {element.type === 'button' && (
+          {element?.type === 'button' && (
             <div className="border-t border-gray-200 pt-4">
               <h4 className="font-medium text-gray-900 mb-3">Button Settings</h4>
               <div className="grid grid-cols-2 gap-4">
@@ -286,9 +292,9 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   </label>
                   <input
                     type="text"
-                    value={element.props.href || ''}
-                    onChange={(e) => updateElement(elementId, {
-                      props: { ...element.props, href: e.target.value }
+                    value={element?.props.href || ''}
+                    onChange={(e) => updateComponent(elementId, {
+                      props: { ...element?.props, href: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="https://example.com"
@@ -299,9 +305,9 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                     Target
                   </label>
                   <select
-                    value={element.props.target || '_self'}
-                    onChange={(e) => updateElement(elementId, {
-                      props: { ...element.props, target: e.target.value }
+                    value={element?.props.target || '_self'}
+                    onChange={(e) => updateComponent(elementId, {
+                      props: { ...element?.props, target: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   >
@@ -313,7 +319,7 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
             </div>
           )}
 
-          {element.type === 'image' && (
+          {element?.type === 'image' && (
             <div className="border-t border-gray-200 pt-4">
               <h4 className="font-medium text-gray-900 mb-3">Image Settings</h4>
               <div className="space-y-3">
@@ -323,9 +329,9 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   </label>
                   <input
                     type="text"
-                    value={element.props.src || ''}
-                    onChange={(e) => updateElement(elementId, {
-                      props: { ...element.props, src: e.target.value }
+                    value={element?.props.src || ''}
+                    onChange={(e) => updateComponent(elementId, {
+                      props: { ...element?.props, src: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="https://example.com/image.jpg"
@@ -337,9 +343,9 @@ export function ElementToolbar({ elementId }: ElementToolbarProps) {
                   </label>
                   <input
                     type="text"
-                    value={element.props.alt || ''}
-                    onChange={(e) => updateElement(elementId, {
-                      props: { ...element.props, alt: e.target.value }
+                    value={element?.props.alt || ''}
+                    onChange={(e) => updateComponent(elementId, {
+                      props: { ...element?.props, alt: e.target.value }
                     })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Describe the image"

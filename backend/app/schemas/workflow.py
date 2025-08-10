@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
-from app.models.workflow import WorkflowStatus, WorkflowExecutionStatus, NodeType
+from app.models.workflow import WorkflowStatus, WorkflowExecutionStatus, NodeType, WorkflowCategory, TriggerType
 
 
 class WorkflowBase(BaseModel):
@@ -17,6 +17,10 @@ class WorkflowBase(BaseModel):
 
 class WorkflowCreate(WorkflowBase):
     """Workflow creation schema."""
+    category: WorkflowCategory = WorkflowCategory.AUTOMATION
+    trigger_type: TriggerType = TriggerType.MANUAL
+    template_id: Optional[str] = None
+    component_id: Optional[str] = None
     nodes: List[Dict[str, Any]] = Field(default_factory=list)
     connections: List[Dict[str, Any]] = Field(default_factory=list)
     settings: Dict[str, Any] = Field(default_factory=dict)
@@ -27,6 +31,10 @@ class WorkflowUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     status: Optional[WorkflowStatus] = None
+    category: Optional[WorkflowCategory] = None
+    trigger_type: Optional[TriggerType] = None
+    template_id: Optional[str] = None
+    component_id: Optional[str] = None
     nodes: Optional[List[Dict[str, Any]]] = None
     connections: Optional[List[Dict[str, Any]]] = None
     settings: Optional[Dict[str, Any]] = None
@@ -36,9 +44,13 @@ class WorkflowUpdate(BaseModel):
 class WorkflowInDB(WorkflowBase):
     """Workflow schema for database operations."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     status: WorkflowStatus
+    category: WorkflowCategory
+    trigger_type: TriggerType
+    template_id: Optional[str]
+    component_id: Optional[str]
     nodes: List[Dict[str, Any]]
     connections: List[Dict[str, Any]]
     settings: Dict[str, Any]
@@ -49,6 +61,10 @@ class WorkflowInDB(WorkflowBase):
     owner_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
+
+    # Computed properties
+    success_rate: Optional[float] = None
+    error_rate: Optional[float] = None
 
 
 class Workflow(WorkflowInDB):
@@ -154,3 +170,28 @@ class WorkflowStats(BaseModel):
     total_executions: int
     success_rate: float
     avg_execution_time: Optional[float]
+
+
+class WorkflowTemplate(BaseModel):
+    """Workflow template schema."""
+    id: str
+    name: str
+    description: str
+    category: WorkflowCategory
+    trigger_type: TriggerType
+    template: WorkflowCreate
+
+
+class WorkflowExecutionDetail(WorkflowExecutionInDB):
+    """Detailed workflow execution schema with workflow info."""
+    workflow_name: Optional[str] = None
+    workflow_category: Optional[WorkflowCategory] = None
+
+
+class WorkflowAnalytics(BaseModel):
+    """Workflow analytics schema."""
+    execution_count: int
+    success_rate: float
+    avg_execution_time: float
+    error_rate: float
+    trend_data: List[Dict[str, Any]] = Field(default_factory=list)

@@ -31,10 +31,11 @@ AI-Marketing-Web-Builder/
 │   ├── package.json            # Node.js dependencies
 │   └── next.config.ts          # Next.js configuration
 │
-└── spec/                       # 📋 Project specifications
-    ├── backend-spec.md
-    ├── frontend-spec.md
-    └── main-spec.md
+└── .claude/agents/             # 🤖 AI Agent System
+    ├── engineering/            # Technical development agents
+    ├── design/                 # UI/UX and template agents  
+    ├── project-management/     # Coordination and delivery agents
+    └── [specialized folders]/  # Marketing, operations, testing agents
 ```
 
 ## ✅ Benefits of This Architecture
@@ -42,14 +43,16 @@ AI-Marketing-Web-Builder/
 ### Clean Separation
 - **Backend**: Independent FastAPI service on port 8000
 - **Frontend**: Independent Next.js application on port 3000
-- **No coupling**: Each can be developed, tested, and deployed separately
+- **Agent System**: Specialized AI agents with embedded specifications
+- **No coupling**: Each layer can be developed, tested, and deployed separately
 
 ### Development Benefits
-- ✅ **Teams can work independently** 
+- ✅ **Agent-Driven Development**: Specialized agents with complete specifications
+- ✅ **Teams can work independently** with clear agent boundaries
 - ✅ **Different tech stacks** (Python/FastAPI vs Node/Next.js)
 - ✅ **Independent scaling** (scale backend/frontend separately)
-- ✅ **Clear responsibility boundaries**
-- ✅ **Microservice-ready architecture**
+- ✅ **Embedded Documentation**: Specifications live within agent files
+- ✅ **Single Source of Truth**: No sync issues between docs and agents
 
 ### Deployment Benefits
 - ✅ **Separate containers** (backend + frontend)

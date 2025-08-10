@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useBuilderStore } from '@/store/builderStore';
 import { Canvas } from './Canvas';
 import { IntegratedEditor } from '../IntegratedEditor';
@@ -17,12 +17,26 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AICustomizationPanel } from '../builder/AICustomizationPanel';
+import { useAIEditor } from '@/hooks/useAIEditor';
 
 interface EnhancedCanvasProps {
   className?: string;
 }
 
-export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
+// PERFORMANCE: Memoized component to prevent unnecessary re-renders
+const MemoizedCanvas = React.memo(Canvas, (prevProps, nextProps) => {
+  return prevProps.className === nextProps.className;
+});
+
+// PERFORMANCE: Memoized AI Panel to prevent re-renders when not visible
+const MemoizedAIPanel = React.memo(AICustomizationPanel, (prevProps, nextProps) => {
+  return (
+    prevProps.className === nextProps.className &&
+    prevProps.onOpenEditor === nextProps.onOpenEditor
+  );
+});
+
+export const EnhancedCanvas = React.memo(function EnhancedCanvas({ className }: EnhancedCanvasProps) {
   const [showEditor, setShowEditor] = useState(false);
   const [editorMode, setEditorMode] = useState<'visual' | 'code' | 'ai'>('visual');
   const [showAI, setShowAI] = useState(false);
@@ -32,8 +46,10 @@ export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
     getSelectedComponent,
   } = useBuilderStore();
 
-  const selectedComponent = getSelectedComponent();
+  // PERFORMANCE: Memoize selected component to avoid recalculation
+  const selectedComponent = useMemo(() => getSelectedComponent(), [selectedComponentId, getSelectedComponent]);
 
+  // PERFORMANCE: Memoized callbacks to prevent child re-renders
   const handleDoubleClick = useCallback((component: ComponentData) => {
     setShowEditor(true);
     setEditorMode('visual');
@@ -44,45 +60,97 @@ export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
   }, []);
 
   const handleToggleAI = useCallback(() => {
-    setShowAI(!showAI);
-  }, [showAI]);
+    setShowAI(prev => !prev);
+  }, []);
+
+  // PERFORMANCE: Memoized editor handlers
+  const handleOpenCodeEditor = useCallback(() => {
+    setShowEditor(true);
+    setEditorMode('code');
+  }, []);
+
+  const handleOpenVisualEditor = useCallback(() => {
+    setShowEditor(true);
+    setEditorMode('visual');
+  }, []);
+
+  // PERFORMANCE: Memoized AI panel props to prevent unnecessary re-renders
+  const aiPanelProps = useMemo(() => ({
+    className: "h-full",
+    onOpenEditor: handleOpenCodeEditor
+  }), [handleOpenCodeEditor]);
+
+  // PERFORMANCE: Memoized floating controls to prevent re-renders
+  const floatingControls = useMemo(() => (
+    <div className="absolute top-4 right-4 z-10">
+      <div className="flex gap-2">
+        <button
+          onClick={handleToggleAI}
+          className={cn(
+            "p-3 rounded-lg shadow-lg transition-all",
+            showAI 
+              ? "bg-purple-500 text-white" 
+              : "bg-white text-gray-700 hover:bg-purple-50"
+          )}
+          title="Toggle AI Assistant"
+        >
+          <Sparkles className="w-5 h-5" />
+        </button>
+        
+        <button
+          onClick={handleOpenCodeEditor}
+          className="p-3 bg-white rounded-lg shadow-lg text-gray-700 hover:bg-gray-50 transition-all"
+          title="Open Code Editor"
+        >
+          <Code className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  ), [showAI, handleToggleAI, handleOpenCodeEditor]);
+
+  // PERFORMANCE: Memoized contextual controls
+  const contextualControls = useMemo(() => {
+    if (!selectedComponent) return null;
+
+    return (
+      <div className="absolute bottom-4 left-4 z-10">
+        <div className="bg-white rounded-lg shadow-lg p-3 flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-700">
+            Editing: {selectedComponent.name}
+          </span>
+          
+          <div className="flex gap-1">
+            <button
+              onClick={handleOpenVisualEditor}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+              title="Visual Editor"
+            >
+              <Layers className="w-4 h-4" />
+            </button>
+            
+            <button
+              onClick={handleOpenCodeEditor}
+              className="p-2 text-purple-600 hover:bg-purple-50 rounded"
+              title="Code Editor"
+            >
+              <Code className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }, [selectedComponent, handleOpenVisualEditor, handleOpenCodeEditor]);
 
   return (
     <div className={cn("relative h-full", className)}>
       {/* Canvas Area */}
       <div className="h-full relative">
-        <Canvas className="h-full" />
+        <MemoizedCanvas className="h-full" />
 
         {/* Floating AI Toggle */}
-        <div className="absolute top-4 right-4 z-10">
-          <div className="flex gap-2">
-            <button
-              onClick={handleToggleAI}
-              className={cn(
-                "p-3 rounded-lg shadow-lg transition-all",
-                showAI 
-                  ? "bg-purple-500 text-white" 
-                  : "bg-white text-gray-700 hover:bg-purple-50"
-              )}
-              title="Toggle AI Assistant"
-            >
-              <Sparkles className="w-5 h-5" />
-            </button>
-            
-            <button
-              onClick={() => {
-                setShowEditor(true);
-                setEditorMode('code');
-              }}
-              className="p-3 bg-white rounded-lg shadow-lg text-gray-700 hover:bg-gray-50 transition-all"
-              title="Open Code Editor"
-            >
-              <Code className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+        {floatingControls}
 
-        {/* AI Panel Overlay */}
+        {/* AI Panel Overlay - PERFORMANCE: Only render when visible */}
         <AnimatePresence>
           {showAI && (
             <motion.div
@@ -92,8 +160,7 @@ export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
               className="absolute top-0 right-0 h-full z-20"
             >
               <div className="bg-white border-l border-gray-200 h-full shadow-xl">
-                <div className="flex items-center justify-between p-4 border-b border-gray-200"
-                >
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
                   <h4 className="font-semibold text-gray-800 flex items-center">
                     <Sparkles className="w-4 h-4 mr-2 text-purple-500" />
                     AI Assistant
@@ -106,15 +173,8 @@ export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
                   </button>
                 </div>
                 
-                <div className="h-full overflow-hidden"
-                >
-                  <AICustomizationPanel 
-                    className="h-full"
-                    onOpenEditor={() => {
-                      setShowEditor(true);
-                      setEditorMode('code');
-                    }}
-                  />
+                <div className="h-full overflow-hidden">
+                  <MemoizedAIPanel {...aiPanelProps} />
                 </div>
               </div>
             </motion.div>
@@ -122,7 +182,7 @@ export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
         </AnimatePresence>
       </div>
 
-      {/* Full Editor Modal */}
+      {/* Full Editor Modal - PERFORMANCE: Only render when visible */}
       <AnimatePresence>
         {showEditor && (
           <motion.div
@@ -147,46 +207,13 @@ export function EnhancedCanvas({ className }: EnhancedCanvasProps) {
       </AnimatePresence>
 
       {/* Contextual Controls */}
-      {selectedComponent && (
-        <div className="absolute bottom-4 left-4 z-10">
-          <div className="bg-white rounded-lg shadow-lg p-3 flex items-center gap-3"
-          >
-            <span className="text-sm font-medium text-gray-700">
-              Editing: {selectedComponent.name}
-            </span>
-            
-            <div className="flex gap-1">
-              <button
-                onClick={() => {
-                  setShowEditor(true);
-                  setEditorMode('visual');
-                }}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                title="Visual Editor"
-              >
-                <Layers className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => {
-                  setShowEditor(true);
-                  setEditorMode('code');
-                }}
-                className="p-2 text-purple-600 hover:bg-purple-50 rounded"
-                title="Code Editor"
-              >
-                <Code className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {contextualControls}
     </div>
   );
-}
+});
 
 // Helper component for integrating AI editing into existing components
-export function AIEditorIntegration({ 
+export const AIEditorIntegration = React.memo(function AIEditorIntegration({ 
   component,
   onEdit,
   className 
@@ -198,16 +225,20 @@ export function AIEditorIntegration({
   const [showEditor, setShowEditor] = useState(false);
   const { processAIPrompt } = useAIEditor();
 
+  // PERFORMANCE: Memoized handlers
+  const handleShowEditor = useCallback(() => setShowEditor(true), []);
+  const handleHideEditor = useCallback(() => setShowEditor(false), []);
+
   return (
     <div className={cn("relative", className)}>
       {/* Component preview */}
-      <div onDoubleClick={() => setShowEditor(true)}>
+      <div onDoubleClick={handleShowEditor}>
         {/* Render component here */}
       </div>
 
       {/* AI Edit Button */}
       <button
-        onClick={() => setShowEditor(true)}
+        onClick={handleShowEditor}
         className="absolute top-2 right-2 p-2 bg-purple-500 text-white rounded-lg shadow-lg opacity-0 hover:opacity-100 transition-opacity"
       >
         <Sparkles className="w-4 h-4" />
@@ -223,13 +254,13 @@ export function AIEditorIntegration({
           >
             <IntegratedEditor 
               className="h-full"
-              onClose={() => setShowEditor(false)}
+              onClose={handleHideEditor}
             />
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
-}
+});
 
 export default EnhancedCanvas;

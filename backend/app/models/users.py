@@ -1,12 +1,11 @@
 """User model for authentication and account management."""
 
 from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship
 import enum
 
-from ..core.database import Base
-from .base import UUIDMixin, TimestampMixin
+from .base import BaseModel, UUIDMixin, TimestampMixin
 
 
 class SubscriptionTier(str, enum.Enum):
@@ -17,7 +16,7 @@ class SubscriptionTier(str, enum.Enum):
     ENTERPRISE = "enterprise"
 
 
-class User(Base, UUIDMixin, TimestampMixin):
+class User(BaseModel, UUIDMixin, TimestampMixin):
     """User model for platform accounts."""
     
     __tablename__ = "users"

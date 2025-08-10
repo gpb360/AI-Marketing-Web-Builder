@@ -1,13 +1,13 @@
 """Workflow engine models for visual automation."""
 
 from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Integer, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import JSON, UUID, ARRAY
+from sqlalchemy.types import JSON
+from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
 from sqlalchemy.orm import relationship
 import enum
 from typing import Dict, Any, List
 
-from ..core.database import Base
-from .base import UUIDMixin, TimestampMixin
+from .base import BaseModel, UUIDMixin, TimestampMixin
 
 
 class WorkflowStatus(str, enum.Enum):
@@ -54,12 +54,12 @@ class ActionType(str, enum.Enum):
     DELAY = "delay"
 
 
-class Workflow(Base, UUIDMixin, TimestampMixin):
+class Workflow(BaseModel, UUIDMixin, TimestampMixin):
     """Visual workflow definition."""
     
-    __tablename__ = "workflows"
+    __tablename__ = "site_workflows"
     
-    site_id = Column(UUID(as_uuid=True), ForeignKey("sites.id"), nullable=False)
+    site_id = Column(String(36), ForeignKey("sites.id"), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text)
     
@@ -96,12 +96,12 @@ class Workflow(Base, UUIDMixin, TimestampMixin):
         return self.status == WorkflowStatus.ACTIVE
 
 
-class WorkflowExecution(Base, UUIDMixin, TimestampMixin):
+class WorkflowExecution(BaseModel, UUIDMixin, TimestampMixin):
     """Individual workflow execution record."""
     
-    __tablename__ = "workflow_executions"
+    __tablename__ = "site_workflow_executions"
     
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("workflows.id"), nullable=False)
+    workflow_id = Column(String(36), ForeignKey("workflows.id"), nullable=False)
     
     # Execution details
     trigger_data = Column(JSON, nullable=False)  # Data that triggered the workflow
@@ -134,12 +134,12 @@ class WorkflowExecution(Base, UUIDMixin, TimestampMixin):
         return self.status == ExecutionStatus.COMPLETED
 
 
-class WorkflowNode(Base, UUIDMixin, TimestampMixin):
+class WorkflowNode(BaseModel, UUIDMixin, TimestampMixin):
     """Individual node in a workflow graph."""
     
-    __tablename__ = "workflow_nodes"
+    __tablename__ = "site_workflow_nodes"
     
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("workflows.id"), nullable=False)
+    workflow_id = Column(String(36), ForeignKey("workflows.id"), nullable=False)
     
     # Node identification
     node_id = Column(String(100), nullable=False)  # Unique within workflow
