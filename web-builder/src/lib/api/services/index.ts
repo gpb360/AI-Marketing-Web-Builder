@@ -7,6 +7,7 @@ export { AuthService, authService } from './auth';
 export { TemplateService, templateService } from './templates';
 export { WorkflowService, workflowService } from './workflows';
 export { CRMService, crmService } from './crm';
+export { AnalyticsService, analyticsService } from './analytics';
 export { templateOptimizationApi } from './template-optimization';
 
 // Re-export types for convenience
@@ -32,5 +33,12 @@ export type {
   EmailCampaignUpdate,
   PaginatedResponse,
   APIError,
-  LoadingState
+  LoadingState,
+  // Analytics types
+  ComprehensiveWorkflowAnalytics,
+  AnalyticsTimePeriod,
+  ABTestCreateRequest,
+  ABTestResult,
+  ExportRequest,
+  RealTimeMetrics
 } from '../types';

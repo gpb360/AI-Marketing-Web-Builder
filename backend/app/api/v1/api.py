@@ -7,7 +7,8 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, templates, workflows, crm, publishing, collaboration, 
     template_optimization, migration, workflow_debug, workflow_websocket,
-    business_workflows, ab_testing, scenario_modeling, template_performance
+    business_workflows, ab_testing, scenario_modeling, template_performance,
+    advanced_analytics
 )
 
 api_router = APIRouter()
@@ -27,3 +28,4 @@ api_router.include_router(migration.router, prefix="/migration", tags=["Template
 api_router.include_router(ab_testing.router, prefix="/ab-testing", tags=["A/B Testing Framework"])
 api_router.include_router(scenario_modeling.router, prefix="/scenario-modeling", tags=["Scenario Modeling"])
 api_router.include_router(template_performance.router, prefix="/template-performance", tags=["Template Performance Analytics"])
+api_router.include_router(advanced_analytics.router, prefix="/analytics", tags=["Advanced Workflow Analytics"])

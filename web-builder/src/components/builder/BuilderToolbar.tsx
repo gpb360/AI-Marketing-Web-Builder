@@ -21,7 +21,9 @@ import {
   Smartphone,
   Tablet,
   Monitor,
+  BarChart3,
 } from 'lucide-react';
+import Link from 'next/link';
 
 type ViewportSize = 'mobile' | 'tablet' | 'desktop';
 
@@ -249,6 +251,15 @@ export function BuilderToolbar() {
         >
           <Share className="w-4 h-4" />
         </button>
+
+        <Link href="/analytics">
+          <button
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            title="Analytics Dashboard"
+          >
+            <BarChart3 className="w-4 h-4" />
+          </button>
+        </Link>
 
         <button
           className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"

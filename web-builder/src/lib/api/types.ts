@@ -392,3 +392,220 @@ export interface QueryParams extends PaginationParams {
   status?: string;
   [key: string]: any;
 }
+
+// Analytics Types for Story 3.3
+export enum AnalyticsTimePeriod {
+  HOUR = '1h',
+  DAY = '1d',
+  WEEK = '7d',
+  MONTH = '30d',
+  QUARTER = '90d',
+  YEAR = '365d'
+}
+
+export enum AnomalySeverity {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical'
+}
+
+export enum ABTestGoal {
+  CONVERSION_RATE = 'conversion_rate',
+  EXECUTION_TIME = 'execution_time',
+  SUCCESS_RATE = 'success_rate',
+  USER_ENGAGEMENT = 'user_engagement',
+  REVENUE = 'revenue',
+  COST_PER_EXECUTION = 'cost_per_execution'
+}
+
+export interface PerformanceMetrics {
+  execution_count: number;
+  success_rate: number;
+  avg_execution_time: number;
+  median_execution_time: number;
+  p95_execution_time: number;
+  error_rate: number;
+  throughput: number;
+  resource_utilization: number;
+}
+
+export interface ConversionFunnelStage {
+  stage_name: string;
+  entry_count: number;
+  completion_count: number;
+  conversion_rate: number;
+  drop_off_count: number;
+  avg_time_in_stage: number;
+}
+
+export interface ConversionFunnel {
+  stages: ConversionFunnelStage[];
+  overall_conversion_rate: number;
+  total_drop_offs: number;
+  optimization_opportunities: string[];
+}
+
+export interface BusinessImpactMetrics {
+  time_savings_hours: number;
+  cost_savings_usd: number;
+  revenue_attribution_usd: number;
+  roi_percentage: number;
+  productivity_improvement: number;
+  user_satisfaction_score: number;
+}
+
+export interface PerformanceAnomaly {
+  timestamp: string;
+  metric_name: string;
+  actual_value: number;
+  expected_value: number;
+  deviation_percentage: number;
+  severity: AnomalySeverity;
+  description: string;
+  suggested_actions: string[];
+}
+
+export interface TrendPrediction {
+  metric_name: string;
+  current_value: number;
+  predicted_value: number;
+  prediction_confidence: number;
+  trend_direction: 'increasing' | 'decreasing' | 'stable';
+  time_horizon: string;
+  confidence_interval: [number, number];
+}
+
+export interface ComprehensiveWorkflowAnalytics {
+  workflow_id: number;
+  workflow_name: string;
+  time_period: AnalyticsTimePeriod;
+  analysis_timestamp: string;
+  performance_metrics: PerformanceMetrics;
+  conversion_funnel: ConversionFunnel;
+  business_impact: BusinessImpactMetrics;
+  detected_anomalies: PerformanceAnomaly[];
+  trend_predictions: TrendPrediction[];
+  previous_period_comparison?: Record<string, number>;
+  benchmark_comparison?: Record<string, number>;
+  key_insights: string[];
+  recommendations: string[];
+}
+
+export interface RealTimeMetrics {
+  current_executions: number;
+  success_rate: number;
+  avg_response_time: number;
+  active_users: number;
+  last_updated: string;
+}
+
+export interface WorkflowVariantRequest {
+  variant_id: string;
+  variant_name: string;
+  workflow_config: Record<string, any>;
+  traffic_allocation: number;
+  is_control?: boolean;
+  description?: string;
+}
+
+export interface ABTestCreateRequest {
+  test_name: string;
+  test_description?: string;
+  variants: WorkflowVariantRequest[];
+  goal_metric: ABTestGoal;
+  minimum_sample_size?: number;
+  minimum_detectable_effect?: number;
+  significance_level?: number;
+  statistical_power?: number;
+  max_duration_days?: number;
+  early_stopping_enabled?: boolean;
+}
+
+export interface StatisticalSignificance {
+  is_significant: boolean;
+  p_value: number;
+  confidence_level: number;
+  effect_size: number;
+  statistical_power: number;
+  sample_size_a: number;
+  sample_size_b: number;
+  test_statistic: number;
+  degrees_of_freedom?: number;
+  test_type: string;
+  recommendation: string;
+  confidence_interval: [number, number];
+}
+
+export interface VariantPerformance {
+  variant_id: string;
+  variant_name: string;
+  sample_size: number;
+  conversion_rate: number;
+  avg_execution_time: number;
+  success_rate: number;
+  total_conversions: number;
+  revenue_per_user: number;
+  cost_per_conversion: number;
+  roi_estimate: number;
+  conversion_rate_ci: [number, number];
+  execution_time_ci: [number, number];
+}
+
+export interface ABTestResult {
+  test_id: string;
+  test_name: string;
+  workflow_id: number;
+  status: string;
+  goal_metric: string;
+  start_date: string;
+  end_date?: string;
+  actual_duration_days: number;
+  control_performance: VariantPerformance;
+  treatment_performance: VariantPerformance;
+  statistical_significance: StatisticalSignificance;
+  winner_probability: Record<string, number>;
+  expected_improvement: number;
+  business_impact_estimate: number;
+  implementation_recommendation: string;
+  confidence_level: number;
+  risk_factors: string[];
+  implementation_complexity: 'low' | 'medium' | 'high';
+}
+
+export interface ExportRequest {
+  format: 'pdf' | 'csv' | 'json';
+  time_period?: AnalyticsTimePeriod;
+  include_charts?: boolean;
+  include_raw_data?: boolean;
+  template?: string;
+  custom_sections?: string[];
+}
+
+export interface AnalyticsResponse {
+  status: string;
+  data: ComprehensiveWorkflowAnalytics;
+  metadata: Record<string, any>;
+}
+
+export interface RealTimeMetricsResponse {
+  workflow_id: number;
+  metrics: RealTimeMetrics;
+  timestamp: string;
+}
+
+export interface ABTestResponse {
+  status: string;
+  test_id: string;
+  message: string;
+  test_url: string;
+  estimated_duration_days: number;
+}
+
+export interface ExportResponse {
+  status: string;
+  message: string;
+  export_id: string;
+  estimated_completion_time: string;
+  download_url: string;
+}
