@@ -209,10 +209,17 @@ class SLAMonitor {
     await fs.mkdir(path.dirname(reportPath), { recursive: true });
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
 
-    // Output for GitHub Actions
-    console.log(`::set-output name=total_violations::${report.summary.total_violations}`);
-    console.log(`::set-output name=critical_violations::${report.summary.critical_violations}`);
-    console.log(`::set-output name=report_path::${reportPath}`);
+    // Output for GitHub Actions using new syntax
+    if (process.env.GITHUB_OUTPUT) {
+      await fs.appendFile(process.env.GITHUB_OUTPUT, `total_violations=${report.summary.total_violations}\n`);
+      await fs.appendFile(process.env.GITHUB_OUTPUT, `critical_violations=${report.summary.critical_violations}\n`);
+      await fs.appendFile(process.env.GITHUB_OUTPUT, `report_path=${reportPath}\n`);
+    } else {
+      // Fallback for older runners
+      console.log(`::set-output name=total_violations::${report.summary.total_violations}`);
+      console.log(`::set-output name=critical_violations::${report.summary.critical_violations}`);
+      console.log(`::set-output name=report_path::${reportPath}`);
+    }
 
     return report;
   }
@@ -316,13 +323,25 @@ async function main() {
   try {
     if (args.includes('--metric=pr_review_time')) {
       const hasViolations = await monitor.monitorPRReviewTimes();
-      console.log(`::set-output name=violation::${hasViolations}`);
+      if (process.env.GITHUB_OUTPUT) {
+        await fs.appendFile(process.env.GITHUB_OUTPUT, `violation=${hasViolations}\n`);
+      } else {
+        console.log(`::set-output name=violation::${hasViolations}`);
+      }
     } else if (args.includes('--metric=build_time')) {
       const hasViolations = await monitor.monitorBuildTimes();
-      console.log(`::set-output name=violation::${hasViolations}`);
+      if (process.env.GITHUB_OUTPUT) {
+        await fs.appendFile(process.env.GITHUB_OUTPUT, `violation=${hasViolations}\n`);
+      } else {
+        console.log(`::set-output name=violation::${hasViolations}`);
+      }
     } else if (args.includes('--metric=test_execution')) {
       const hasViolations = await monitor.monitorTestExecution();
-      console.log(`::set-output name=violation::${hasViolations}`);
+      if (process.env.GITHUB_OUTPUT) {
+        await fs.appendFile(process.env.GITHUB_OUTPUT, `violation=${hasViolations}\n`);
+      } else {
+        console.log(`::set-output name=violation::${hasViolations}`);
+      }
     } else if (args.includes('--generate-report')) {
       await monitor.monitorPRReviewTimes();
       await monitor.monitorBuildTimes();
