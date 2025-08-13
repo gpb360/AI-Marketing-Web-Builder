@@ -1,325 +1,303 @@
 /**
- * Analytics API Service for Story 3.3
- * Comprehensive workflow analytics, A/B testing, and performance monitoring
+ * Analytics API Service
+ * 
+ * Service for communicating with the analytics API endpoints
+ * Part of Story 3.3 - Performance Analytics Dashboard
  */
 
-import apiClient from '../client';
+import { apiClient } from '../client';
 import type {
-  AnalyticsResponse,
-  RealTimeMetricsResponse,
-  ABTestCreateRequest,
-  ABTestResponse,
-  ABTestResult,
+  AnalyticsMetrics,
+  WorkflowAnalytics,
+  ABTestResults,
+  ROIAnalytics,
+  RealTimeMetrics,
+  AlertThreshold,
+  ExternalIntegration,
   ExportRequest,
-  ExportResponse,
-  AnalyticsTimePeriod,
-  ComprehensiveWorkflowAnalytics,
-  RealTimeMetrics
+  ExportJob,
+  ScheduledReport,
+  ReportTemplate,
+  PaginatedResponse,
+  APIError
 } from '../types';
 
 export class AnalyticsService {
+  private readonly basePath = '/analytics';
+
   /**
-   * Get comprehensive workflow analytics
+   * Get comprehensive analytics overview
+   */
+  async getAnalyticsOverview(params?: {
+    timeRange?: string;
+    workflowId?: string;
+  }): Promise<AnalyticsMetrics> {
+    const response = await apiClient.get(`${this.basePath}/overview`, { params });
+    return response.data;
+  }
+
+  /**
+   * Get workflow-specific analytics
    */
   async getWorkflowAnalytics(
-    workflowId: number,
+    workflowId: string,
     params?: {
-      time_period?: AnalyticsTimePeriod;
-      include_predictions?: boolean;
-      include_anomalies?: boolean;
+      timeRange?: string;
+      includeComparison?: boolean;
     }
-  ): Promise<AnalyticsResponse> {
-    try {
-      const searchParams = new URLSearchParams();
-      
-      if (params?.time_period) searchParams.append('time_period', params.time_period);
-      if (params?.include_predictions !== undefined) {
-        searchParams.append('include_predictions', params.include_predictions.toString());
-      }
-      if (params?.include_anomalies !== undefined) {
-        searchParams.append('include_anomalies', params.include_anomalies.toString());
-      }
-
-      const queryString = searchParams.toString();
-      const url = `/analytics/workflows/${workflowId}/analytics${queryString ? `?${queryString}` : ''}`;
-      
-      return await apiClient.get<AnalyticsResponse>(url);
-    } catch (error) {
-      throw error;
-    }
+  ): Promise<WorkflowAnalytics> {
+    const response = await apiClient.get(`${this.basePath}/workflows/${workflowId}`, { params });
+    return response.data;
   }
 
   /**
-   * Get real-time performance metrics
+   * Get performance comparison data
    */
-  async getRealTimeMetrics(workflowId: number): Promise<RealTimeMetricsResponse> {
-    try {
-      return await apiClient.get<RealTimeMetricsResponse>(
-        `/analytics/workflows/${workflowId}/real-time-metrics`
-      );
-    } catch (error) {
-      throw error;
-    }
+  async getPerformanceComparison(params: {
+    versionA: string;
+    versionB: string;
+    workflowId?: string;
+    timeRange?: string;
+  }): Promise<{
+    versionA: WorkflowAnalytics;
+    versionB: WorkflowAnalytics;
+    comparison: any;
+  }> {
+    const response = await apiClient.get(`${this.basePath}/comparison`, { params });
+    return response.data;
   }
 
   /**
-   * Get dashboard data for multiple workflows
+   * Get ROI analytics
    */
-  async getMultiWorkflowDashboard(workflowIds: number[]): Promise<{
-    status: string;
-    workflows: Record<string, any>;
-    summary: {
-      total_workflows: number;
-      total_executions: number;
-      average_success_rate: number;
-      last_updated: string;
+  async getROIAnalytics(params?: {
+    timeRange?: string;
+    workflowId?: string;
+  }): Promise<ROIAnalytics> {
+    const response = await apiClient.get(`${this.basePath}/roi`, { params });
+    return response.data;
+  }
+
+  /**
+   * Get real-time metrics
+   */
+  async getRealTimeMetrics(): Promise<RealTimeMetrics> {
+    const response = await apiClient.get(`${this.basePath}/realtime`);
+    return response.data;
+  }
+
+  /**
+   * Subscribe to real-time updates via WebSocket
+   */
+  subscribeToRealTimeUpdates(callback: (data: RealTimeMetrics) => void): () => void {
+    // WebSocket implementation for real-time updates
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/ws/analytics`);
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
     };
-  }> {
-    try {
-      const searchParams = new URLSearchParams();
-      workflowIds.forEach(id => searchParams.append('workflow_ids', id.toString()));
 
-      return await apiClient.get(`/analytics/dashboard/multi-workflow?${searchParams.toString()}`);
-    } catch (error) {
-      throw error;
-    }
+    return () => ws.close();
   }
 
   /**
-   * Create A/B test experiment
+   * A/B Testing Methods
    */
-  async createABTest(
-    workflowId: number,
-    testRequest: ABTestCreateRequest
-  ): Promise<ABTestResponse> {
-    try {
-      return await apiClient.post<ABTestResponse>(
-        `/analytics/workflows/${workflowId}/ab-tests`,
-        testRequest
-      );
-    } catch (error) {
-      throw error;
-    }
+  async getABTests(): Promise<PaginatedResponse<ABTestResults>> {
+    const response = await apiClient.get(`${this.basePath}/ab-tests`);
+    return response.data;
+  }
+
+  async getABTest(testId: string): Promise<ABTestResults> {
+    const response = await apiClient.get(`${this.basePath}/ab-tests/${testId}`);
+    return response.data;
+  }
+
+  async createABTest(testData: {
+    name: string;
+    description: string;
+    workflowId: string;
+    variantA: any;
+    variantB: any;
+    trafficSplit: number;
+    settings: any;
+  }): Promise<ABTestResults> {
+    const response = await apiClient.post(`${this.basePath}/ab-tests`, testData);
+    return response.data;
+  }
+
+  async updateABTest(testId: string, updates: Partial<ABTestResults>): Promise<ABTestResults> {
+    const response = await apiClient.patch(`${this.basePath}/ab-tests/${testId}`, updates);
+    return response.data;
+  }
+
+  async startABTest(testId: string): Promise<{ success: boolean }> {
+    const response = await apiClient.post(`${this.basePath}/ab-tests/${testId}/start`);
+    return response.data;
+  }
+
+  async stopABTest(testId: string): Promise<{ success: boolean }> {
+    const response = await apiClient.post(`${this.basePath}/ab-tests/${testId}/stop`);
+    return response.data;
   }
 
   /**
-   * Get A/B test results
+   * Alert Management
    */
-  async getABTestResults(
-    testId: string,
-    includeRawData: boolean = false
-  ): Promise<ABTestResult> {
-    try {
-      const searchParams = new URLSearchParams();
-      if (includeRawData) searchParams.append('include_raw_data', 'true');
+  async getAlertThresholds(): Promise<AlertThreshold[]> {
+    const response = await apiClient.get(`${this.basePath}/alerts/thresholds`);
+    return response.data;
+  }
 
-      const queryString = searchParams.toString();
-      const url = `/analytics/ab-tests/${testId}${queryString ? `?${queryString}` : ''}`;
-      
-      return await apiClient.get<ABTestResult>(url);
-    } catch (error) {
-      throw error;
-    }
+  async createAlertThreshold(threshold: Omit<AlertThreshold, 'id'>): Promise<AlertThreshold> {
+    const response = await apiClient.post(`${this.basePath}/alerts/thresholds`, threshold);
+    return response.data;
+  }
+
+  async updateAlertThreshold(id: string, updates: Partial<AlertThreshold>): Promise<AlertThreshold> {
+    const response = await apiClient.patch(`${this.basePath}/alerts/thresholds/${id}`, updates);
+    return response.data;
+  }
+
+  async deleteAlertThreshold(id: string): Promise<{ success: boolean }> {
+    const response = await apiClient.delete(`${this.basePath}/alerts/thresholds/${id}`);
+    return response.data;
+  }
+
+  async getActiveAlerts(): Promise<any[]> {
+    const response = await apiClient.get(`${this.basePath}/alerts/active`);
+    return response.data;
   }
 
   /**
-   * Implement winning A/B test variant
+   * External Integrations
    */
-  async implementWinningVariant(
-    testId: string,
-    winningVariant: string
-  ): Promise<{
-    status: string;
-    message: string;
-    workflow_id: number;
-    implemented_config: any;
-    test_results_summary: any;
-  }> {
-    try {
-      const searchParams = new URLSearchParams();
-      searchParams.append('winning_variant', winningVariant);
+  async getExternalIntegrations(): Promise<ExternalIntegration[]> {
+    const response = await apiClient.get(`${this.basePath}/integrations`);
+    return response.data;
+  }
 
-      return await apiClient.post(
-        `/analytics/ab-tests/${testId}/implement-winner?${searchParams.toString()}`
-      );
-    } catch (error) {
-      throw error;
-    }
+  async createExternalIntegration(integration: Omit<ExternalIntegration, 'id' | 'status'>): Promise<ExternalIntegration> {
+    const response = await apiClient.post(`${this.basePath}/integrations`, integration);
+    return response.data;
+  }
+
+  async updateExternalIntegration(id: string, updates: Partial<ExternalIntegration>): Promise<ExternalIntegration> {
+    const response = await apiClient.patch(`${this.basePath}/integrations/${id}`, updates);
+    return response.data;
+  }
+
+  async testExternalIntegration(id: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post(`${this.basePath}/integrations/${id}/test`);
+    return response.data;
+  }
+
+  async syncExternalIntegration(id: string): Promise<{ success: boolean }> {
+    const response = await apiClient.post(`${this.basePath}/integrations/${id}/sync`);
+    return response.data;
   }
 
   /**
-   * Get variant assignment for user
+   * Report Management
    */
-  async getVariantAssignment(
-    workflowId: number,
-    userId: string,
-    testId: string
-  ): Promise<{
-    test_id: string;
-    user_id: string;
-    assigned_variant: string;
-    assignment_timestamp: string;
-  }> {
-    try {
-      const searchParams = new URLSearchParams();
-      searchParams.append('test_id', testId);
+  async getReportTemplates(): Promise<ReportTemplate[]> {
+    const response = await apiClient.get(`${this.basePath}/reports/templates`);
+    return response.data;
+  }
 
-      return await apiClient.get(
-        `/analytics/workflows/${workflowId}/variant-assignment/${userId}?${searchParams.toString()}`
-      );
-    } catch (error) {
-      throw error;
-    }
+  async createReportTemplate(template: Omit<ReportTemplate, 'id'>): Promise<ReportTemplate> {
+    const response = await apiClient.post(`${this.basePath}/reports/templates`, template);
+    return response.data;
+  }
+
+  async getScheduledReports(): Promise<ScheduledReport[]> {
+    const response = await apiClient.get(`${this.basePath}/reports/scheduled`);
+    return response.data;
+  }
+
+  async createScheduledReport(report: Omit<ScheduledReport, 'id' | 'status'>): Promise<ScheduledReport> {
+    const response = await apiClient.post(`${this.basePath}/reports/scheduled`, report);
+    return response.data;
+  }
+
+  async updateScheduledReport(id: string, updates: Partial<ScheduledReport>): Promise<ScheduledReport> {
+    const response = await apiClient.patch(`${this.basePath}/reports/scheduled/${id}`, updates);
+    return response.data;
   }
 
   /**
-   * Export analytics data
+   * Export and Download
    */
-  async exportAnalyticsData(
-    workflowId: number,
-    exportRequest: ExportRequest
-  ): Promise<ExportResponse> {
-    try {
-      return await apiClient.post<ExportResponse>(
-        `/analytics/workflows/${workflowId}/export`,
-        exportRequest
-      );
-    } catch (error) {
-      throw error;
-    }
+  async createExport(request: ExportRequest): Promise<ExportJob> {
+    const response = await apiClient.post(`${this.basePath}/export`, request);
+    return response.data;
+  }
+
+  async getExportJobs(): Promise<ExportJob[]> {
+    const response = await apiClient.get(`${this.basePath}/export/jobs`);
+    return response.data;
+  }
+
+  async getExportJob(jobId: string): Promise<ExportJob> {
+    const response = await apiClient.get(`${this.basePath}/export/jobs/${jobId}`);
+    return response.data;
+  }
+
+  async downloadExport(jobId: string): Promise<Blob> {
+    const response = await apiClient.get(`${this.basePath}/export/jobs/${jobId}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
   }
 
   /**
-   * Download exported file
+   * Configuration
    */
-  async downloadExportFile(exportId: string): Promise<Blob> {
-    try {
-      // Use the raw axios client to get binary data
-      const response = await apiClient.client.get(
-        `/analytics/exports/${exportId}/download`,
-        { responseType: 'blob' }
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+  async getAnalyticsConfiguration(): Promise<any> {
+    const response = await apiClient.get(`${this.basePath}/configuration`);
+    return response.data;
+  }
+
+  async updateAnalyticsConfiguration(config: any): Promise<any> {
+    const response = await apiClient.patch(`${this.basePath}/configuration`, config);
+    return response.data;
   }
 
   /**
-   * Compare performance across time periods
+   * Historical Data
    */
-  async comparePerformancePeriods(
-    workflowId: number,
-    baselinePeriod: AnalyticsTimePeriod = AnalyticsTimePeriod.MONTH,
-    comparisonPeriod: AnalyticsTimePeriod = AnalyticsTimePeriod.WEEK
-  ): Promise<{
-    baseline_period: string;
-    comparison_period: string;
-    baseline_metrics: any;
-    comparison_metrics: any;
-    performance_changes: {
-      success_rate_change: number;
-      avg_execution_time_change: number;
-      throughput_change: number;
-      roi_change: number;
-    };
-    insights: string[];
-    analysis_timestamp: string;
-  }> {
-    try {
-      const searchParams = new URLSearchParams();
-      searchParams.append('baseline_period', baselinePeriod);
-      searchParams.append('comparison_period', comparisonPeriod);
-
-      return await apiClient.get(
-        `/analytics/workflows/${workflowId}/performance-comparison?${searchParams.toString()}`
-      );
-    } catch (error) {
-      throw error;
-    }
+  async getHistoricalTrends(params: {
+    metric: string;
+    timeRange: string;
+    granularity?: 'hour' | 'day' | 'week' | 'month';
+  }): Promise<{ timestamp: string; value: number }[]> {
+    const response = await apiClient.get(`${this.basePath}/trends`, { params });
+    return response.data;
   }
 
   /**
-   * Health check for analytics service
+   * Anomaly Detection
    */
-  async healthCheck(): Promise<{
-    status: string;
-    timestamp: string;
-    service: string;
-    version: string;
-  }> {
-    try {
-      return await apiClient.get('/analytics/health');
-    } catch (error) {
-      throw error;
-    }
+  async getAnomalies(params?: {
+    timeRange?: string;
+    severity?: 'low' | 'medium' | 'high' | 'critical';
+  }): Promise<any[]> {
+    const response = await apiClient.get(`${this.basePath}/anomalies`, { params });
+    return response.data;
   }
 
   /**
-   * Get analytics data with caching for dashboard performance
+   * Performance Benchmarks
    */
-  async getCachedAnalytics(
-    workflowId: number,
-    timePeriod: AnalyticsTimePeriod,
-    cacheKey?: string
-  ): Promise<ComprehensiveWorkflowAnalytics> {
-    try {
-      // In a real implementation, this would check local cache first
-      // For now, directly fetch from API
-      const response = await this.getWorkflowAnalytics(workflowId, {
-        time_period: timePeriod,
-        include_predictions: true,
-        include_anomalies: true
-      });
-      
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Stream real-time metrics (for WebSocket integration)
-   */
-  async startRealTimeStream(
-    workflowIds: number[],
-    onMetricsUpdate: (data: Record<string, RealTimeMetrics>) => void,
-    onError?: (error: Error) => void
-  ): Promise<() => void> {
-    try {
-      // This would establish WebSocket connection in real implementation
-      // For now, polling every 5 seconds
-      let isActive = true;
-      
-      const poll = async () => {
-        if (!isActive) return;
-        
-        try {
-          const dashboard = await this.getMultiWorkflowDashboard(workflowIds);
-          onMetricsUpdate(dashboard.workflows);
-        } catch (error) {
-          if (onError) onError(error as Error);
-        }
-        
-        if (isActive) {
-          setTimeout(poll, 5000); // Poll every 5 seconds
-        }
-      };
-      
-      poll(); // Start polling
-      
-      // Return cleanup function
-      return () => {
-        isActive = false;
-      };
-    } catch (error) {
-      throw error;
-    }
+  async getPerformanceBenchmarks(params?: {
+    industry?: string;
+    companySize?: string;
+  }): Promise<any> {
+    const response = await apiClient.get(`${this.basePath}/benchmarks`, { params });
+    return response.data;
   }
 }
 
-// Create singleton instance
+// Create and export singleton instance
 export const analyticsService = new AnalyticsService();
-
-// Export for use in components and hooks
-export default analyticsService;

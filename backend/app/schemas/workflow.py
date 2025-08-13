@@ -195,3 +195,70 @@ class WorkflowAnalytics(BaseModel):
     avg_execution_time: float
     error_rate: float
     trend_data: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+# SLA Prediction Schemas for Story 3.4
+
+class SLAPredictionFeatures(BaseModel):
+    """ML model input features for SLA violation prediction."""
+    workflow_id: int
+    violation_type: str = Field(..., description="Type of SLA violation to predict")
+    historical_performance: List[float] = Field(default_factory=list, description="Last 30 days performance data")
+    current_load: float = Field(0.0, ge=0.0, le=1.0, description="Current system load (0-1)")
+    time_of_day: int = Field(0, ge=0, le=23, description="Hour of day (0-23)")
+    day_of_week: int = Field(0, ge=0, le=6, description="Day of week (0-6)")
+    recent_violations: int = Field(0, ge=0, description="Number of recent violations")
+    system_resources: Dict[str, float] = Field(default_factory=dict, description="System resource metrics")
+
+
+class ActionRecommendation(BaseModel):
+    """Recommended action for SLA violation prevention."""
+    action: str = Field(..., description="Action identifier")
+    description: str = Field(..., description="Human-readable action description")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence in recommendation")
+    estimated_impact: str = Field(..., description="Expected impact description")
+
+
+class SLAPrediction(BaseModel):
+    """SLA violation prediction result."""
+    violation_type: str = Field(..., description="Type of predicted violation")
+    probability: float = Field(..., ge=0.0, le=1.0, description="Violation probability (0.0-1.0)")
+    confidence_score: float = Field(..., ge=0.0, le=1.0, description="Model confidence in prediction")
+    predicted_time: str = Field(..., description="ISO timestamp of predicted violation")
+    recommended_actions: List[ActionRecommendation] = Field(default_factory=list)
+    historical_accuracy: float = Field(..., ge=0.0, le=1.0, description="Model accuracy for this violation type")
+
+
+class PredictionRequest(BaseModel):
+    """Request for SLA violation predictions."""
+    workflow_id: int = Field(..., description="Workflow ID to predict for")
+    violation_types: Optional[List[str]] = Field(None, description="Specific violation types to predict")
+    forecast_window_minutes: int = Field(15, ge=5, le=60, description="Prediction time window")
+
+
+class PredictionResponse(BaseModel):
+    """Response containing SLA violation predictions."""
+    workflow_id: int
+    predictions: List[SLAPrediction]
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+    model_version: str = Field("1.0", description="ML model version used")
+
+
+class ModelAccuracyReport(BaseModel):
+    """ML model accuracy report."""
+    violation_type_accuracies: Dict[str, float] = Field(default_factory=dict)
+    overall_accuracy: float = Field(..., ge=0.0, le=1.0)
+    total_predictions: int = Field(0, ge=0)
+    correct_predictions: int = Field(0, ge=0)
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+
+
+class PredictionFeedback(BaseModel):
+    """Feedback for ML model improvement."""
+    prediction_id: str = Field(..., description="Original prediction identifier")
+    workflow_id: int
+    violation_type: str
+    predicted_violation: bool = Field(..., description="Whether violation was predicted")
+    actual_violation: bool = Field(..., description="Whether violation actually occurred")
+    feedback_timestamp: datetime = Field(default_factory=datetime.utcnow)
+    notes: Optional[str] = Field(None, description="Additional feedback notes")

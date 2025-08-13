@@ -1,7 +1,3 @@
-# /create-next-story Task
-
-When this command is used, execute the following task:
-
 # Create Next Story Task
 
 ## Purpose

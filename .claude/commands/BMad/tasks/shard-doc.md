@@ -1,7 +1,3 @@
-# /shard-doc Task
-
-When this command is used, execute the following task:
-
 # Document Sharding Task
 
 ## Purpose

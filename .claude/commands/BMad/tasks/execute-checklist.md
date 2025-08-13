@@ -1,7 +1,3 @@
-# /execute-checklist Task
-
-When this command is used, execute the following task:
-
 # Checklist Validation Task
 
 This task provides instructions for validating documentation against checklists. The agent MUST follow these instructions to ensure thorough and systematic validation of documents.

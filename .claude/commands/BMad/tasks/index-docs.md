@@ -1,7 +1,3 @@
-# /index-docs Task
-
-When this command is used, execute the following task:
-
 # Index Documentation Task
 
 ## Purpose

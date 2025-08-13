@@ -1,7 +1,3 @@
-# /correct-course Task
-
-When this command is used, execute the following task:
-
 # Correct Course Task
 
 ## Purpose
