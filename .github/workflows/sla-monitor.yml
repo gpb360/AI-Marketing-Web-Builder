@@ -116,8 +116,9 @@ jobs:
         
     - name: Collect Workflow Analytics
       run: |
-        if [ -f "scripts/automation/analytics-collector.js" ]; then
-          node scripts/automation/analytics-collector.js --epic=2 --collect-all || echo "Analytics collection failed, continuing..."
+        cd scripts/automation
+        if [ -f "analytics-collector.js" ]; then
+          node analytics-collector.js --epic=2 --collect-all || echo "Analytics collection failed, continuing..."
         else
           echo "Analytics collector not found, skipping..."
         fi
@@ -126,8 +127,9 @@ jobs:
         
     - name: Generate Performance Insights
       run: |
-        if [ -f "scripts/automation/analytics-collector.js" ]; then
-          node scripts/automation/analytics-collector.js --epic=2 --generate-insights || echo "Performance insights generation failed, continuing..."
+        cd scripts/automation
+        if [ -f "analytics-collector.js" ]; then
+          node analytics-collector.js --epic=2 --generate-insights || echo "Performance insights generation failed, continuing..."
         else
           echo "Analytics collector not found, skipping..."
         fi
