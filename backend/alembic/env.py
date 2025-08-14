@@ -18,8 +18,15 @@ from app.core.config import settings
 # access to the values within the .ini file in use.
 config = context.config
 
-# Set the database URL from settings
-config.set_main_option("sqlalchemy.url", settings.database_url_sync)
+# Set the database URL from settings 
+# For development/demo, use SQLite if PostgreSQL is not available
+database_url = settings.DATABASE_URL
+if "postgresql" in database_url:
+    # Use SQLite for development if PostgreSQL is configured but not available
+    database_url = "sqlite:///./analytics_demo.db"
+else:
+    database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://")
+config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -83,7 +90,19 @@ async def run_async_migrations() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    asyncio.run(run_async_migrations())
+    from sqlalchemy import create_engine
+    
+    # Create synchronous engine for migrations
+    connectable = create_engine(config.get_main_option("sqlalchemy.url"))
+    
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata
+        )
+        
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 if context.is_offline_mode():

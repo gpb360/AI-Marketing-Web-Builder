@@ -1,24 +1,15 @@
-/**
- * Skeleton Component
- * 
- * Loading placeholder component with shimmer animation
- */
+import { cn } from "@/lib/utils"
 
-import React from 'react';
-import { cn } from '@/lib/utils';
-
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export const Skeleton: React.FC<SkeletonProps> = ({ className, ...props }) => {
+function Skeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        'animate-pulse rounded-md bg-muted/50',
-        className
-      )}
+      className={cn("animate-pulse rounded-md bg-muted", className)}
       {...props}
     />
-  );
-};
+  )
+}
 
-export default Skeleton;
+export { Skeleton }

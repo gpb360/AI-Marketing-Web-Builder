@@ -1,7 +1,3 @@
-# /review-story Task
-
-When this command is used, execute the following task:
-
 # review-story
 
 When a developer agent marks a story as "Ready for Review", perform a comprehensive senior developer code review with the ability to refactor and improve code directly.
