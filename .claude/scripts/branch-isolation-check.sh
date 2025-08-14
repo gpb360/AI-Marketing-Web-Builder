@@ -156,10 +156,6 @@ check_file_ownership() {
             echo -e "${YELLOW}⚠️  No ownership rules defined for agent '$AGENT_NAME'${NC}"
             return 0
         fi
-    else
-        echo -e "${YELLOW}⚠️  Cannot extract agent name from branch${NC}"
-        return 0
-    fi
 }
 
 # Check for potential conflicts with other agent branches
