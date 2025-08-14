@@ -6,6 +6,13 @@ from .sites import Site, Component
 from .workflow import Workflow, WorkflowExecution, WorkflowNode
 from .crm import Contact, ContactActivity, EmailCampaign, EmailSend
 from .template import Template, TemplateComponent
+from .business_context import (
+    BusinessContextAnalysis,
+    BusinessContextUsageAnalytics, 
+    TemplateContextScoring,
+    BusinessSuccessPattern,
+    EpicIntegrationMetrics
+)
 
 __all__ = [
     "BaseModel",
@@ -22,4 +29,9 @@ __all__ = [
     "ContactActivity",
     "EmailCampaign",
     "EmailSend",
+    "BusinessContextAnalysis",
+    "BusinessContextUsageAnalytics",
+    "TemplateContextScoring",
+    "BusinessSuccessPattern",
+    "EpicIntegrationMetrics",
 ]

@@ -4,7 +4,7 @@ API router for version 1 endpoints.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, templates, workflows, crm, publishing, collaboration, template_optimization, migration, workflow_debug, workflow_websocket, analytics, predictions, sla_optimization, sla_remediation
+from app.api.v1.endpoints import auth, templates, workflows, crm, publishing, collaboration, template_optimization, migration, workflow_debug, workflow_websocket, analytics, predictions, sla_optimization, sla_remediation, ai_features, business_context
 
 api_router = APIRouter()
 
@@ -23,3 +23,5 @@ api_router.include_router(analytics.router, prefix="/analytics", tags=["Performa
 api_router.include_router(predictions.router, prefix="/predictions", tags=["SLA Predictions"])
 api_router.include_router(sla_optimization.router, prefix="/sla-optimization", tags=["SLA Threshold Optimization"])
 api_router.include_router(sla_remediation.router, tags=["SLA Remediation"])
+api_router.include_router(ai_features.router, prefix="/ai", tags=["Epic 4: AI Features"])
+api_router.include_router(business_context.router, prefix="/business-context", tags=["Epic 1: Business Context"])
