@@ -1,7 +1,3 @@
-# /document-project Task
-
-When this command is used, execute the following task:
-
 # Document an Existing Project
 
 ## Purpose

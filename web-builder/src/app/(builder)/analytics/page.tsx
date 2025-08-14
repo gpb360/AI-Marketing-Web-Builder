@@ -1,198 +1,222 @@
 /**
- * Analytics Dashboard Page for Story 3.3
- * Main page integrating all analytics components
+ * Analytics Dashboard Page
+ * 
+ * Comprehensive performance analytics dashboard for Story 3.3 + 3.5
+ * Features: conversion rates, engagement metrics, A/B testing, ROI analysis, SLA optimization
  */
 
 'use client';
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { Card } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
-import ComprehensiveAnalyticsDashboard from '../../../components/analytics/ComprehensiveAnalyticsDashboard';
-import ABTestingInterface from '../../../components/analytics/ABTestingInterface';
-import ExportReporting from '../../../components/analytics/ExportReporting';
-import RealTimeDashboard from '../../../components/analytics/RealTimeDashboard';
+import { Suspense } from 'react';
+import { ComprehensiveAnalyticsDashboard } from '@/components/analytics/ComprehensiveAnalyticsDashboard';
+import { PerformanceComparisonPanel } from '@/components/analytics/PerformanceComparisonPanel';
+import { ROIAnalyticsPanel } from '@/components/analytics/ROIAnalyticsPanel';
+import { RealTimeMonitoringPanel } from '@/components/analytics/RealTimeMonitoringPanel';
+import { ExportReporting } from '@/components/analytics/ExportReporting';
+import { AnalyticsConfiguration } from '@/components/analytics/AnalyticsConfiguration';
+import { ABTestingInterface } from '@/components/analytics/ABTestingInterface';
+import { ThresholdOptimizationPanel } from '@/components/builder/ThresholdOptimizationPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BarChart3, 
-  TestTube, 
-  Download, 
-  Activity,
+  TrendingUp, 
+  DollarSign, 
+  Activity, 
+  FileText, 
   Settings,
-  HelpCircle,
-  Plus
+  TestTube2,
+  Gauge,
+  Target,
+  Zap
 } from 'lucide-react';
 
-// Mock data - in a real app, this would come from the workflow service
-const MOCK_WORKFLOWS = [
-  { id: 1, name: 'Lead Capture Form', status: 'active' },
-  { id: 2, name: 'Email Welcome Sequence', status: 'active' },
-  { id: 3, name: 'Product Demo Booking', status: 'active' },
-  { id: 4, name: 'Customer Onboarding', status: 'paused' }
-];
+// Loading skeleton for dashboard sections
+const DashboardSkeleton = () => (
+  <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i} className="p-6">
+          <Skeleton className="h-4 w-20 mb-2" />
+          <Skeleton className="h-8 w-16 mb-1" />
+          <Skeleton className="h-3 w-24" />
+        </Card>
+      ))}
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="p-6">
+        <Skeleton className="h-6 w-32 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </Card>
+      <Card className="p-6">
+        <Skeleton className="h-6 w-32 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </Card>
+    </div>
+  </div>
+);
 
 export default function AnalyticsPage() {
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<number>(1);
-  const [selectedTab, setSelectedTab] = useState('overview');
+  // Mock service types for SLA optimization
+  const serviceTypes = ['build_time', 'pr_review_time', 'test_execution', 'deployment_time'];
 
-  const selectedWorkflow = MOCK_WORKFLOWS.find(w => w.id === selectedWorkflowId);
-  const activeWorkflowIds = MOCK_WORKFLOWS.filter(w => w.status === 'active').map(w => w.id);
-  const workflowNames = MOCK_WORKFLOWS.reduce((acc, w) => {
-    acc[w.id] = w.name;
-    return acc;
-  }, {} as Record<number, string>);
+  const handleApplyRecommendation = async (recommendation: any) => {
+    try {
+      // Apply the threshold recommendation
+      const response = await fetch('/api/v1/sla-optimization/thresholds/change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_type: recommendation.service_type,
+          current_threshold: recommendation.current_threshold,
+          proposed_threshold: recommendation.recommended_threshold,
+          change_type: 'optimization',
+          justification: recommendation.optimization_rationale.business_justification,
+          requested_by: 'analytics_dashboard',
+          rollback_criteria: recommendation.rollback_criteria
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Auto-apply the change
+        await fetch(`/api/v1/sla-optimization/thresholds/change/${result.change_id}/apply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Threshold recommendation applied successfully');
+      }
+    } catch (error) {
+      console.error('Failed to apply threshold recommendation:', error);
+    }
+  };
+
+  const handleRollbackChange = async (changeId: string) => {
+    try {
+      const response = await fetch(`/api/v1/sla-optimization/thresholds/change/${changeId}/rollback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trigger: 'manual',
+          trigger_metrics: {}
+        })
+      });
+
+      if (response.ok) {
+        console.log('Threshold change rolled back successfully');
+      }
+    } catch (error) {
+      console.error('Failed to rollback threshold change:', error);
+    }
+  };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Page Header */}
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600">
-            Comprehensive performance analytics, A/B testing, and real-time monitoring
+          <h1 className="text-3xl font-bold tracking-tight">Performance Analytics & SLA Optimization</h1>
+          <p className="text-muted-foreground">
+            Comprehensive workflow analytics with AI-powered SLA threshold optimization and ROI insights
           </p>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
-            Dashboard Settings
-          </Button>
-          <Button variant="outline" size="sm">
-            <HelpCircle className="w-4 h-4 mr-2" />
-            Help & Tutorial
-          </Button>
         </div>
       </div>
 
-      {/* Workflow Selector */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h3 className="text-lg font-semibold">Select Workflow</h3>
-            <select
-              value={selectedWorkflowId}
-              onChange={(e) => setSelectedWorkflowId(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {MOCK_WORKFLOWS.map(workflow => (
-                <option key={workflow.id} value={workflow.id}>
-                  {workflow.name}
-                </option>
-              ))}
-            </select>
-            {selectedWorkflow && (
-              <Badge variant={selectedWorkflow.status === 'active' ? 'default' : 'secondary'}>
-                {selectedWorkflow.status}
-              </Badge>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">
-              {activeWorkflowIds.length} active workflow{activeWorkflowIds.length !== 1 ? 's' : ''}
-            </span>
-            <Button variant="outline" size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Workflow
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Main Analytics Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
-            <span>Overview</span>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Gauge className="h-4 w-4" />
+            Overview
           </TabsTrigger>
-          <TabsTrigger value="realtime" className="flex items-center space-x-2">
-            <Activity className="w-4 h-4" />
-            <span>Real-time</span>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Performance
           </TabsTrigger>
-          <TabsTrigger value="abtesting" className="flex items-center space-x-2">
-            <TestTube className="w-4 h-4" />
-            <span>A/B Testing</span>
+          <TabsTrigger value="comparison" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Comparison
           </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center space-x-2">
-            <Download className="w-4 h-4" />
-            <span>Reports</span>
+          <TabsTrigger value="roi" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            ROI
+          </TabsTrigger>
+          <TabsTrigger value="realtime" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Real-time
+          </TabsTrigger>
+          <TabsTrigger value="abtesting" className="flex items-center gap-2">
+            <TestTube2 className="h-4 w-4" />
+            A/B Testing
+          </TabsTrigger>
+          <TabsTrigger value="sla-optimization" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            SLA Optimization
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
           </TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab - Comprehensive Analytics */}
         <TabsContent value="overview" className="space-y-6">
-          <ComprehensiveAnalyticsDashboard
-            workflowId={selectedWorkflowId}
-            workflowName={selectedWorkflow?.name}
-            defaultTimePeriod="WEEK"
-            enableRealTime={true}
-          />
+          <Suspense fallback={<DashboardSkeleton />}>
+            <ComprehensiveAnalyticsDashboard />
+          </Suspense>
         </TabsContent>
 
-        {/* Real-time Tab - Live Dashboard */}
+        <TabsContent value="performance" className="space-y-6">
+          <Suspense fallback={<DashboardSkeleton />}>
+            <ComprehensiveAnalyticsDashboard detailed={true} />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="comparison" className="space-y-6">
+          <Suspense fallback={<DashboardSkeleton />}>
+            <PerformanceComparisonPanel />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="roi" className="space-y-6">
+          <Suspense fallback={<DashboardSkeleton />}>
+            <ROIAnalyticsPanel />
+          </Suspense>
+        </TabsContent>
+
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeDashboard
-            workflowIds={activeWorkflowIds}
-            workflowNames={workflowNames}
-            refreshInterval={5000}
-            alertThresholds={{
-              successRate: 0.95,
-              responseTime: 5.0,
-              errorRate: 0.05
-            }}
-          />
+          <Suspense fallback={<DashboardSkeleton />}>
+            <RealTimeMonitoringPanel />
+          </Suspense>
         </TabsContent>
 
-        {/* A/B Testing Tab */}
         <TabsContent value="abtesting" className="space-y-6">
-          <ABTestingInterface
-            workflowId={selectedWorkflowId}
-            workflowName={selectedWorkflow?.name}
-            onTestCreated={(testId) => {
-              console.log('A/B test created:', testId);
-              // Could show a success notification here
-            }}
-          />
+          <Suspense fallback={<DashboardSkeleton />}>
+            <ABTestingInterface />
+          </Suspense>
         </TabsContent>
 
-        {/* Reports Tab - Export & Reporting */}
-        <TabsContent value="reports" className="space-y-6">
-          <ExportReporting
-            workflowId={selectedWorkflowId}
-            workflowName={selectedWorkflow?.name}
-          />
+        <TabsContent value="sla-optimization" className="space-y-6">
+          <Suspense fallback={<DashboardSkeleton />}>
+            <ThresholdOptimizationPanel
+              serviceTypes={serviceTypes}
+              onApplyRecommendation={handleApplyRecommendation}
+              onRollbackChange={handleRollbackChange}
+            />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Suspense fallback={<DashboardSkeleton />}>
+              <AnalyticsConfiguration />
+            </Suspense>
+            <Suspense fallback={<DashboardSkeleton />}>
+              <ExportReporting />
+            </Suspense>
+          </div>
         </TabsContent>
       </Tabs>
-
-      {/* Quick Actions Footer */}
-      <Card className="p-4 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h4 className="font-medium text-gray-900">Quick Actions</h4>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={() => setSelectedTab('abtesting')}>
-                <TestTube className="w-4 h-4 mr-2" />
-                Start A/B Test
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setSelectedTab('reports')}>
-                <Download className="w-4 h-4 mr-2" />
-                Export Report
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setSelectedTab('realtime')}>
-                <Activity className="w-4 h-4 mr-2" />
-                View Live Data
-              </Button>
-            </div>
-          </div>
-          
-          <div className="text-sm text-gray-600">
-            Analytics powered by AI • Real-time monitoring • Advanced insights
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

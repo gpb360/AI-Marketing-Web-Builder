@@ -1,7 +1,3 @@
-# /create-deep-research-prompt Task
-
-When this command is used, execute the following task:
-
 # Create Deep Research Prompt Task
 
 This task helps create comprehensive research prompts for various types of deep analysis. It can process inputs from brainstorming sessions, project briefs, market research, or specific research questions to generate targeted prompts for deeper investigation.

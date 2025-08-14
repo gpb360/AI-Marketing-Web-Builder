@@ -11,7 +11,6 @@ import type {
   PaginatedResponse
 } from '../types';
 import { templateOptimizationApi, type OptimizationInsight, type PerformanceMetrics, type ABTest } from './template-optimization';
-import { templateAnalyticsService } from './template-analytics';
 
 export class TemplateService {
   /**
@@ -174,7 +173,7 @@ export class TemplateService {
   }
 
   /**
-   * Get template usage analytics (legacy - use templateAnalyticsService for comprehensive analytics)
+   * Get template usage analytics
    */
   async getTemplateAnalytics(templateId: number): Promise<{
     usage_count: number;
@@ -184,79 +183,6 @@ export class TemplateService {
   }> {
     try {
       return await apiClient.get(`/templates/${templateId}/analytics`);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Track template adoption event
-   */
-  async trackTemplateAdoption(templateId: number, userId: number, source: 'search' | 'recommendation' | 'category' | 'featured', context?: Record<string, any>): Promise<{ success: boolean }> {
-    try {
-      return await templateAnalyticsService.trackAdoptionEvent({
-        templateId,
-        userId,
-        source,
-        context
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Track template customization event
-   */
-  async trackTemplateCustomization(templateId: number, userId: number, modificationType: 'content' | 'design' | 'layout' | 'style', modificationCount: number, timeSpent: number): Promise<{ success: boolean }> {
-    try {
-      return await templateAnalyticsService.trackCustomizationEvent({
-        templateId,
-        userId,
-        modificationType,
-        modificationCount,
-        timeSpent
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Track template completion event
-   */
-  async trackTemplateCompletion(templateId: number, userId: number, completionType: 'setup' | 'publish' | 'preview', timeSinceAdoption: number, customizationsMade: number): Promise<{ success: boolean }> {
-    try {
-      return await templateAnalyticsService.trackCompletionEvent({
-        templateId,
-        userId,
-        completionType,
-        timeSinceAdoption,
-        customizationsMade
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Get comprehensive template analytics
-   */
-  async getComprehensiveAnalytics(templateId: number, timeRange: '7d' | '30d' | '90d' | '1y' = '30d') {
-    try {
-      const [adoptionMetrics, successMetrics, performanceTrends, optimizations] = await Promise.all([
-        templateAnalyticsService.getTemplateAdoptionMetrics(templateId, timeRange),
-        templateAnalyticsService.getTemplateSuccessMetrics(templateId, timeRange),
-        templateAnalyticsService.getTemplatePerformanceTrends(templateId, 'weekly', '90d'),
-        templateAnalyticsService.getOptimizationSuggestions(templateId)
-      ]);
-
-      return {
-        adoptionMetrics,
-        successMetrics,
-        performanceTrends,
-        optimizations
-      };
     } catch (error) {
       throw error;
     }

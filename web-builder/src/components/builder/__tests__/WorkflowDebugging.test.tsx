@@ -12,9 +12,8 @@ import '@testing-library/jest-dom';
 import { jest } from '@jest/globals';
 
 // Import components to test
-import WorkflowStatusOverlay, { 
-  type WorkflowNodeData 
-} from '../WorkflowStatusOverlay';
+import WorkflowStatusOverlay from '../WorkflowStatusOverlay';
+import { WorkflowNodeData } from '../WorkflowStatusOverlay';
 import ErrorDetailsModal from '../ErrorDetailsModal';
 import ExecutionTimeline from '../ExecutionTimeline';
 import WorkflowDebuggingPanel from '../WorkflowDebuggingPanel';
@@ -31,7 +30,8 @@ const mockWebSocket = {
   close: jest.fn(),
   readyState: WebSocket.OPEN
 };
-global.WebSocket = jest.fn(() => mockWebSocket) as any;
+// @ts-ignore
+global.WebSocket = jest.fn(() => mockWebSocket);
 
 describe('Story 3.1: Visual Workflow Debugging', () => {
   

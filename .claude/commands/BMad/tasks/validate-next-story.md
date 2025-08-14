@@ -1,7 +1,3 @@
-# /validate-next-story Task
-
-When this command is used, execute the following task:
-
 # Validate Next Story Task
 
 ## Purpose
