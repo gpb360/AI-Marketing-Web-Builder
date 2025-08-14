@@ -1,7 +1,3 @@
-# /create-brownfield-story Task
-
-When this command is used, execute the following task:
-
 # Create Brownfield Story Task
 
 ## Purpose

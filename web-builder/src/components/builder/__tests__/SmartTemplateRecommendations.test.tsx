@@ -1,524 +1,650 @@
 /**
- * SmartTemplateRecommendations Component Tests
+ * Story 3.2: Smart Workflow Templates with AI Customization - Test Suite
  * 
- * Comprehensive test suite covering all acceptance criteria for Story 3.2 Task #82
+ * Comprehensive test coverage for SmartTemplateRecommendations component
+ * 
+ * @author Test Writer Fixer Agent - Story 3.2 Test Implementation
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { jest } from '@jest/globals';
 
+// Import components to test
 import SmartTemplateRecommendations from '../SmartTemplateRecommendations';
-import {
-  type WebsiteAnalysisResult,
-  type SmartTemplateRecommendation,
-  WorkflowCategory
-} from '@/lib/types/smart-templates';
+import { useSmartTemplateRecommendations } from '../../../hooks/useSmartTemplateRecommendations';
 
-// Mock the custom hook
-jest.mock('@/hooks/useSmartTemplateRecommendations', () => ({
-  useSmartTemplateRecommendations: jest.fn(() => ({
-    recommendations: mockRecommendations,
-    loadingState: {
-      isAnalyzing: false,
-      isGeneratingRecommendations: false,
-      isInstantiating: false,
-      error: null
+// Mock the hook
+jest.mock('../../../hooks/useSmartTemplateRecommendations', () => ({
+  useSmartTemplateRecommendations: jest.fn()
+}));
+
+// Mock API calls
+jest.mock('../../../lib/api/client', () => ({
+  api: {
+    post: jest.fn(),
+    get: jest.fn()
+  }
+}));
+
+describe('Story 3.2: SmartTemplateRecommendations Component', () => {
+  
+  // ========================================================================
+  // TEST DATA
+  // ========================================================================
+  
+  const mockBusinessContext = {
+    industry: 'E-commerce',
+    brandVoice: 'Professional',
+    targetAudience: 'B2B',
+    marketingMaturity: 'Intermediate',
+    automationReadiness: 85,
+    businessSize: 'Medium',
+    currentTools: ['Shopify', 'MailChimp'],
+    marketingGoals: ['Lead Generation', 'Customer Retention']
+  };
+
+  const mockTemplateRecommendation = {
+    template_id: 'ecom-lead-nurture',
+    name: 'E-commerce Lead Nurturing Sequence',
+    category: 'Marketing',
+    description: 'Automated lead nurturing for e-commerce businesses',
+    relevanceScore: 92,
+    successProbability: 87,
+    estimatedSetupTime: 15,
+    expectedOutcomes: {
+      conversionIncrease: 25,
+      timeToValue: 7,
+      automationEfficiency: 90
     },
-    analyzeWebsite: jest.fn(),
+    reasoning: {
+      primaryFactors: [
+        'Perfect match for e-commerce industry',
+        'Aligns with professional brand voice',
+        'Suitable for intermediate marketing maturity'
+      ],
+      confidenceScore: 94,
+      riskFactors: ['Requires integration with Shopify'],
+      successIndicators: ['High engagement rates in similar businesses']
+    },
+    customizations: {
+      emailTemplates: [
+        {
+          type: 'welcome',
+          subject: 'Welcome to [Brand Name] - Your Success Starts Here',
+          preview: 'Professional welcome message...',
+          personalization: 85
+        }
+      ],
+      integrationRequirements: [
+        {
+          service: 'Shopify',
+          status: 'available',
+          setupComplexity: 'Low'
+        }
+      ]
+    },
+    performance: {
+      industryBenchmark: 18,
+      averageROI: 340,
+      implementationSuccess: 89
+    }
+  };
+
+  const mockHookReturn = {
+    recommendations: [mockTemplateRecommendation],
+    isLoading: false,
+    error: null,
+    businessContext: mockBusinessContext,
+    filters: {
+      category: 'all',
+      complexity: 'all',
+      successRate: 0
+    },
+    sortBy: 'relevance',
+    searchQuery: '',
+    selectedTemplate: null,
+    updateFilters: jest.fn(),
+    setSortBy: jest.fn(),
+    setSearchQuery: jest.fn(),
+    selectTemplate: jest.fn(),
     instantiateTemplate: jest.fn(),
-    provideFeedback: jest.fn(),
-    refreshRecommendations: jest.fn()
-  }))
-}));
-
-// Mock UI components
-jest.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: any) => <div className={className}>{children}</div>,
-  CardContent: ({ children }: any) => <div>{children}</div>,
-  CardHeader: ({ children }: any) => <div>{children}</div>,
-  CardTitle: ({ children }: any) => <h3>{children}</h3>
-}));
-
-jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, variant }: any) => (
-    <button onClick={onClick} disabled={disabled} className={variant}>{children}</button>
-  )
-}));
-
-jest.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, variant }: any) => <span className={variant}>{children}</span>
-}));
-
-jest.mock('@/components/ui/tabs', () => ({
-  Tabs: ({ children, value, onValueChange }: any) => (
-    <div data-testid="tabs" data-value={value} onClick={() => onValueChange?.('test')}>
-      {children}
-    </div>
-  ),
-  TabsContent: ({ children }: any) => <div>{children}</div>,
-  TabsList: ({ children }: any) => <div>{children}</div>,
-  TabsTrigger: ({ children, value }: any) => <button data-value={value}>{children}</button>
-}));
-
-jest.mock('@/components/ui/skeleton', () => ({
-  Skeleton: ({ className }: any) => <div className={`skeleton ${className}`}>Loading...</div>
-}));
-
-// Mock subcomponents
-jest.mock('../TemplateRecommendationCard', () => ({
-  TemplateRecommendationCard: ({ recommendation, onSelect, onInstantiate, isSelected }: any) => (
-    <div data-testid={`template-card-${recommendation.template_id}`}>
-      <h4>{recommendation.template_name}</h4>
-      <span>Category: {recommendation.category}</span>
-      <span>Score: {recommendation.relevance_score}</span>
-      <button onClick={onSelect}>Select</button>
-      <button onClick={onInstantiate}>Instantiate</button>
-      {isSelected && <span>Selected</span>}
-    </div>
-  )
-}));
-
-jest.mock('../ReasoningDisplay', () => ({
-  ReasoningDisplay: ({ reasoning, performanceData }: any) => (
-    <div data-testid="reasoning-display">
-      <div>{reasoning.industry_match}</div>
-      <div>{reasoning.business_goal_alignment}</div>
-      <div>Satisfaction: {performanceData.user_satisfaction_score}</div>
-    </div>
-  )
-}));
-
-// Mock data
-const mockWebsiteAnalysis: WebsiteAnalysisResult = {
-  business_classification: {
-    industry: 'Software & Technology',
-    sub_industry: ['SaaS', 'B2B Software'],
-    business_model: 'saas',
-    confidence: 0.92
-  },
-  content_analysis: {
-    brand_voice: 'professional',
-    target_audience: ['Business owners', 'Marketing professionals'],
-    value_propositions: ['Automated workflows', 'Time savings', 'Better conversions'],
-    existing_workflows: [
-      { type: 'email_sequence', confidence: 0.8, description: 'Lead nurturing emails' }
-    ]
-  },
-  marketing_maturity: {
-    level: 'intermediate',
-    existing_tools: ['Email marketing', 'CRM', 'Analytics'],
-    automation_readiness: 0.75
-  }
-};
-
-const mockRecommendations: SmartTemplateRecommendation[] = [
-  {
-    template_id: 'lead-nurture-email',
-    template_name: 'Lead Nurturing Email Sequence',
-    category: WorkflowCategory.MARKETING,
-    relevance_score: 0.92,
-    success_probability: 0.85,
-    customization_preview: {
-      nodes: [],
-      connections: [],
-      estimated_setup_time: 8
-    },
-    reasoning: {
-      industry_match: 'Perfect fit for SaaS businesses',
-      business_goal_alignment: 'Directly addresses lead conversion goals',
-      automation_fit: 'High readiness for automation complexity',
-      expected_benefits: ['40-60% conversion improvement', 'Automated scoring', 'Personalized messaging']
-    },
-    performance_data: {
-      average_conversion_rate: 0.34,
-      typical_roi_range: [2.8, 4.2],
-      user_satisfaction_score: 4.6
-    }
-  },
-  {
-    template_id: 'support-ticket-routing',
-    template_name: 'Smart Support Ticket Routing',
-    category: WorkflowCategory.SUPPORT,
-    relevance_score: 0.87,
-    success_probability: 0.78,
-    customization_preview: {
-      nodes: [],
-      connections: [],
-      estimated_setup_time: 12
-    },
-    reasoning: {
-      industry_match: 'Highly relevant for growing SaaS companies',
-      business_goal_alignment: 'Addresses scalable support needs',
-      automation_fit: 'Technical infrastructure supports intelligent routing',
-      expected_benefits: ['50% faster response time', 'Auto-categorization', 'Load balancing']
-    },
-    performance_data: {
-      average_conversion_rate: 0.28,
-      typical_roi_range: [1.8, 3.2],
-      user_satisfaction_score: 4.3
-    }
-  }
-];
-
-describe('SmartTemplateRecommendations', () => {
-  const mockOnTemplateSelect = jest.fn();
-  const mockOnTemplateInstantiate = jest.fn();
+    refreshRecommendations: jest.fn(),
+    analyzeBusinessContext: jest.fn()
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (useSmartTemplateRecommendations as jest.Mock).mockReturnValue(mockHookReturn);
   });
 
-  // AC1: AI analyzes user's website content and suggests relevant workflow templates with 90%+ relevance accuracy
-  describe('Website Analysis and Template Relevance', () => {
-    test('displays AI-powered template recommendations with high relevance scores', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+  // ========================================================================
+  // COMPONENT RENDERING TESTS (AC: 2)
+  // ========================================================================
+  
+  describe('Component Rendering', () => {
+    it('renders template recommendations with relevance scoring', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Verify header shows AI analysis
-      expect(screen.getByText('AI-Powered Template Recommendations')).toBeInTheDocument();
-      expect(screen.getByText('2 Templates Found')).toBeInTheDocument();
-
-      // Verify high-relevance recommendations are displayed
-      expect(screen.getByText('Lead Nurturing Email Sequence')).toBeInTheDocument();
-      expect(screen.getByText('Smart Support Ticket Routing')).toBeInTheDocument();
+      expect(screen.getByText('E-commerce Lead Nurturing Sequence')).toBeInTheDocument();
+      expect(screen.getByText('92%')).toBeInTheDocument(); // Relevance score
+      expect(screen.getByText('87%')).toBeInTheDocument(); // Success probability
     });
 
-    test('shows website analysis details when requested', async () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+    it('displays business context information', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Click to show analysis details
-      const showAnalysisButton = screen.getByText('Show Analysis');
-      await userEvent.click(showAnalysisButton);
-
-      // Verify analysis details are displayed
-      expect(screen.getByText('Software & Technology')).toBeInTheDocument();
-      expect(screen.getByText('professional')).toBeInTheDocument();
-      expect(screen.getByText('intermediate')).toBeInTheDocument();
-    });
-  });
-
-  // AC2: Templates include Marketing, Support, Sales, and E-commerce categories using existing WorkflowCategory enum
-  describe('Template Categories', () => {
-    test('displays category tabs with counts for all WorkflowCategory types', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
-
-      // Verify all category tabs are present
-      expect(screen.getByText('All (2)')).toBeInTheDocument();
-      expect(screen.getByText(/Marketing/)).toBeInTheDocument();
-      expect(screen.getByText(/Sales/)).toBeInTheDocument();
-      expect(screen.getByText(/Support/)).toBeInTheDocument();
-      expect(screen.getByText(/E-commerce/)).toBeInTheDocument();
+      expect(screen.getByText('E-commerce')).toBeInTheDocument();
+      expect(screen.getByText('Professional')).toBeInTheDocument();
+      expect(screen.getByText('B2B')).toBeInTheDocument();
     });
 
-    test('filters recommendations by category when tab is selected', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+    it('shows loading state when analyzing', () => {
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        isLoading: true,
+        recommendations: []
+      });
 
-      // Verify both templates are initially visible
-      expect(screen.getByText('Lead Nurturing Email Sequence')).toBeInTheDocument();
-      expect(screen.getByText('Smart Support Ticket Routing')).toBeInTheDocument();
+      render(<SmartTemplateRecommendations />);
 
-      // Category filtering would be tested with actual tab interaction
-      // This is mocked in our test setup, but the component should filter correctly
+      expect(screen.getByText(/Analyzing your business/)).toBeInTheDocument();
+      expect(screen.getByRole('status')).toBeInTheDocument(); // Loading spinner
+    });
+
+    it('displays error state gracefully', () => {
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        error: 'Failed to load recommendations',
+        recommendations: []
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      expect(screen.getByText(/Failed to load recommendations/)).toBeInTheDocument();
+      expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });
 
-  // AC3: One-click template instantiation with pre-configured nodes and intelligent parameter defaults
-  describe('Template Instantiation', () => {
-    test('provides one-click instantiation buttons for each template', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+  // ========================================================================
+  // AI REASONING DISPLAY TESTS (AC: 2, 6)
+  // ========================================================================
+  
+  describe('AI Reasoning Display', () => {
+    it('shows detailed reasoning for recommendations', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Verify instantiate buttons are present
-      const instantiateButtons = screen.getAllByText('Instantiate');
-      expect(instantiateButtons).toHaveLength(2);
+      // Click on template to see details
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+
+      expect(screen.getByText('Perfect match for e-commerce industry')).toBeInTheDocument();
+      expect(screen.getByText('94%')).toBeInTheDocument(); // Confidence score
     });
 
-    test('calls onTemplateInstantiate when instantiate button is clicked', async () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+    it('displays success prediction with confidence intervals', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Click instantiate button for first template
-      const firstInstantiateButton = screen.getAllByText('Instantiate')[0];
-      await userEvent.click(firstInstantiateButton);
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
 
-      // Verify callback was called with correct template ID
-      expect(mockOnTemplateInstantiate).toHaveBeenCalledWith('lead-nurture-email', expect.any(Array));
+      expect(screen.getByText('Expected Outcomes')).toBeInTheDocument();
+      expect(screen.getByText('25%')).toBeInTheDocument(); // Conversion increase
+      expect(screen.getByText('340%')).toBeInTheDocument(); // Average ROI
     });
-  });
 
-  // AC4: AI customizes email templates, trigger conditions, and actions for user's brand voice and style
-  describe('AI Customization Preview', () => {
-    test('displays customization details in reasoning section', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-          showReasoningDetails={true}
-        />
-      );
+    it('highlights risk factors and mitigation strategies', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Select a template to show reasoning
-      const selectButton = screen.getAllByText('Select')[0];
-      fireEvent.click(selectButton);
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
 
-      // Verify reasoning display shows customization details
-      expect(screen.getByTestId('reasoning-display')).toBeInTheDocument();
-      expect(screen.getByText('Perfect fit for SaaS businesses')).toBeInTheDocument();
-      expect(screen.getByText('Directly addresses lead conversion goals')).toBeInTheDocument();
+      expect(screen.getByText('Requires integration with Shopify')).toBeInTheDocument();
+      expect(screen.getByText('Risk Factors')).toBeInTheDocument();
+    });
+
+    it('shows industry benchmarks for context', () => {
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+
+      expect(screen.getByText('Industry Benchmark')).toBeInTheDocument();
+      expect(screen.getByText('18%')).toBeInTheDocument();
     });
   });
 
-  // AC5: Preview mode shows expected workflow outcomes before activation with success probability estimates
-  describe('Outcome Prediction', () => {
-    test('displays success probability estimates for each template', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+  // ========================================================================
+  // TEMPLATE CUSTOMIZATION PREVIEW TESTS (AC: 3)
+  // ========================================================================
+  
+  describe('Template Customization Preview', () => {
+    it('shows AI-suggested customizations with impact assessment', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Verify success probabilities are displayed in template cards
-      // The exact display format depends on TemplateRecommendationCard implementation
-      expect(screen.getByText('Score: 0.92')).toBeInTheDocument();
-      expect(screen.getByText('Score: 0.87')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+      fireEvent.click(screen.getByText('Preview Customizations'));
+
+      expect(screen.getByText('Welcome to [Brand Name]')).toBeInTheDocument();
+      expect(screen.getByText('85%')).toBeInTheDocument(); // Personalization score
+    });
+
+    it('displays before/after comparisons', () => {
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+      fireEvent.click(screen.getByText('Preview Customizations'));
+
+      expect(screen.getByText('Before')).toBeInTheDocument();
+      expect(screen.getByText('After')).toBeInTheDocument();
+      expect(screen.getByText('Impact Assessment')).toBeInTheDocument();
+    });
+
+    it('shows integration requirements and setup complexity', () => {
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+
+      expect(screen.getByText('Integration Requirements')).toBeInTheDocument();
+      expect(screen.getByText('Shopify')).toBeInTheDocument();
+      expect(screen.getByText('Low')).toBeInTheDocument(); // Setup complexity
+    });
+
+    it('provides confidence scores for customizations', () => {
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+      fireEvent.click(screen.getByText('Preview Customizations'));
+
+      // Should show personalization confidence
+      expect(screen.getByText('85%')).toBeInTheDocument();
     });
   });
 
-  // AC6: Template recommendation engine learns from user adoption patterns and workflow success rates
-  describe('Learning and Feedback', () => {
-    test('provides feedback mechanism when templates are selected or instantiated', () => {
-      // This is tested through the hook integration
-      // The component should call provideFeedback when actions are taken
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+  // ========================================================================
+  // ONE-CLICK INSTANTIATION TESTS (AC: 4)
+  // ========================================================================
+  
+  describe('One-Click Instantiation', () => {
+    it('handles template instantiation with business context', async () => {
+      const mockInstantiate = jest.fn().mockResolvedValue({
+        workflowId: 'new-workflow-123',
+        status: 'created'
+      });
 
-      // Template selection and instantiation should trigger feedback
-      expect(screen.getAllByText('Select')).toHaveLength(2);
-      expect(screen.getAllByText('Instantiate')).toHaveLength(2);
-    });
-  });
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        instantiateTemplate: mockInstantiate
+      });
 
-  // AC7: Integration with existing workflow builder maintains current drag-drop functionality and performance
-  describe('Workflow Builder Integration', () => {
-    test('maintains template selection interface without breaking existing functionality', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+      render(<SmartTemplateRecommendations />);
 
-      // Verify component renders without errors and provides expected interface
-      expect(screen.getByText('AI-Powered Template Recommendations')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
       
-      // Verify selection callbacks are properly wired
-      const selectButton = screen.getAllByText('Select')[0];
-      fireEvent.click(selectButton);
-      expect(mockOnTemplateSelect).toHaveBeenCalled();
+      const instantiateButton = screen.getByText('Create Workflow');
+      fireEvent.click(instantiateButton);
+
+      await waitFor(() => {
+        expect(mockInstantiate).toHaveBeenCalledWith('ecom-lead-nurture', mockBusinessContext);
+      });
     });
 
-    test('supports maxRecommendations prop for performance optimization', () => {
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-          maxRecommendations={1}
-        />
-      );
+    it('shows setup instructions after instantiation', async () => {
+      const mockInstantiate = jest.fn().mockResolvedValue({
+        workflowId: 'new-workflow-123',
+        status: 'created',
+        setupInstructions: [
+          'Connect your Shopify store',
+          'Configure email templates',
+          'Set automation triggers'
+        ]
+      });
 
-      // Component should respect the maxRecommendations limit
-      // This would be verified through the hook behavior in actual implementation
-      expect(screen.getByText('AI-Powered Template Recommendations')).toBeInTheDocument();
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        instantiateTemplate: mockInstantiate
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+      fireEvent.click(screen.getByText('Create Workflow'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Setup Instructions')).toBeInTheDocument();
+        expect(screen.getByText('Connect your Shopify store')).toBeInTheDocument();
+      });
+    });
+
+    it('handles instantiation errors gracefully', async () => {
+      const mockInstantiate = jest.fn().mockRejectedValue(new Error('Integration failed'));
+
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        instantiateTemplate: mockInstantiate
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+      fireEvent.click(screen.getByText('Create Workflow'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Integration failed')).toBeInTheDocument();
+        expect(screen.getByText('Try Again')).toBeInTheDocument();
+      });
+    });
+
+    it('tracks template selection analytics', async () => {
+      const mockInstantiate = jest.fn().mockResolvedValue({ status: 'created' });
+
+      render(<SmartTemplateRecommendations />);
+
+      fireEvent.click(screen.getByText('E-commerce Lead Nurturing Sequence'));
+      fireEvent.click(screen.getByText('Create Workflow'));
+
+      await waitFor(() => {
+        expect(mockInstantiate).toHaveBeenCalledWith(
+          'ecom-lead-nurture',
+          mockBusinessContext
+        );
+      });
     });
   });
 
-  // Loading States
-  describe('Loading States', () => {
-    test('displays loading skeleton during recommendation generation', () => {
-      // Mock loading state
-      const { useSmartTemplateRecommendations } = require('@/hooks/useSmartTemplateRecommendations');
-      useSmartTemplateRecommendations.mockReturnValue({
-        recommendations: [],
-        loadingState: {
-          isAnalyzing: false,
-          isGeneratingRecommendations: true,
-          isInstantiating: false,
-          error: null
-        },
-        analyzeWebsite: jest.fn(),
-        instantiateTemplate: jest.fn(),
-        provideFeedback: jest.fn(),
-        refreshRecommendations: jest.fn()
+  // ========================================================================
+  // FILTERING AND SEARCH TESTS (AC: 5)
+  // ========================================================================
+  
+  describe('Interactive Selection Interface', () => {
+    it('provides category filtering', () => {
+      render(<SmartTemplateRecommendations />);
+
+      const categoryFilter = screen.getByLabelText('Category');
+      fireEvent.change(categoryFilter, { target: { value: 'Marketing' } });
+
+      expect(mockHookReturn.updateFilters).toHaveBeenCalledWith({
+        category: 'Marketing'
       });
-
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
-
-      // Verify loading skeletons are displayed
-      expect(screen.getAllByText('Loading...')).toHaveLength(4);
     });
 
-    test('displays website analysis loading state', () => {
-      const { useSmartTemplateRecommendations } = require('@/hooks/useSmartTemplateRecommendations');
-      useSmartTemplateRecommendations.mockReturnValue({
-        recommendations: [],
-        loadingState: {
-          isAnalyzing: true,
-          isGeneratingRecommendations: false,
-          isInstantiating: false,
-          error: null
-        },
-        analyzeWebsite: jest.fn(),
-        instantiateTemplate: jest.fn(),
-        provideFeedback: jest.fn(),
-        refreshRecommendations: jest.fn()
+    it('supports search functionality', () => {
+      render(<SmartTemplateRecommendations />);
+
+      const searchInput = screen.getByPlaceholderText('Search templates...');
+      fireEvent.change(searchInput, { target: { value: 'lead generation' } });
+
+      expect(mockHookReturn.setSearchQuery).toHaveBeenCalledWith('lead generation');
+    });
+
+    it('allows sorting by different criteria', () => {
+      render(<SmartTemplateRecommendations />);
+
+      const sortSelect = screen.getByLabelText('Sort by');
+      fireEvent.change(sortSelect, { target: { value: 'successRate' } });
+
+      expect(mockHookReturn.setSortBy).toHaveBeenCalledWith('successRate');
+    });
+
+    it('filters by success rate threshold', () => {
+      render(<SmartTemplateRecommendations />);
+
+      const successRateSlider = screen.getByLabelText('Minimum Success Rate');
+      fireEvent.change(successRateSlider, { target: { value: '80' } });
+
+      expect(mockHookReturn.updateFilters).toHaveBeenCalledWith({
+        successRate: 80
       });
+    });
 
-      render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
-      );
+    it('provides grid and list view modes', () => {
+      render(<SmartTemplateRecommendations />);
 
-      // Verify analysis loading state
-      expect(screen.getByText('Analyzing Your Website')).toBeInTheDocument();
-      expect(screen.getByText('Extracting business context and goals...')).toBeInTheDocument();
+      expect(screen.getByLabelText('Grid view')).toBeInTheDocument();
+      expect(screen.getByLabelText('List view')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('List view'));
+      
+      // Should update view mode
+      expect(screen.getByTestId('list-view-container')).toBeInTheDocument();
     });
   });
 
-  // Error Handling
+  // ========================================================================
+  // BUSINESS ANALYSIS INTEGRATION TESTS (AC: 1, 7)
+  // ========================================================================
+  
+  describe('Business Analysis Integration', () => {
+    it('triggers business context analysis', async () => {
+      const mockAnalyze = jest.fn().mockResolvedValue(mockBusinessContext);
+
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        analyzeBusinessContext: mockAnalyze,
+        businessContext: null
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      const analyzeButton = screen.getByText('Analyze My Business');
+      fireEvent.click(analyzeButton);
+
+      await waitFor(() => {
+        expect(mockAnalyze).toHaveBeenCalled();
+      });
+    });
+
+    it('displays business context analysis results', () => {
+      render(<SmartTemplateRecommendations />);
+
+      expect(screen.getByText('Business Analysis')).toBeInTheDocument();
+      expect(screen.getByText('Industry:')).toBeInTheDocument();
+      expect(screen.getByText('E-commerce')).toBeInTheDocument();
+      expect(screen.getByText('Brand Voice:')).toBeInTheDocument();
+      expect(screen.getByText('Professional')).toBeInTheDocument();
+    });
+
+    it('maintains context across workflow creation', () => {
+      render(<SmartTemplateRecommendations />);
+
+      // Context should be available throughout the component
+      expect(screen.getByTestId('business-context')).toHaveAttribute(
+        'data-context',
+        JSON.stringify(mockBusinessContext)
+      );
+    });
+
+    it('updates recommendations when context changes', async () => {
+      const mockRefresh = jest.fn();
+
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        refreshRecommendations: mockRefresh
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      // Simulate context change
+      const refreshButton = screen.getByLabelText('Refresh recommendations');
+      fireEvent.click(refreshButton);
+
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+  });
+
+  // ========================================================================
+  // PERFORMANCE TESTS
+  // ========================================================================
+  
+  describe('Performance', () => {
+    it('handles large recommendation lists efficiently', () => {
+      const largeRecommendationList = Array.from({ length: 50 }, (_, index) => ({
+        ...mockTemplateRecommendation,
+        template_id: `template-${index}`,
+        name: `Template ${index}`
+      }));
+
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        recommendations: largeRecommendationList
+      });
+
+      const { container } = render(<SmartTemplateRecommendations />);
+
+      // Should render without performance issues
+      expect(container.querySelectorAll('[data-testid="template-card"]')).toHaveLength(50);
+    });
+
+    it('implements virtual scrolling for large lists', () => {
+      const largeList = Array.from({ length: 100 }, (_, i) => ({
+        ...mockTemplateRecommendation,
+        template_id: `template-${i}`,
+        name: `Template ${i}`
+      }));
+
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        recommendations: largeList
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      // Should implement virtual scrolling
+      expect(screen.getByTestId('virtual-scroll-container')).toBeInTheDocument();
+    });
+
+    it('debounces search input for performance', async () => {
+      jest.useFakeTimers();
+
+      render(<SmartTemplateRecommendations />);
+
+      const searchInput = screen.getByPlaceholderText('Search templates...');
+      
+      // Type rapidly
+      fireEvent.change(searchInput, { target: { value: 'l' } });
+      fireEvent.change(searchInput, { target: { value: 'le' } });
+      fireEvent.change(searchInput, { target: { value: 'lea' } });
+      fireEvent.change(searchInput, { target: { value: 'lead' } });
+
+      // Should not call setSearchQuery immediately
+      expect(mockHookReturn.setSearchQuery).not.toHaveBeenCalled();
+
+      // Fast-forward debounce timer
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      // Should call only once with final value
+      expect(mockHookReturn.setSearchQuery).toHaveBeenCalledTimes(1);
+      expect(mockHookReturn.setSearchQuery).toHaveBeenCalledWith('lead');
+
+      jest.useRealTimers();
+    });
+  });
+
+  // ========================================================================
+  // ACCESSIBILITY TESTS
+  // ========================================================================
+  
+  describe('Accessibility', () => {
+    it('provides proper ARIA labels and roles', () => {
+      render(<SmartTemplateRecommendations />);
+
+      expect(screen.getByRole('main')).toHaveAttribute('aria-label', 'Smart Template Recommendations');
+      expect(screen.getByRole('search')).toBeInTheDocument();
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+    });
+
+    it('supports keyboard navigation', () => {
+      render(<SmartTemplateRecommendations />);
+
+      const templateCard = screen.getByTestId('template-card-ecom-lead-nurture');
+      expect(templateCard).toHaveAttribute('tabIndex', '0');
+
+      // Test keyboard activation
+      fireEvent.keyDown(templateCard, { key: 'Enter' });
+      expect(mockHookReturn.selectTemplate).toHaveBeenCalledWith('ecom-lead-nurture');
+    });
+
+    it('provides screen reader friendly content', () => {
+      render(<SmartTemplateRecommendations />);
+
+      expect(screen.getByText('92% relevance score')).toHaveAttribute(
+        'aria-label',
+        'Relevance score: 92 percent'
+      );
+      expect(screen.getByText('87% success probability')).toHaveAttribute(
+        'aria-label',
+        'Success probability: 87 percent'
+      );
+    });
+
+    it('handles focus management properly', () => {
+      render(<SmartTemplateRecommendations />);
+
+      const templateCard = screen.getByTestId('template-card-ecom-lead-nurture');
+      fireEvent.click(templateCard);
+
+      // Focus should move to details panel
+      expect(screen.getByTestId('template-details')).toHaveFocus();
+    });
+  });
+
+  // ========================================================================
+  // ERROR BOUNDARY TESTS
+  // ========================================================================
+  
   describe('Error Handling', () => {
-    test('displays error state when recommendation generation fails', () => {
-      const { useSmartTemplateRecommendations } = require('@/hooks/useSmartTemplateRecommendations');
-      useSmartTemplateRecommendations.mockReturnValue({
-        recommendations: [],
-        loadingState: {
-          isAnalyzing: false,
-          isGeneratingRecommendations: false,
-          isInstantiating: false,
-          error: 'Failed to generate recommendations'
-        },
-        analyzeWebsite: jest.fn(),
-        instantiateTemplate: jest.fn(),
-        provideFeedback: jest.fn(),
-        refreshRecommendations: jest.fn()
-      });
+    it('catches and displays component errors gracefully', () => {
+      const ThrowError = () => {
+        throw new Error('Test error');
+      };
+
+      const ErrorBoundaryWrapper = ({ children }: { children: React.ReactNode }) => {
+        try {
+          return <>{children}</>;
+        } catch (error) {
+          return <div>Error caught: {(error as Error).message}</div>;
+        }
+      };
 
       render(
-        <SmartTemplateRecommendations
-          websiteAnalysis={mockWebsiteAnalysis}
-          onTemplateSelect={mockOnTemplateSelect}
-          onTemplateInstantiate={mockOnTemplateInstantiate}
-        />
+        <ErrorBoundaryWrapper>
+          <ThrowError />
+        </ErrorBoundaryWrapper>
       );
 
-      // Verify error display
-      expect(screen.getByText('Analysis Failed')).toBeInTheDocument();
-      expect(screen.getByText('Failed to generate recommendations')).toBeInTheDocument();
-      expect(screen.getByText('Try Again')).toBeInTheDocument();
-    });
-  });
-});
-
-// Integration Tests
-describe('SmartTemplateRecommendations Integration', () => {
-  test('full workflow from analysis to instantiation', async () => {
-    const mockAnalyzeWebsite = jest.fn();
-    const mockInstantiateTemplate = jest.fn().mockResolvedValue({
-      workflow_id: 'workflow_123',
-      workflow_name: 'Test Workflow',
-      customizations_applied: [],
-      estimated_setup_time: 5,
-      next_steps: []
+      expect(screen.getByText('Error caught: Test error')).toBeInTheDocument();
     });
 
-    const { useSmartTemplateRecommendations } = require('@/hooks/useSmartTemplateRecommendations');
-    useSmartTemplateRecommendations.mockReturnValue({
-      recommendations: mockRecommendations,
-      loadingState: {
-        isAnalyzing: false,
-        isGeneratingRecommendations: false,
-        isInstantiating: false,
-        error: null
-      },
-      analyzeWebsite: mockAnalyzeWebsite,
-      instantiateTemplate: mockInstantiateTemplate,
-      provideFeedback: jest.fn(),
-      refreshRecommendations: jest.fn()
+    it('provides fallback content when recommendations fail to load', () => {
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        recommendations: [],
+        error: 'Network error'
+      });
+
+      render(<SmartTemplateRecommendations />);
+
+      expect(screen.getByText('Unable to load recommendations')).toBeInTheDocument();
+      expect(screen.getByText('Try again')).toBeInTheDocument();
     });
 
-    render(
-      <SmartTemplateRecommendations
-        websiteAnalysis={mockWebsiteAnalysis}
-        onTemplateSelect={mockOnTemplateSelect}
-        onTemplateInstantiate={mockOnTemplateInstantiate}
-      />
-    );
+    it('handles partial data gracefully', () => {
+      const incompleteRecommendation = {
+        template_id: 'incomplete',
+        name: 'Incomplete Template',
+        relevanceScore: 85
+        // Missing other required fields
+      };
 
-    // Select and instantiate a template
-    const selectButton = screen.getAllByText('Select')[0];
-    const instantiateButton = screen.getAllByText('Instantiate')[0];
+      (useSmartTemplateRecommendations as jest.Mock).mockReturnValue({
+        ...mockHookReturn,
+        recommendations: [incompleteRecommendation]
+      });
 
-    await userEvent.click(selectButton);
-    expect(mockOnTemplateSelect).toHaveBeenCalled();
+      render(<SmartTemplateRecommendations />);
 
-    await userEvent.click(instantiateButton);
-    
-    await waitFor(() => {
-      expect(mockInstantiateTemplate).toHaveBeenCalledWith('lead-nurture-email');
-      expect(mockOnTemplateInstantiate).toHaveBeenCalled();
+      // Should render with fallback values
+      expect(screen.getByText('Incomplete Template')).toBeInTheDocument();
+      expect(screen.getByText('85%')).toBeInTheDocument();
     });
   });
 });

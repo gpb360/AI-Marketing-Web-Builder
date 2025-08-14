@@ -1,7 +1,7 @@
 """
 AI service for integrating with Google Gemini API.
 Provides AI-powered content generation and analysis capabilities.
-Story #106: Business-specific action customization with intelligent integrations.
+Enhanced for Epic 4: Advanced AI Features with multi-model support.
 """
 
 import logging
@@ -13,6 +13,7 @@ import aiohttp
 import os
 from functools import wraps
 from asyncio import Semaphore
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -56,13 +57,83 @@ def rate_limit(max_calls: int = 60, time_window: int = 60):
     return decorator
 
 
+class IntelligentModelRouter:
+    """Route AI requests to optimal models based on task complexity and requirements."""
+    
+    MODEL_ROUTING = {
+        'component_suggestions': {
+            'simple': 'gemini-1.5-flash',
+            'complex': 'gpt-4-turbo'
+        },
+        'template_generation': {
+            'default': 'claude-3.5-sonnet',
+            'creative': 'gpt-4-turbo'
+        },
+        'workflow_creation': {
+            'default': 'claude-3.5-sonnet'
+        },
+        'performance_analysis': {
+            'default': 'gpt-4-turbo'
+        }
+    }
+    
+    async def select_model(self, task_type: str, context: Any = None) -> str:
+        """Select optimal model for task based on context complexity."""
+        
+        if task_type not in self.MODEL_ROUTING:
+            return 'gemini-1.5-flash'  # Default fallback
+        
+        task_config = self.MODEL_ROUTING[task_type]
+        
+        # Simple routing logic - can be enhanced with ML-based routing
+        if task_type == 'component_suggestions':
+            # Use complex model if context has many existing components
+            if isinstance(context, dict) and len(context.get('existing_components', [])) > 10:
+                return task_config.get('complex', task_config['simple'])
+            return task_config['simple']
+        
+        return task_config.get('default', 'gemini-1.5-flash')
+
+
 class AIService:
-    """AI service for content generation using Google Gemini API."""
+    """Enhanced AI service for Epic 4 advanced AI features with multi-model support."""
     
     def __init__(self):
         self.api_key = os.getenv("GOOGLE_API_KEY")
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+        
+        # Model configurations
+        self.models = {
+            'gemini-1.5-flash': {
+                'base_url': 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+                'api_key': self.api_key,
+                'type': 'gemini'
+            },
+            'gpt-4-turbo': {
+                'base_url': 'https://api.openai.com/v1/chat/completions',
+                'api_key': self.openai_api_key,
+                'type': 'openai'
+            },
+            'claude-3.5-sonnet': {
+                'base_url': 'https://api.anthropic.com/v1/messages',
+                'api_key': self.anthropic_api_key,
+                'type': 'anthropic'
+            }
+        }
+        
+        # Epic 4: Intelligent model routing
+        self.model_router = IntelligentModelRouter()
         self.session = None
+        
+        # Performance tracking
+        self.request_count = 0
+        self.total_latency = 0
+        
+        # Epic 4: AI feature caches
+        self.component_suggestion_cache = {}
+        self.template_generation_cache = {}
+        self.workflow_creation_cache = {}
         
     async def __aenter__(self):
         """Async context manager entry."""
@@ -256,559 +327,454 @@ class AIService:
         """
         
         return await self.generate_json_response(prompt)
-
-    # Story #106: Business-specific action customization methods
-
-    @rate_limit(max_calls=20, time_window=60)
-    async def analyze_website_content(
+    
+    # Epic 4: Enhanced AI capabilities
+    
+    async def generate_component_suggestions(
         self, 
-        website_content: Dict[str, Any], 
-        business_context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Analyze website content to determine business type, industry, and workflow needs.
-        Achieves 90%+ relevance for workflow template suggestions.
-        """
-        business_info = business_context or {}
+        context: Dict[str, Any],
+        current_components: List[Dict[str, Any]] = None,
+        user_preferences: Dict[str, Any] = None
+    ) -> List[Dict[str, Any]]:
+        """Generate intelligent component suggestions based on context."""
+        
+        cache_key = self._generate_cache_key('component_suggestions', context)
+        if cache_key in self.component_suggestion_cache:
+            return self.component_suggestion_cache[cache_key]
         
         prompt = f"""
-        Analyze this website content to understand the business and suggest optimal workflow automation:
-
-        WEBSITE CONTENT:
-        - URL: {website_content.get('url', 'N/A')}
-        - Title: {website_content.get('title', 'N/A')}
-        - Meta Description: {website_content.get('meta_description', 'N/A')}
-        - Main Content: {website_content.get('content', 'N/A')[:2000]}  # Limit content length
-        - Page Sections: {website_content.get('sections', [])}
-
-        ADDITIONAL CONTEXT:
-        - Business Description: {business_info.get('description', 'N/A')}
-        - Target Audience: {business_info.get('target_audience', 'N/A')}
-        - Current Tools: {business_info.get('current_tools', [])}
-
-        Provide comprehensive business analysis in JSON format:
-        {{
-            "business_classification": {{
-                "industry": "specific industry (e.g., SaaS, E-commerce, Healthcare)",
-                "sub_industries": ["list", "of", "sub-industries"],
-                "business_model": "b2b|b2c|marketplace|saas|nonprofit",
-                "company_size": "startup|small|medium|enterprise",
-                "confidence": 0.95
-            }},
-            "content_analysis": {{
-                "brand_voice": "professional|casual|technical|creative|friendly",
-                "value_propositions": ["primary value prop", "secondary value prop"],
-                "target_audiences": ["primary audience", "secondary audience"],
-                "pain_points_addressed": ["pain point 1", "pain point 2"],
-                "competitive_advantages": ["advantage 1", "advantage 2"],
-                "existing_workflows_detected": [
-                    {{
-                        "type": "workflow type",
-                        "confidence": 0.8,
-                        "description": "what this workflow does",
-                        "current_automation_level": "none|basic|advanced"
-                    }}
-                ]
-            }},
-            "marketing_maturity": {{
-                "level": "basic|intermediate|advanced",
-                "existing_tools_detected": ["tool1", "tool2"],
-                "automation_readiness_score": 0.85,
-                "current_gaps": ["gap1", "gap2"],
-                "opportunities": ["opportunity1", "opportunity2"]
-            }},
-            "workflow_recommendations": {{
-                "marketing": {{
-                    "priority": "high|medium|low",
-                    "suggested_workflows": ["lead capture", "email nurture", "social media"],
-                    "expected_roi": [150, 300],
-                    "implementation_complexity": "simple|moderate|complex"
-                }},
-                "support": {{
-                    "priority": "high|medium|low", 
-                    "suggested_workflows": ["ticket routing", "knowledge base", "chat automation"],
-                    "expected_roi": [200, 400],
-                    "implementation_complexity": "simple|moderate|complex"
-                }},
-                "sales": {{
-                    "priority": "high|medium|low",
-                    "suggested_workflows": ["lead scoring", "follow-up sequences", "proposal automation"],
-                    "expected_roi": [250, 500],
-                    "implementation_complexity": "simple|moderate|complex"
-                }},
-                "ecommerce": {{
-                    "priority": "high|medium|low",
-                    "suggested_workflows": ["abandoned cart", "inventory alerts", "review automation"],
-                    "expected_roi": [180, 350],
-                    "implementation_complexity": "simple|moderate|complex"
-                }}
-            }}
-        }}
+        Analyze the current website building context and suggest 5 highly relevant components:
+        
+        Context: {json.dumps(context)}
+        Current Components: {json.dumps(current_components or [])}
+        User Preferences: {json.dumps(user_preferences or {})}
+        
+        For each component suggestion, provide:
+        - component_type: specific component type (header, hero, contact-form, etc.)
+        - reasoning: why this component fits the context
+        - priority: high/medium/low priority for this context
+        - expected_impact: predicted conversion/engagement impact
+        - customization_suggestions: specific customization recommendations
+        
+        Focus on:
+        1. Industry best practices for the detected business type
+        2. Conversion optimization opportunities
+        3. User experience improvements
+        4. Missing essential components for the use case
+        5. Performance and accessibility considerations
+        
+        Return as JSON array of component suggestions.
         """
         
-        return await self.generate_json_response(prompt)
-
-    @rate_limit(max_calls=15, time_window=60)
-    async def generate_workflow_template(
-        self, 
-        business_analysis: Dict[str, Any],
-        category: str,
-        template_preferences: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Generate customized workflow template based on business analysis.
-        Creates templates with intelligent defaults and business-specific messaging.
-        """
-        preferences = template_preferences or {}
+        optimal_model = await self.model_router.select_model('component_suggestions', context)
+        suggestions = await self.generate_json_response_with_model(prompt, optimal_model)
         
-        # Extract key business information
-        industry = business_analysis.get("business_classification", {}).get("industry", "General")
-        brand_voice = business_analysis.get("content_analysis", {}).get("brand_voice", "professional")
-        target_audiences = business_analysis.get("content_analysis", {}).get("target_audiences", ["general audience"])
-        value_props = business_analysis.get("content_analysis", {}).get("value_propositions", ["improve efficiency"])
-
-        prompt = f"""
-        Create a customized {category} workflow template for this business:
-
-        BUSINESS CONTEXT:
-        - Industry: {industry}
-        - Brand Voice: {brand_voice}
-        - Target Audiences: {target_audiences}
-        - Value Propositions: {value_props}
-        - Business Model: {business_analysis.get("business_classification", {}).get("business_model", "b2b")}
-
-        USER PREFERENCES:
-        - Complexity Level: {preferences.get("complexity", "moderate")}
-        - Integration Priorities: {preferences.get("integrations", ["email", "crm"])}
-        - Automation Level: {preferences.get("automation_level", "moderate")}
-
-        Create a comprehensive workflow template in JSON format:
-        {{
-            "template_id": "generated-{category}-template-{int(datetime.now().timestamp())}",
-            "name": "Business-specific template name",
-            "description": "Detailed description of what this workflow accomplishes",
-            "category": "{category}",
-            "estimated_setup_time": 15,
-            "success_probability": 0.87,
-            "expected_benefits": [
-                "Specific benefit 1 with metrics",
-                "Specific benefit 2 with ROI estimate"
-            ],
-            "customizations_applied": [
-                {{
-                    "component": "email_template",
-                    "field": "subject_line", 
-                    "original_value": "Generic subject",
-                    "customized_value": "Industry-specific subject matching brand voice",
-                    "reason": "Tailored for {industry} audience with {brand_voice} tone"
-                }}
-            ],
-            "nodes": [
-                {{
-                    "id": "trigger-node-1",
-                    "type": "trigger",
-                    "name": "Form Submission Trigger",
-                    "config": {{
-                        "trigger_type": "form_submit",
-                        "form_selector": "#contact-form",
-                        "required_fields": ["email", "name"],
-                        "business_specific_fields": []
-                    }},
-                    "position": {{"x": 100, "y": 100}},
-                    "customizations": [
-                        {{
-                            "field": "welcome_message",
-                            "original": "Thank you for your interest",
-                            "customized": "Brand-voice appropriate welcome message",
-                            "reason": "Matches {brand_voice} brand voice"
-                        }}
-                    ]
-                }},
-                {{
-                    "id": "condition-node-1", 
-                    "type": "condition",
-                    "name": "Lead Quality Assessment",
-                    "config": {{
-                        "conditions": [
-                            {{
-                                "field": "company_size",
-                                "operator": "contains",
-                                "value": "enterprise",
-                                "weight": 0.4
-                            }}
-                        ],
-                        "scoring_logic": "weighted_sum",
-                        "threshold": 0.6
-                    }},
-                    "position": {{"x": 300, "y": 100}}
-                }},
-                {{
-                    "id": "action-node-1",
-                    "type": "email",
-                    "name": "Personalized Welcome Email",
-                    "config": {{
-                        "template": {{
-                            "subject": "Industry-specific subject line",
-                            "body": "Personalized email body matching brand voice and addressing specific pain points",
-                            "sender_name": "Auto-detected from business context",
-                            "personalization_tokens": ["first_name", "company", "industry"]
-                        }},
-                        "scheduling": {{
-                            "delay": 0,
-                            "business_hours_only": true,
-                            "timezone": "auto_detect"
-                        }}
-                    }},
-                    "position": {{"x": 500, "y": 100}},
-                    "customizations": [
-                        {{
-                            "field": "email_body",
-                            "original": "Generic welcome email",
-                            "customized": "Welcome email specifically crafted for {industry} businesses",
-                            "reason": "Addresses common {industry} pain points and uses {brand_voice} tone"
-                        }}
-                    ]
-                }},
-                {{
-                    "id": "crm-node-1",
-                    "type": "crm_update",
-                    "name": "Update Contact Record",
-                    "config": {{
-                        "integration": "hubspot|salesforce|pipedrive",
-                        "operation": "create_or_update",
-                        "fields": {{
-                            "lead_source": "{category}_workflow",
-                            "lead_score": "calculated_from_conditions",
-                            "industry": "{industry}",
-                            "workflow_stage": "initial_contact"
-                        }},
-                        "custom_properties": []
-                    }},
-                    "position": {{"x": 500, "y": 250}}
-                }}
-            ],
-            "connections": [
-                {{
-                    "source": "trigger-node-1",
-                    "target": "condition-node-1",
-                    "label": "New submission"
-                }},
-                {{
-                    "source": "condition-node-1", 
-                    "target": "action-node-1",
-                    "label": "Qualified lead",
-                    "condition": "score >= 0.6"
-                }},
-                {{
-                    "source": "condition-node-1",
-                    "target": "crm-node-1", 
-                    "label": "All leads"
-                }}
-            ],
-            "performance_predictions": {{
-                "conversion_rate_estimate": 0.15,
-                "roi_range": [200, 400],
-                "confidence_level": 0.85,
-                "key_success_factors": [
-                    "Industry-specific messaging resonates with target audience",
-                    "Automated lead scoring improves sales efficiency"
-                ],
-                "potential_challenges": [
-                    "May need CRM integration setup",
-                    "Requires email template customization"
-                ]
-            }},
-            "integration_requirements": [
-                {{
-                    "type": "email_service",
-                    "required": true,
-                    "recommendations": ["Mailchimp", "SendGrid", "ConvertKit"],
-                    "setup_complexity": "low"
-                }},
-                {{
-                    "type": "crm",
-                    "required": false,
-                    "recommendations": ["HubSpot", "Salesforce", "Pipedrive"],
-                    "setup_complexity": "medium"
-                }}
-            ]
-        }}
-        """
+        # Cache for 1 hour
+        self.component_suggestion_cache[cache_key] = suggestions
+        asyncio.create_task(self._expire_cache_key('component_suggestions', cache_key, 3600))
         
-        return await self.generate_json_response(prompt)
-
-    @rate_limit(max_calls=10, time_window=60)
-    async def customize_email_templates(
+        return suggestions
+    
+    async def generate_template_from_description(
         self,
-        business_analysis: Dict[str, Any],
-        template_context: Dict[str, Any],
-        email_types: List[str]
+        description: str,
+        business_context: Dict[str, Any],
+        requirements: Dict[str, Any] = None
     ) -> Dict[str, Any]:
-        """
-        Customize email templates for specific business voice and messaging.
-        Generates brand-appropriate content with industry-specific personalization.
-        """
-        industry = business_analysis.get("business_classification", {}).get("industry", "General")
-        brand_voice = business_analysis.get("content_analysis", {}).get("brand_voice", "professional")
-        value_props = business_analysis.get("content_analysis", {}).get("value_propositions", ["improve efficiency"])
+        """Generate complete template from natural language description."""
+        
+        cache_key = self._generate_cache_key('template_generation', {
+            'description': description,
+            'context': business_context
+        })
+        
+        if cache_key in self.template_generation_cache:
+            return self.template_generation_cache[cache_key]
         
         prompt = f"""
-        Create customized email templates for a {industry} business with {brand_voice} brand voice:
-
-        BUSINESS CONTEXT:
-        - Industry: {industry}
-        - Brand Voice: {brand_voice}
-        - Value Propositions: {value_props}
-        - Template Context: {template_context}
-
-        EMAIL TYPES TO CUSTOMIZE: {email_types}
-
-        Generate customized email templates in JSON format:
-        {{
-            "templates": {{
-                "welcome_email": {{
-                    "subject": "Industry-appropriate welcome subject",
-                    "preview_text": "Compelling preview text",
-                    "body_html": "Professional HTML email body with industry-specific messaging",
-                    "body_plain": "Plain text version",
-                    "personalization_fields": ["first_name", "company", "industry"],
-                    "customization_notes": [
-                        "Subject line uses {brand_voice} tone",
-                        "Body addresses {industry} specific pain points",
-                        "CTA matches business goals"
-                    ]
-                }},
-                "follow_up_email": {{
-                    "subject": "Compelling follow-up subject",
-                    "body_html": "Follow-up email with value-driven content",
-                    "body_plain": "Plain text version", 
-                    "send_delay": "3_days",
-                    "personalization_fields": ["first_name", "last_interaction"],
-                    "customization_notes": ["Timing optimized for {industry} buying cycles"]
-                }},
-                "nurture_sequence": [
-                    {{
-                        "sequence_position": 1,
-                        "subject": "Educational content subject",
-                        "body_html": "Value-driven educational content",
-                        "send_delay": "7_days",
-                        "goal": "educate_prospect"
-                    }},
-                    {{
-                        "sequence_position": 2,
-                        "subject": "Social proof subject",
-                        "body_html": "Case studies and testimonials",
-                        "send_delay": "14_days", 
-                        "goal": "build_trust"
-                    }}
-                ]
-            }},
-            "messaging_guidelines": {{
-                "tone_characteristics": ["{brand_voice}", "helpful", "industry_expert"],
-                "key_phrases": ["industry-specific phrases", "value proposition language"],
-                "avoid_phrases": ["generic marketing speak", "overly salesy language"],
-                "personalization_strategy": "Use industry context and company-specific pain points"
-            }},
-            "performance_optimization": {{
-                "subject_line_variants": [
-                    "Primary subject line option",
-                    "Alternative A/B test option", 
-                    "Emoji variant (if appropriate for brand voice)"
-                ],
-                "send_time_recommendations": {{
-                    "best_days": ["Tuesday", "Wednesday", "Thursday"],
-                    "best_times": ["10:00 AM", "2:00 PM"],
-                    "timezone": "recipient_local"
-                }},
-                "expected_metrics": {{
-                    "open_rate": 0.25,
-                    "click_rate": 0.08,
-                    "conversion_rate": 0.03
-                }}
-            }}
-        }}
-        """
+        Generate a complete website template based on this description:
         
-        return await self.generate_json_response(prompt)
-
-    @rate_limit(max_calls=10, time_window=60)
-    async def predict_workflow_success(
-        self,
-        workflow_config: Dict[str, Any],
-        business_analysis: Dict[str, Any],
-        historical_data: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Predict workflow success probability and expected outcomes.
-        Provides success estimates and ROI predictions based on business context.
-        """
-        historical = historical_data or {}
+        Description: "{description}"
         
-        prompt = f"""
-        Predict the success probability and expected outcomes for this workflow:
-
-        WORKFLOW CONFIGURATION:
-        {json.dumps(workflow_config, indent=2)}
-
-        BUSINESS CONTEXT:
-        {json.dumps(business_analysis, indent=2)}
-
-        HISTORICAL PERFORMANCE DATA:
-        - Similar Workflows: {historical.get('similar_workflows_count', 'No data')}
-        - Industry Benchmarks: {historical.get('industry_benchmarks', {})}
-        - User Success Patterns: {historical.get('success_patterns', [])}
-
-        Provide comprehensive success prediction in JSON format:
-        {{
-            "success_prediction": {{
-                "overall_success_probability": 0.87,
-                "confidence_level": 0.92,
-                "prediction_factors": [
-                    {{
-                        "factor": "Industry fit",
-                        "impact": 0.3,
-                        "rating": "high",
-                        "explanation": "Workflow type highly effective for this industry"
-                    }},
-                    {{
-                        "factor": "Complexity appropriateness", 
-                        "impact": 0.25,
-                        "rating": "medium",
-                        "explanation": "Moderate complexity matches user experience level"
-                    }}
-                ]
-            }},
-            "expected_outcomes": {{
-                "conversion_rate_estimate": 0.18,
-                "roi_estimate": [250, 450],
-                "time_to_results": "2-4 weeks",
-                "monthly_impact": {{
-                    "leads_generated": [50, 120],
-                    "time_saved_hours": [15, 30],
-                    "revenue_impact": [2500, 6000]
-                }}
-            }},
-            "success_scenarios": [
-                {{
-                    "scenario": "optimistic",
-                    "probability": 0.3,
-                    "conversion_rate": 0.25,
-                    "roi": [400, 600],
-                    "key_assumptions": ["High user adoption", "Optimal integration setup"]
-                }},
-                {{
-                    "scenario": "realistic", 
-                    "probability": 0.5,
-                    "conversion_rate": 0.18,
-                    "roi": [250, 400],
-                    "key_assumptions": ["Normal adoption curve", "Standard setup"]
-                }},
-                {{
-                    "scenario": "conservative",
-                    "probability": 0.2,
-                    "conversion_rate": 0.12,
-                    "roi": [150, 250],
-                    "key_assumptions": ["Slow adoption", "Integration challenges"]
-                }}
-            ]],
-            "risk_factors": [
-                {{
-                    "risk": "Integration complexity",
-                    "probability": 0.3,
-                    "impact": "medium",
-                    "mitigation": "Provide detailed setup guide and support"
-                }},
-                {{
-                    "risk": "User adoption resistance",
-                    "probability": 0.2,
-                    "impact": "high", 
-                    "mitigation": "Gradual rollout with training materials"
-                }}
-            ],
-            "optimization_recommendations": [
-                "Start with simple version and iterate",
-                "Focus on high-impact automation first",
-                "Monitor key metrics weekly for first month",
-                "A/B test email templates after 100 contacts"
-            ],
-            "benchmark_comparisons": {{
-                "industry_average": {{
-                    "conversion_rate": 0.12,
-                    "setup_time": "3-5 days",
-                    "roi": [180, 320]
-                }},
-                "top_performers": {{
-                    "conversion_rate": 0.28,
-                    "setup_time": "1-2 days",
-                    "roi": [450, 700]
-                }},
-                "predicted_vs_industry": "25% above average"
-            }}
-        }}
-        """
-        
-        return await self.generate_json_response(prompt)
-
-    @rate_limit(max_calls=5, time_window=60)
-    async def generate_success_insights(
-        self,
-        workflow_performance_data: List[Dict[str, Any]],
-        business_context: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Generate insights from workflow performance data for learning engine.
-        Analyzes success patterns to improve future recommendations.
-        """
-        prompt = f"""
-        Analyze workflow performance data to extract insights for improving future recommendations:
-
-        PERFORMANCE DATA:
-        {json.dumps(workflow_performance_data, indent=2)}
-
-        BUSINESS CONTEXT:
+        Business Context:
         {json.dumps(business_context, indent=2)}
-
-        Generate actionable insights in JSON format:
-        {{
-            "success_patterns": [
-                {{
-                    "pattern": "Description of identified pattern",
-                    "confidence": 0.85,
-                    "business_factors": ["factor1", "factor2"],
-                    "recommendation": "How to apply this pattern to future workflows"
-                }}
-            ],
-            "failure_analysis": [
-                {{
-                    "failure_mode": "Common failure pattern",
-                    "frequency": 0.15,
-                    "root_causes": ["cause1", "cause2"],
-                    "prevention_strategies": ["strategy1", "strategy2"]
-                }}
-            ],
-            "optimization_opportunities": [
-                {{
-                    "opportunity": "Specific optimization opportunity",
-                    "potential_impact": "high|medium|low",
-                    "implementation_effort": "low|medium|high",
-                    "expected_improvement": "15% increase in conversion rate"
-                }}
-            ],
-            "industry_insights": {{
-                "top_performing_categories": ["marketing", "support"],
-                "industry_specific_factors": ["factor1", "factor2"],
-                "seasonal_patterns": ["Q4 higher performance", "Summer slower adoption"]
-            }},
-            "recommendation_improvements": [
-                "Adjust success probability calculations for this industry",
-                "Emphasize specific integrations in recommendations",
-                "Update template customizations based on performance data"
-            ]
-        }}
+        
+        Requirements:
+        {json.dumps(requirements or {}, indent=2)}
+        
+        Generate a comprehensive template with:
+        
+        1. template_metadata:
+           - name: descriptive template name
+           - category: template category
+           - description: detailed description
+           - target_audience: specific target audience
+           - estimated_conversion_rate: predicted conversion rate
+        
+        2. page_structure:
+           - sections: ordered list of page sections
+           - layout_type: grid/flex layout recommendations
+           - responsive_breakpoints: mobile/tablet/desktop considerations
+        
+        3. components: array of components with:
+           - id: unique component identifier
+           - type: component type
+           - position: section and order
+           - props: default configuration
+           - content: sample content
+           - styling: recommended styling
+        
+        4. color_scheme:
+           - primary_color: main brand color
+           - secondary_color: accent color
+           - background_colors: various background options
+           - text_colors: text color hierarchy
+        
+        5. typography:
+           - heading_fonts: recommended heading fonts
+           - body_fonts: recommended body fonts
+           - font_sizes: responsive font size scale
+        
+        6. optimization_features:
+           - seo_recommendations: SEO optimization suggestions
+           - performance_optimizations: loading and performance tips
+           - accessibility_features: WCAG compliance features
+           - conversion_optimizations: conversion rate optimization features
+        
+        Make the template production-ready with modern design principles,
+        excellent user experience, and strong conversion potential.
+        
+        Return as structured JSON.
         """
         
-        return await self.generate_json_response(prompt)
-
-
-# Singleton instance for dependency injection
-ai_service = AIService()
+        optimal_model = await self.model_router.select_model('template_generation')
+        template = await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=6000)
+        
+        # Cache for 2 hours
+        self.template_generation_cache[cache_key] = template
+        asyncio.create_task(self._expire_cache_key('template_generation', cache_key, 7200))
+        
+        return template
+    
+    async def create_workflow_from_natural_language(
+        self,
+        user_input: str,
+        context: Dict[str, Any],
+        existing_workflows: List[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Create workflow configuration from natural language input."""
+        
+        cache_key = self._generate_cache_key('workflow_creation', {
+            'input': user_input,
+            'context': context
+        })
+        
+        if cache_key in self.workflow_creation_cache:
+            return self.workflow_creation_cache[cache_key]
+        
+        prompt = f"""
+        Create a complete workflow configuration from this natural language request:
+        
+        User Request: "{user_input}"
+        
+        Context:
+        {json.dumps(context, indent=2)}
+        
+        Existing Workflows (for reference):
+        {json.dumps(existing_workflows or [], indent=2)}
+        
+        Generate a complete workflow with:
+        
+        1. workflow_metadata:
+           - name: descriptive workflow name
+           - description: what the workflow accomplishes
+           - category: workflow category (email, crm, analytics, etc.)
+           - estimated_execution_time: expected runtime
+           - complexity_level: simple/medium/complex
+        
+        2. trigger:
+           - trigger_type: form_submit, button_click, schedule, webhook, etc.
+           - trigger_config: specific trigger configuration
+           - conditions: any trigger conditions
+        
+        3. workflow_steps: ordered array of steps with:
+           - step_id: unique step identifier
+           - step_type: action type (email, crm_update, webhook, condition, etc.)
+           - name: human-readable step name
+           - description: what this step does
+           - configuration: step-specific configuration
+           - error_handling: how to handle errors
+           - retry_policy: retry configuration if applicable
+        
+        4. data_flow:
+           - input_data: expected input data structure
+           - data_transformations: any data transformations between steps
+           - output_data: expected output data structure
+        
+        5. success_criteria:
+           - completion_conditions: when workflow is considered successful
+           - success_metrics: metrics to track success
+           - failure_conditions: what constitutes failure
+        
+        6. optimization_suggestions:
+           - performance_tips: ways to improve workflow performance
+           - reliability_improvements: ways to make workflow more reliable
+           - user_experience_enhancements: UX improvements
+        
+        Make the workflow practical, reliable, and aligned with marketing automation best practices.
+        Include proper error handling and user feedback mechanisms.
+        
+        Return as structured JSON.
+        """
+        
+        optimal_model = await self.model_router.select_model('workflow_creation')
+        workflow = await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=4000)
+        
+        # Cache for 30 minutes
+        self.workflow_creation_cache[cache_key] = workflow
+        asyncio.create_task(self._expire_cache_key('workflow_creation', cache_key, 1800))
+        
+        return workflow
+    
+    async def predict_template_performance(
+        self,
+        template_data: Dict[str, Any],
+        industry_context: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        """Predict template performance using AI analysis."""
+        
+        prompt = f"""
+        Analyze this website template and predict its performance:
+        
+        Template Data:
+        {json.dumps(template_data, indent=2)}
+        
+        Industry Context:
+        {json.dumps(industry_context or {}, indent=2)}
+        
+        Provide detailed performance predictions:
+        
+        1. conversion_predictions:
+           - estimated_conversion_rate: percentage prediction with confidence interval
+           - conversion_factors: specific elements that will drive conversions
+           - conversion_barriers: elements that might hurt conversions
+        
+        2. engagement_predictions:
+           - estimated_bounce_rate: predicted bounce rate
+           - time_on_page_prediction: expected time on page
+           - scroll_depth_prediction: expected scroll engagement
+           - click_through_predictions: expected click-through rates for CTAs
+        
+        3. performance_analysis:
+           - page_load_prediction: estimated page load time
+           - mobile_performance_score: mobile experience rating (1-100)
+           - seo_potential_score: SEO potential rating (1-100)
+           - accessibility_score: accessibility compliance rating (1-100)
+        
+        4. improvement_recommendations:
+           - high_impact_changes: changes likely to significantly improve performance
+           - quick_wins: easy changes with good impact
+           - advanced_optimizations: complex changes for marginal gains
+        
+        5. industry_comparison:
+           - vs_industry_average: how this compares to industry benchmarks
+           - competitive_advantages: what makes this template stand out
+           - competitive_weaknesses: areas where competitors might perform better
+        
+        6. confidence_assessment:
+           - prediction_confidence: how confident we are in these predictions (1-100)
+           - data_limitations: what data would improve prediction accuracy
+           - recommendation_priority: priority ranking of recommendations
+        
+        Base your analysis on proven UX principles, conversion optimization best practices,
+        and modern web performance standards.
+        
+        Return as structured JSON with specific, actionable insights.
+        """
+        
+        optimal_model = await self.model_router.select_model('performance_analysis')
+        return await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=4000)
+    
+    # Epic 4: Enhanced utility methods
+    
+    async def generate_json_response_with_model(
+        self,
+        prompt: str,
+        model: str,
+        max_tokens: int = 2000
+    ) -> Dict[str, Any]:
+        """Generate JSON response using specific AI model."""
+        
+        model_config = self.models.get(model)
+        if not model_config:
+            # Fallback to default Gemini model
+            return await self.generate_json_response(prompt)
+        
+        if model_config['type'] == 'gemini':
+            return await self.generate_json_response(prompt)
+        elif model_config['type'] == 'openai':
+            return await self._generate_openai_json_response(prompt, model_config, max_tokens)
+        elif model_config['type'] == 'anthropic':
+            return await self._generate_anthropic_json_response(prompt, model_config, max_tokens)
+        else:
+            return await self.generate_json_response(prompt)
+    
+    async def _generate_openai_json_response(
+        self,
+        prompt: str,
+        model_config: Dict[str, Any],
+        max_tokens: int
+    ) -> Dict[str, Any]:
+        """Generate JSON response using OpenAI API."""
+        
+        if not model_config['api_key']:
+            logger.warning("OpenAI API key not found, falling back to Gemini")
+            return await self.generate_json_response(prompt)
+        
+        if not self.session:
+            self.session = aiohttp.ClientSession()
+        
+        headers = {
+            "Authorization": f"Bearer {model_config['api_key']}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "gpt-4-turbo-preview",
+            "messages": [
+                {"role": "system", "content": "You are an expert AI assistant. Always respond with valid JSON only."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": max_tokens,
+            "temperature": 0.7,
+            "response_format": {"type": "json_object"}
+        }
+        
+        try:
+            async with self.session.post(model_config['base_url'], json=payload, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "choices" in data and data["choices"]:
+                        content = data["choices"][0]["message"]["content"]
+                        return json.loads(content.strip())
+                    else:
+                        logger.error(f"No choices in OpenAI response: {data}")
+                        raise ValueError("No response generated")
+                else:
+                    error_text = await response.text()
+                    logger.error(f"OpenAI API error {response.status}: {error_text}")
+                    # Fallback to Gemini
+                    return await self.generate_json_response(prompt)
+        except Exception as e:
+            logger.error(f"OpenAI API call failed: {str(e)}, falling back to Gemini")
+            return await self.generate_json_response(prompt)
+    
+    async def _generate_anthropic_json_response(
+        self,
+        prompt: str,
+        model_config: Dict[str, Any],
+        max_tokens: int
+    ) -> Dict[str, Any]:
+        """Generate JSON response using Anthropic Claude API."""
+        
+        if not model_config['api_key']:
+            logger.warning("Anthropic API key not found, falling back to Gemini")
+            return await self.generate_json_response(prompt)
+        
+        if not self.session:
+            self.session = aiohttp.ClientSession()
+        
+        headers = {
+            "x-api-key": model_config['api_key'],
+            "Content-Type": "application/json",
+            "anthropic-version": "2023-06-01"
+        }
+        
+        json_instruction = "\n\nPlease respond with valid JSON only. Do not include any other text or formatting."
+        
+        payload = {
+            "model": "claude-3-5-sonnet-20241022",
+            "max_tokens": max_tokens,
+            "temperature": 0.7,
+            "messages": [
+                {"role": "user", "content": prompt + json_instruction}
+            ]
+        }
+        
+        try:
+            async with self.session.post(model_config['base_url'], json=payload, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "content" in data and data["content"]:
+                        content = data["content"][0]["text"]
+                        
+                        # Clean response to extract JSON
+                        content = content.strip()
+                        if content.startswith("```json"):
+                            content = content[7:]
+                        if content.startswith("```"):
+                            content = content[3:]
+                        if content.endswith("```"):
+                            content = content[:-3]
+                        
+                        return json.loads(content.strip())
+                    else:
+                        logger.error(f"No content in Claude response: {data}")
+                        raise ValueError("No response generated")
+                else:
+                    error_text = await response.text()
+                    logger.error(f"Claude API error {response.status}: {error_text}")
+                    # Fallback to Gemini
+                    return await self.generate_json_response(prompt)
+        except Exception as e:
+            logger.error(f"Claude API call failed: {str(e)}, falling back to Gemini")
+            return await self.generate_json_response(prompt)
+    
+    def _generate_cache_key(self, feature: str, data: Dict[str, Any]) -> str:
+        """Generate cache key for AI responses."""
+        data_str = json.dumps(data, sort_keys=True)
+        hash_key = hashlib.md5(f"{feature}:{data_str}".encode()).hexdigest()
+        return f"{feature}:{hash_key}"
+    
+    async def _expire_cache_key(self, cache_type: str, cache_key: str, delay: int):
+        """Expire cache key after delay."""
+        await asyncio.sleep(delay)
+        
+        cache_map = {
+            'component_suggestions': self.component_suggestion_cache,
+            'template_generation': self.template_generation_cache,
+            'workflow_creation': self.workflow_creation_cache
+        }
+        
+        cache = cache_map.get(cache_type)
+        if cache and cache_key in cache:
+            del cache[cache_key]
+    
+    # Performance tracking methods
+    
+    def get_performance_metrics(self) -> Dict[str, Any]:
+        """Get AI service performance metrics."""
+        avg_latency = self.total_latency / max(self.request_count, 1)
+        
+        return {
+            "total_requests": self.request_count,
+            "average_latency_ms": avg_latency,
+            "cache_stats": {
+                "component_suggestions_cached": len(self.component_suggestion_cache),
+                "template_generation_cached": len(self.template_generation_cache),
+                "workflow_creation_cached": len(self.workflow_creation_cache)
+            },
+            "model_availability": {
+                "gemini": bool(self.api_key),
+                "openai": bool(self.openai_api_key),
+                "anthropic": bool(self.anthropic_api_key)
+            }
+        }
+    
+    async def clear_caches(self):
+        """Clear all AI response caches."""
+        self.component_suggestion_cache.clear()
+        self.template_generation_cache.clear()
+        self.workflow_creation_cache.clear()
+        
+        logger.info("All AI service caches cleared")

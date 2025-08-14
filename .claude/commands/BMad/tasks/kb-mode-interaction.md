@@ -1,7 +1,3 @@
-# /kb-mode-interaction Task
-
-When this command is used, execute the following task:
-
 # KB Mode Interaction Task
 
 ## Purpose

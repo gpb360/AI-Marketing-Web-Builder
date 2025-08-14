@@ -1,708 +1,733 @@
 /**
  * Analytics Configuration Component
- * Configure analytics tracking, alerts, and monitoring preferences
+ * 
+ * Configuration settings for analytics dashboard and external integrations
+ * Part of Story 3.3 - Performance Analytics Dashboard
  */
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+'use client';
+
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Bell,
-  Settings,
-  Database,
-  Shield,
-  Mail,
-  Slack,
-  Webhook,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Star,
-  Zap,
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Settings, 
+  Database, 
+  Bell, 
+  Eye, 
+  Shield, 
+  Zap, 
+  Globe, 
+  Clock, 
   AlertTriangle,
-  CheckCircle,
-  Save,
-  RefreshCw,
+  CheckCircle2,
+  XCircle,
   Plus,
-  Trash2
+  Trash2,
+  Edit,
+  Link,
+  Unlink,
+  Key
 } from 'lucide-react';
+
+// Types for configuration
+interface DashboardSettings {
+  refreshInterval: number; // seconds
+  autoRefresh: boolean;
+  realTimeUpdates: boolean;
+  darkMode: boolean;
+  compactView: boolean;
+  defaultTimeRange: string;
+  enableNotifications: boolean;
+  enableAlerts: boolean;
+}
 
 interface AlertThreshold {
   id: string;
-  metric: 'adoption_rate' | 'success_rate' | 'user_satisfaction' | 'technical_score' | 'conversion_rate';
-  condition: 'above' | 'below' | 'equals' | 'change_percent';
-  threshold: number;
-  timeWindow: '5m' | '15m' | '1h' | '24h' | '7d';
-  severity: 'critical' | 'warning' | 'info';
+  metric: string;
+  condition: 'above' | 'below' | 'equals';
+  value: number;
+  severity: 'low' | 'medium' | 'high' | 'critical';
   enabled: boolean;
+  notifications: {
+    email: boolean;
+    dashboard: boolean;
+    webhook?: string;
+  };
 }
 
-interface NotificationChannel {
+interface ExternalIntegration {
   id: string;
-  type: 'email' | 'slack' | 'webhook' | 'in_app';
+  platform: 'google_analytics' | 'hubspot' | 'salesforce' | 'mixpanel' | 'segment';
   name: string;
-  config: Record<string, any>;
-  enabled: boolean;
+  status: 'connected' | 'disconnected' | 'error' | 'configuring';
+  lastSync?: string;
+  configuration: {
+    apiKey?: string;
+    accountId?: string;
+    propertyId?: string;
+    customFields?: Record<string, string>;
+  };
+  syncSettings: {
+    frequency: 'realtime' | 'hourly' | 'daily';
+    metrics: string[];
+    enabled: boolean;
+  };
 }
 
-interface TrackingPreference {
-  category: string;
-  enabled: boolean;
-  dataRetention: '30d' | '90d' | '1y' | 'indefinite';
-  anonymize: boolean;
+interface DataRetentionSettings {
+  analyticsData: number; // days
+  exportedReports: number; // days
+  auditLogs: number; // days
+  alertHistory: number; // days
+  autoCleanup: boolean;
 }
 
-const defaultThresholds: Omit<AlertThreshold, 'id'>[] = [
-  {
-    metric: 'adoption_rate',
-    condition: 'below',
-    threshold: 20,
-    timeWindow: '24h',
-    severity: 'warning',
-    enabled: true
-  },
-  {
-    metric: 'success_rate',
-    condition: 'below',
-    threshold: 50,
-    timeWindow: '24h',
-    severity: 'critical',
-    enabled: true
-  },
-  {
-    metric: 'user_satisfaction',
-    condition: 'below',
-    threshold: 3.5,
-    timeWindow: '7d',
-    severity: 'warning',
-    enabled: true
-  },
-  {
-    metric: 'technical_score',
-    condition: 'below',
-    threshold: 70,
-    timeWindow: '1h',
-    severity: 'critical',
-    enabled: true
-  }
-];
+export const AnalyticsConfiguration: React.FC = () => {
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'alerts' | 'integrations' | 'data'>('dashboard');
 
-const defaultChannels: Omit<NotificationChannel, 'id'>[] = [
-  {
-    type: 'in_app',
-    name: 'In-App Notifications',
-    config: {},
-    enabled: true
-  },
-  {
-    type: 'email',
-    name: 'Email Notifications',
-    config: { recipients: [] },
-    enabled: false
-  }
-];
-
-const defaultTrackingPreferences: TrackingPreference[] = [
-  { category: 'Template Adoption', enabled: true, dataRetention: '1y', anonymize: false },
-  { category: 'User Behavior', enabled: true, dataRetention: '90d', anonymize: true },
-  { category: 'Performance Metrics', enabled: true, dataRetention: '1y', anonymize: false },
-  { category: 'Technical Analytics', enabled: true, dataRetention: '30d', anonymize: false },
-  { category: 'Business Metrics', enabled: true, dataRetention: '1y', anonymize: false }
-];
-
-export default function AnalyticsConfiguration() {
-  const [alertThresholds, setAlertThresholds] = useState<AlertThreshold[]>([]);
-  const [notificationChannels, setNotificationChannels] = useState<NotificationChannel[]>([]);
-  const [trackingPreferences, setTrackingPreferences] = useState<TrackingPreference[]>(defaultTrackingPreferences);
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState('5m');
-  const [enableRealTimeTracking, setEnableRealTimeTracking] = useState(true);
-  const [enablePredictiveAlerts, setEnablePredictiveAlerts] = useState(true);
-  const [dataExportSettings, setDataExportSettings] = useState({
-    frequency: 'weekly',
-    format: 'xlsx',
-    includeRawData: false
+  // Dashboard settings state
+  const [dashboardSettings, setDashboardSettings] = useState<DashboardSettings>({
+    refreshInterval: 30,
+    autoRefresh: true,
+    realTimeUpdates: true,
+    darkMode: false,
+    compactView: false,
+    defaultTimeRange: '30d',
+    enableNotifications: true,
+    enableAlerts: true
   });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    // Initialize with default values
-    setAlertThresholds(
-      defaultThresholds.map((threshold, index) => ({
-        id: `threshold-${index}`,
-        ...threshold
-      }))
-    );
-    setNotificationChannels(
-      defaultChannels.map((channel, index) => ({
-        id: `channel-${index}`,
-        ...channel
-      }))
-    );
-  }, []);
-
-  const getMetricIcon = (metric: string) => {
-    switch (metric) {
-      case 'adoption_rate':
-        return <Users className="h-4 w-4 text-blue-500" />;
-      case 'success_rate':
-        return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'user_satisfaction':
-        return <Star className="h-4 w-4 text-yellow-500" />;
-      case 'technical_score':
-        return <Zap className="h-4 w-4 text-purple-500" />;
-      default:
-        return <Database className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getChannelIcon = (type: string) => {
-    switch (type) {
-      case 'email':
-        return <Mail className="h-4 w-4 text-blue-500" />;
-      case 'slack':
-        return <Slack className="h-4 w-4 text-green-500" />;
-      case 'webhook':
-        return <Webhook className="h-4 w-4 text-purple-500" />;
-      default:
-        return <Bell className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getSeverityColor = (severity: 'critical' | 'warning' | 'info') => {
-    switch (severity) {
-      case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-
-  const addAlertThreshold = () => {
-    const newThreshold: AlertThreshold = {
-      id: `threshold-${Date.now()}`,
-      metric: 'adoption_rate',
+  // Alert thresholds state
+  const [alertThresholds, setAlertThresholds] = useState<AlertThreshold[]>([
+    {
+      id: 'threshold-001',
+      metric: 'conversion_rate',
       condition: 'below',
-      threshold: 0,
-      timeWindow: '1h',
-      severity: 'warning',
-      enabled: true
-    };
-    setAlertThresholds(prev => [...prev, newThreshold]);
-  };
-
-  const updateAlertThreshold = (id: string, updates: Partial<AlertThreshold>) => {
-    setAlertThresholds(prev =>
-      prev.map(threshold =>
-        threshold.id === id ? { ...threshold, ...updates } : threshold
-      )
-    );
-  };
-
-  const removeAlertThreshold = (id: string) => {
-    setAlertThresholds(prev => prev.filter(threshold => threshold.id !== id));
-  };
-
-  const addNotificationChannel = () => {
-    const newChannel: NotificationChannel = {
-      id: `channel-${Date.now()}`,
-      type: 'email',
-      name: 'New Channel',
-      config: {},
-      enabled: false
-    };
-    setNotificationChannels(prev => [...prev, newChannel]);
-  };
-
-  const updateNotificationChannel = (id: string, updates: Partial<NotificationChannel>) => {
-    setNotificationChannels(prev =>
-      prev.map(channel =>
-        channel.id === id ? { ...channel, ...updates } : channel
-      )
-    );
-  };
-
-  const removeNotificationChannel = (id: string) => {
-    setNotificationChannels(prev => prev.filter(channel => channel.id !== id));
-  };
-
-  const updateTrackingPreference = (category: string, updates: Partial<TrackingPreference>) => {
-    setTrackingPreferences(prev =>
-      prev.map(pref =>
-        pref.category === category ? { ...pref, ...updates } : pref
-      )
-    );
-  };
-
-  const saveConfiguration = async () => {
-    setSaving(true);
-    try {
-      // Here you would save the configuration to your backend
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (error) {
-      console.error('Failed to save configuration:', error);
-    } finally {
-      setSaving(false);
+      value: 5.0,
+      severity: 'high',
+      enabled: true,
+      notifications: {
+        email: true,
+        dashboard: true,
+        webhook: 'https://hooks.slack.com/services/...'
+      }
+    },
+    {
+      id: 'threshold-002',
+      metric: 'response_time',
+      condition: 'above',
+      value: 5000,
+      severity: 'medium',
+      enabled: true,
+      notifications: {
+        email: false,
+        dashboard: true
+      }
+    },
+    {
+      id: 'threshold-003',
+      metric: 'error_rate',
+      condition: 'above',
+      value: 2.0,
+      severity: 'critical',
+      enabled: true,
+      notifications: {
+        email: true,
+        dashboard: true
+      }
     }
-  };
+  ]);
+
+  // External integrations state
+  const [externalIntegrations, setExternalIntegrations] = useState<ExternalIntegration[]>([
+    {
+      id: 'integration-ga',
+      platform: 'google_analytics',
+      name: 'Google Analytics 4',
+      status: 'connected',
+      lastSync: '2024-01-20T16:30:00Z',
+      configuration: {
+        propertyId: 'GA4-PROPERTY-ID',
+        accountId: 'GA-ACCOUNT-ID'
+      },
+      syncSettings: {
+        frequency: 'hourly',
+        metrics: ['page_views', 'sessions', 'conversions', 'bounce_rate'],
+        enabled: true
+      }
+    },
+    {
+      id: 'integration-hubspot',
+      platform: 'hubspot',
+      name: 'HubSpot CRM',
+      status: 'connected',
+      lastSync: '2024-01-20T15:45:00Z',
+      configuration: {
+        apiKey: 'hubspot-api-key-***'
+      },
+      syncSettings: {
+        frequency: 'realtime',
+        metrics: ['contacts', 'deals', 'emails', 'calls'],
+        enabled: true
+      }
+    },
+    {
+      id: 'integration-sf',
+      platform: 'salesforce',
+      name: 'Salesforce',
+      status: 'disconnected',
+      configuration: {},
+      syncSettings: {
+        frequency: 'daily',
+        metrics: ['leads', 'opportunities', 'accounts'],
+        enabled: false
+      }
+    }
+  ]);
+
+  // Data retention settings
+  const [dataRetentionSettings, setDataRetentionSettings] = useState<DataRetentionSettings>({
+    analyticsData: 730, // 2 years
+    exportedReports: 90,
+    auditLogs: 365,
+    alertHistory: 180,
+    autoCleanup: true
+  });
+
+  // Render dashboard settings section
+  const renderDashboardSettings = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Display Settings
+          </CardTitle>
+          <CardDescription>
+            Customize your analytics dashboard appearance and behavior
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Auto Refresh</Label>
+                <p className="text-sm text-muted-foreground">Automatically update dashboard data</p>
+              </div>
+              <Switch 
+                checked={dashboardSettings.autoRefresh}
+                onCheckedChange={(checked) => 
+                  setDashboardSettings(prev => ({ ...prev, autoRefresh: checked }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Real-time Updates</Label>
+                <p className="text-sm text-muted-foreground">Enable live data streaming</p>
+              </div>
+              <Switch 
+                checked={dashboardSettings.realTimeUpdates}
+                onCheckedChange={(checked) => 
+                  setDashboardSettings(prev => ({ ...prev, realTimeUpdates: checked }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Dark Mode</Label>
+                <p className="text-sm text-muted-foreground">Use dark theme</p>
+              </div>
+              <Switch 
+                checked={dashboardSettings.darkMode}
+                onCheckedChange={(checked) => 
+                  setDashboardSettings(prev => ({ ...prev, darkMode: checked }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Compact View</Label>
+                <p className="text-sm text-muted-foreground">Show more data in less space</p>
+              </div>
+              <Switch 
+                checked={dashboardSettings.compactView}
+                onCheckedChange={(checked) => 
+                  setDashboardSettings(prev => ({ ...prev, compactView: checked }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <Label>Refresh Interval: {dashboardSettings.refreshInterval} seconds</Label>
+              <Slider
+                value={[dashboardSettings.refreshInterval]}
+                onValueChange={(value) => 
+                  setDashboardSettings(prev => ({ ...prev, refreshInterval: value[0] }))
+                }
+                max={300}
+                min={5}
+                step={5}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="default-time-range">Default Time Range</Label>
+              <Select 
+                value={dashboardSettings.defaultTimeRange}
+                onValueChange={(value) => 
+                  setDashboardSettings(prev => ({ ...prev, defaultTimeRange: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="24h">Last 24 hours</SelectItem>
+                  <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="30d">Last 30 days</SelectItem>
+                  <SelectItem value="90d">Last 90 days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notification Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Enable Notifications</Label>
+              <p className="text-sm text-muted-foreground">Receive dashboard notifications</p>
+            </div>
+            <Switch 
+              checked={dashboardSettings.enableNotifications}
+              onCheckedChange={(checked) => 
+                setDashboardSettings(prev => ({ ...prev, enableNotifications: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Enable Alerts</Label>
+              <p className="text-sm text-muted-foreground">Receive performance alerts</p>
+            </div>
+            <Switch 
+              checked={dashboardSettings.enableAlerts}
+              onCheckedChange={(checked) => 
+                setDashboardSettings(prev => ({ ...prev, enableAlerts: checked }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Render alerts section
+  const renderAlertsSection = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Alert Thresholds
+              </CardTitle>
+              <CardDescription>
+                Configure automatic alerts for performance metrics
+              </CardDescription>
+            </div>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Threshold
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {alertThresholds.map(threshold => (
+              <div key={threshold.id} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="font-semibold capitalize">
+                      {threshold.metric.replace('_', ' ')} Alert
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Trigger when {threshold.metric.replace('_', ' ')} is {threshold.condition} {threshold.value}
+                      {threshold.metric.includes('rate') ? '%' : 
+                       threshold.metric.includes('time') ? 'ms' : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      className={
+                        threshold.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                        threshold.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                        threshold.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-blue-100 text-blue-800'
+                      }
+                    >
+                      {threshold.severity}
+                    </Badge>
+                    <Switch checked={threshold.enabled} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Condition:</span>
+                    <div className="font-medium">{threshold.condition} {threshold.value}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Email:</span>
+                    <div>{threshold.notifications.email ? 'Enabled' : 'Disabled'}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Dashboard:</span>
+                    <div>{threshold.notifications.dashboard ? 'Enabled' : 'Disabled'}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Webhook:</span>
+                    <div>{threshold.notifications.webhook ? 'Configured' : 'Not set'}</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-3">
+                  <Button size="sm" variant="outline">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Render integrations section
+  const renderIntegrationsSection = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                External Integrations
+              </CardTitle>
+              <CardDescription>
+                Connect with external analytics platforms and CRM systems
+              </CardDescription>
+            </div>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Integration
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {externalIntegrations.map(integration => (
+              <div key={integration.id} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Globe className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">{integration.name}</h4>
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {integration.platform.replace('_', ' ')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      className={
+                        integration.status === 'connected' ? 'bg-green-100 text-green-800' :
+                        integration.status === 'error' ? 'bg-red-100 text-red-800' :
+                        integration.status === 'configuring' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }
+                    >
+                      {integration.status === 'connected' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                      {integration.status === 'error' && <XCircle className="h-3 w-3 mr-1" />}
+                      {integration.status === 'disconnected' && <Unlink className="h-3 w-3 mr-1" />}
+                      {integration.status}
+                    </Badge>
+                    <Switch checked={integration.syncSettings.enabled} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-3">
+                  <div>
+                    <span className="text-muted-foreground">Sync Frequency:</span>
+                    <div className="font-medium capitalize">{integration.syncSettings.frequency}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Metrics:</span>
+                    <div className="font-medium">{integration.syncSettings.metrics.length} metrics</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Last Sync:</span>
+                    <div className="font-medium">
+                      {integration.lastSync ? new Date(integration.lastSync).toLocaleString() : 'Never'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {integration.syncSettings.metrics.map(metric => (
+                    <Badge key={metric} variant="outline" className="text-xs">
+                      {metric.replace('_', ' ')}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  {integration.status === 'connected' ? (
+                    <>
+                      <Button size="sm" variant="outline">
+                        <Settings className="h-4 w-4 mr-1" />
+                        Configure
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Zap className="h-4 w-4 mr-1" />
+                        Sync Now
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Unlink className="h-4 w-4 mr-1" />
+                        Disconnect
+                      </Button>
+                    </>
+                  ) : (
+                    <Button size="sm">
+                      <Link className="h-4 w-4 mr-1" />
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Render data management section
+  const renderDataSection = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Data Retention Policy
+          </CardTitle>
+          <CardDescription>
+            Configure how long different types of data are stored
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Analytics Data: {dataRetentionSettings.analyticsData} days</Label>
+              <Slider
+                value={[dataRetentionSettings.analyticsData]}
+                onValueChange={(value) => 
+                  setDataRetentionSettings(prev => ({ ...prev, analyticsData: value[0] }))
+                }
+                max={1095} // 3 years
+                min={30}
+                step={30}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Exported Reports: {dataRetentionSettings.exportedReports} days</Label>
+              <Slider
+                value={[dataRetentionSettings.exportedReports]}
+                onValueChange={(value) => 
+                  setDataRetentionSettings(prev => ({ ...prev, exportedReports: value[0] }))
+                }
+                max={365}
+                min={7}
+                step={7}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Audit Logs: {dataRetentionSettings.auditLogs} days</Label>
+              <Slider
+                value={[dataRetentionSettings.auditLogs]}
+                onValueChange={(value) => 
+                  setDataRetentionSettings(prev => ({ ...prev, auditLogs: value[0] }))
+                }
+                max={1095}
+                min={30}
+                step={30}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Alert History: {dataRetentionSettings.alertHistory} days</Label>
+              <Slider
+                value={[dataRetentionSettings.alertHistory]}
+                onValueChange={(value) => 
+                  setDataRetentionSettings(prev => ({ ...prev, alertHistory: value[0] }))
+                }
+                max={730}
+                min={30}
+                step={30}
+                className="mt-2"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Automatic Cleanup</Label>
+              <p className="text-sm text-muted-foreground">
+                Automatically delete old data based on retention policy
+              </p>
+            </div>
+            <Switch 
+              checked={dataRetentionSettings.autoCleanup}
+              onCheckedChange={(checked) => 
+                setDataRetentionSettings(prev => ({ ...prev, autoCleanup: checked }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Data Privacy & Security
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Anonymize Data</Label>
+                <p className="text-sm text-muted-foreground">Remove personally identifiable information</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Encrypt at Rest</Label>
+                <p className="text-sm text-muted-foreground">Encrypt stored analytics data</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Access Logging</Label>
+                <p className="text-sm text-muted-foreground">Log all data access attempts</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>GDPR Compliance</Label>
+                <p className="text-sm text-muted-foreground">Enable GDPR compliance features</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center space-x-2">
-            <Settings className="h-6 w-6" />
-            <span>Analytics Configuration</span>
-          </h2>
-          <p className="text-muted-foreground">Configure tracking, alerts, and monitoring preferences</p>
-        </div>
-        <Button onClick={saveConfiguration} disabled={saving} className="flex items-center space-x-2">
-          {saving ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              <span>Saving...</span>
-            </>
-          ) : saved ? (
-            <>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Saved</span>
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              <span>Save Changes</span>
-            </>
-          )}
+      {/* Section Navigation */}
+      <div className="flex flex-wrap border-b gap-1">
+        <Button 
+          variant={activeSection === 'dashboard' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('dashboard')}
+        >
+          <Eye className="h-4 w-4 mr-2" />
+          Dashboard
+        </Button>
+        <Button 
+          variant={activeSection === 'alerts' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('alerts')}
+        >
+          <Bell className="h-4 w-4 mr-2" />
+          Alerts
+        </Button>
+        <Button 
+          variant={activeSection === 'integrations' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('integrations')}
+        >
+          <Globe className="h-4 w-4 mr-2" />
+          Integrations
+        </Button>
+        <Button 
+          variant={activeSection === 'data' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('data')}
+        >
+          <Database className="h-4 w-4 mr-2" />
+          Data
         </Button>
       </div>
 
-      <Tabs defaultValue="alerts" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="alerts">Alert Thresholds</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="tracking">Data Tracking</TabsTrigger>
-          <TabsTrigger value="general">General Settings</TabsTrigger>
-        </TabsList>
+      {/* Section Content */}
+      {activeSection === 'dashboard' && renderDashboardSettings()}
+      {activeSection === 'alerts' && renderAlertsSection()}
+      {activeSection === 'integrations' && renderIntegrationsSection()}
+      {activeSection === 'data' && renderDataSection()}
 
-        {/* Alert Thresholds */}
-        <TabsContent value="alerts" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Alert Thresholds</CardTitle>
-                <Button onClick={addAlertThreshold} size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Threshold
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {alertThresholds.map((threshold) => (
-                <Card key={threshold.id} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
-                    <div className="space-y-2">
-                      <Label>Metric</Label>
-                      <Select
-                        value={threshold.metric}
-                        onValueChange={(value: any) => updateAlertThreshold(threshold.id, { metric: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="adoption_rate">Adoption Rate</SelectItem>
-                          <SelectItem value="success_rate">Success Rate</SelectItem>
-                          <SelectItem value="user_satisfaction">User Satisfaction</SelectItem>
-                          <SelectItem value="technical_score">Technical Score</SelectItem>
-                          <SelectItem value="conversion_rate">Conversion Rate</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Condition</Label>
-                      <Select
-                        value={threshold.condition}
-                        onValueChange={(value: any) => updateAlertThreshold(threshold.id, { condition: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="above">Above</SelectItem>
-                          <SelectItem value="below">Below</SelectItem>
-                          <SelectItem value="equals">Equals</SelectItem>
-                          <SelectItem value="change_percent">% Change</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Threshold</Label>
-                      <Input
-                        type="number"
-                        value={threshold.threshold}
-                        onChange={(e) => updateAlertThreshold(threshold.id, { threshold: parseFloat(e.target.value) || 0 })}
-                        placeholder="0"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Time Window</Label>
-                      <Select
-                        value={threshold.timeWindow}
-                        onValueChange={(value: any) => updateAlertThreshold(threshold.id, { timeWindow: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="5m">5 minutes</SelectItem>
-                          <SelectItem value="15m">15 minutes</SelectItem>
-                          <SelectItem value="1h">1 hour</SelectItem>
-                          <SelectItem value="24h">24 hours</SelectItem>
-                          <SelectItem value="7d">7 days</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Severity</Label>
-                      <Select
-                        value={threshold.severity}
-                        onValueChange={(value: any) => updateAlertThreshold(threshold.id, { severity: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="critical">Critical</SelectItem>
-                          <SelectItem value="warning">Warning</SelectItem>
-                          <SelectItem value="info">Info</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={threshold.enabled}
-                          onCheckedChange={(checked) => updateAlertThreshold(threshold.id, { enabled: checked })}
-                        />
-                        <Badge className={getSeverityColor(threshold.severity)}>
-                          {threshold.severity}
-                        </Badge>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeAlertThreshold(threshold.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Notification Channels */}
-        <TabsContent value="notifications" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Notification Channels</CardTitle>
-                <Button onClick={addNotificationChannel} size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Channel
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {notificationChannels.map((channel) => (
-                <Card key={channel.id} className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      {getChannelIcon(channel.type)}
-                      <h3 className="font-medium">{channel.name}</h3>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={channel.enabled}
-                        onCheckedChange={(checked) => updateNotificationChannel(channel.id, { enabled: checked })}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeNotificationChannel(channel.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Type</Label>
-                      <Select
-                        value={channel.type}
-                        onValueChange={(value: any) => updateNotificationChannel(channel.id, { type: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="in_app">In-App</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
-                          <SelectItem value="slack">Slack</SelectItem>
-                          <SelectItem value="webhook">Webhook</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Name</Label>
-                      <Input
-                        value={channel.name}
-                        onChange={(e) => updateNotificationChannel(channel.id, { name: e.target.value })}
-                        placeholder="Channel name"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Configuration</Label>
-                      {channel.type === 'email' && (
-                        <Input
-                          placeholder="email@example.com"
-                          value={channel.config.email || ''}
-                          onChange={(e) => updateNotificationChannel(channel.id, {
-                            config: { ...channel.config, email: e.target.value }
-                          })}
-                        />
-                      )}
-                      {channel.type === 'slack' && (
-                        <Input
-                          placeholder="Webhook URL"
-                          value={channel.config.webhook_url || ''}
-                          onChange={(e) => updateNotificationChannel(channel.id, {
-                            config: { ...channel.config, webhook_url: e.target.value }
-                          })}
-                        />
-                      )}
-                      {channel.type === 'webhook' && (
-                        <Input
-                          placeholder="Webhook URL"
-                          value={channel.config.url || ''}
-                          onChange={(e) => updateNotificationChannel(channel.id, {
-                            config: { ...channel.config, url: e.target.value }
-                          })}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Data Tracking */}
-        <TabsContent value="tracking" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Database className="h-5 w-5" />
-                <span>Data Tracking Preferences</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {trackingPreferences.map((pref) => (
-                <div key={pref.category} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <Switch
-                      checked={pref.enabled}
-                      onCheckedChange={(checked) => updateTrackingPreference(pref.category, { enabled: checked })}
-                    />
-                    <div>
-                      <h3 className="font-medium">{pref.category}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
-                        <span>Retention: {pref.dataRetention}</span>
-                        <span>•</span>
-                        <span>{pref.anonymize ? 'Anonymized' : 'Non-anonymized'}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Select
-                      value={pref.dataRetention}
-                      onValueChange={(value: any) => updateTrackingPreference(pref.category, { dataRetention: value })}
-                      disabled={!pref.enabled}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="30d">30 days</SelectItem>
-                        <SelectItem value="90d">90 days</SelectItem>
-                        <SelectItem value="1y">1 year</SelectItem>
-                        <SelectItem value="indefinite">Indefinite</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={pref.anonymize}
-                        onCheckedChange={(checked) => updateTrackingPreference(pref.category, { anonymize: checked })}
-                        disabled={!pref.enabled}
-                      />
-                      <Shield className="h-4 w-4 text-gray-500" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Alert>
-            <Shield className="h-4 w-4" />
-            <AlertDescription>
-              All data collection complies with GDPR, CCPA, and other privacy regulations. 
-              Users can opt out of tracking at any time through their privacy settings.
-            </AlertDescription>
-          </Alert>
-        </TabsContent>
-
-        {/* General Settings */}
-        <TabsContent value="general" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <RefreshCw className="h-5 w-5" />
-                  <span>Real-Time Settings</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Enable Real-Time Tracking</Label>
-                    <p className="text-sm text-muted-foreground">Track user actions in real-time</p>
-                  </div>
-                  <Switch
-                    checked={enableRealTimeTracking}
-                    onCheckedChange={setEnableRealTimeTracking}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Auto-Refresh Interval</Label>
-                  <Select value={autoRefreshInterval} onValueChange={setAutoRefreshInterval}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1m">1 minute</SelectItem>
-                      <SelectItem value="5m">5 minutes</SelectItem>
-                      <SelectItem value="15m">15 minutes</SelectItem>
-                      <SelectItem value="30m">30 minutes</SelectItem>
-                      <SelectItem value="1h">1 hour</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Predictive Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Use AI to predict potential issues</p>
-                  </div>
-                  <Switch
-                    checked={enablePredictiveAlerts}
-                    onCheckedChange={setEnablePredictiveAlerts}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Database className="h-5 w-5" />
-                  <span>Data Export Settings</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Export Frequency</Label>
-                  <Select
-                    value={dataExportSettings.frequency}
-                    onValueChange={(value) => setDataExportSettings(prev => ({ ...prev, frequency: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="manual">Manual only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Export Format</Label>
-                  <Select
-                    value={dataExportSettings.format}
-                    onValueChange={(value) => setDataExportSettings(prev => ({ ...prev, format: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="csv">CSV</SelectItem>
-                      <SelectItem value="xlsx">Excel</SelectItem>
-                      <SelectItem value="json">JSON</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Include Raw Data</Label>
-                    <p className="text-sm text-muted-foreground">Export raw event data</p>
-                  </div>
-                  <Switch
-                    checked={dataExportSettings.includeRawData}
-                    onCheckedChange={(checked) => setDataExportSettings(prev => ({ ...prev, includeRawData: checked }))}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {/* Save Settings */}
+      <div className="flex justify-end">
+        <Button>
+          <Settings className="h-4 w-4 mr-2" />
+          Save Configuration
+        </Button>
+      </div>
     </div>
   );
-}
+};

@@ -63,21 +63,8 @@ class Template(Base, TimestampMixin, UUIDMixin):
     is_premium: Mapped[bool] = mapped_column(Boolean, default=False)
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
     
-    # Performance tracking fields
-    avg_conversion_rate: Mapped[Optional[float]] = mapped_column(Integer, default=0.0)
-    avg_bounce_rate: Mapped[Optional[float]] = mapped_column(Integer, default=0.0)
-    success_rate: Mapped[Optional[float]] = mapped_column(Integer, default=0.0)
-    performance_score: Mapped[Optional[float]] = mapped_column(Integer, default=0.0)
-    
     # Relationships
     projects: Mapped[List["Project"]] = relationship("Project", back_populates="template")
-    scenario_configurations: Mapped[List["ScenarioModelingConfiguration"]] = relationship(
-        "ScenarioModelingConfiguration", 
-        back_populates="template",
-        cascade="all, delete-orphan"
-    )
-    analytics: Mapped[List["TemplateAnalytics"]] = relationship("TemplateAnalytics", back_populates="template")
-    ranking: Mapped[Optional["TemplateRanking"]] = relationship("TemplateRanking", back_populates="template", uselist=False)
     
     def __repr__(self) -> str:
         return f"<Template(id={self.id}, name='{self.name}', category='{self.category}')>"

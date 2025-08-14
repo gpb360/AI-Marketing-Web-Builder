@@ -1,7 +1,3 @@
-# /generate-ai-frontend-prompt Task
-
-When this command is used, execute the following task:
-
 # Create AI Frontend Prompt Task
 
 ## Purpose

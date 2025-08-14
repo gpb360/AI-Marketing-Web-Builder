@@ -13,12 +13,59 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers
 revision: str = '004'
-down_revision: Union[str, None] = '003'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Create base tables that other migrations depend on
+    
+    # Create users table
+    op.create_table('users',
+        sa.Column('id', sa.String(36), nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('email', sa.String(255), nullable=False),
+        sa.Column('username', sa.String(100), nullable=False),
+        sa.Column('full_name', sa.String(200), nullable=True),
+        sa.Column('hashed_password', sa.String(255), nullable=False),
+        sa.Column('is_active', sa.Boolean(), default=True, nullable=False),
+        sa.Column('is_verified', sa.Boolean(), default=False, nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('ix_users_email', 'users', ['email'], unique=True)
+    op.create_index('ix_users_username', 'users', ['username'], unique=True)
+    
+    # Create workflows table
+    op.create_table('workflows',
+        sa.Column('id', sa.String(36), nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('name', sa.String(200), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('user_id', sa.String(36), nullable=False),
+        sa.Column('is_active', sa.Boolean(), default=True, nullable=False),
+        sa.Column('config', sa.JSON(), nullable=False),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id']),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('ix_workflows_user_id', 'workflows', ['user_id'])
+    
+    # Create workflow_executions table
+    op.create_table('workflow_executions',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('workflow_id', sa.String(36), nullable=False),
+        sa.Column('status', sa.Enum('PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED', name='workflowexecutionstatus'), nullable=False),
+        sa.Column('started_at', sa.DateTime(), nullable=True),
+        sa.Column('finished_at', sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(['workflow_id'], ['workflows.id']),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('ix_workflow_executions_workflow_id', 'workflow_executions', ['workflow_id'])
+    
     # Create workflow_execution_steps table
     op.create_table('workflow_execution_steps',
         sa.Column('id', sa.Integer(), nullable=False),

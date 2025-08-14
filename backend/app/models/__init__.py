@@ -6,29 +6,12 @@ from .sites import Site, Component
 from .workflow import Workflow, WorkflowExecution, WorkflowNode
 from .crm import Contact, ContactActivity, EmailCampaign, EmailSend
 from .template import Template, TemplateComponent
-from .analytics import (
-    TemplateAnalytics, 
-    TemplateRanking, 
-    ConversionEvent, 
-    TemplateUsage, 
-    TemplateOptimizationRecommendation,
-    MetricType,
-    PerformanceBand,
-    RecommendationEvent,
-    ABTestMetrics,
-    RecommendationAlgorithm,
-    UserInteraction,
-    EventType
-)
-from .ab_test import ABTest, ABTestVariant, ABTestStatus, ABTestType
-from .scenario_modeling import (
-    ScenarioModelingConfiguration,
-    ScenarioModel,
-    ScenarioPrediction,
-    OptimizationRecommendation,
-    ScenarioExperiment,
-    ScenarioType,
-    OptimizationObjective
+from .business_context import (
+    BusinessContextAnalysis,
+    BusinessContextUsageAnalytics, 
+    TemplateContextScoring,
+    BusinessSuccessPattern,
+    EpicIntegrationMetrics
 )
 
 __all__ = [
@@ -46,27 +29,9 @@ __all__ = [
     "ContactActivity",
     "EmailCampaign",
     "EmailSend",
-    "TemplateAnalytics",
-    "TemplateRanking",
-    "ConversionEvent",
-    "TemplateUsage",
-    "TemplateOptimizationRecommendation",
-    "MetricType",
-    "PerformanceBand",
-    "RecommendationEvent",
-    "ABTestMetrics",
-    "RecommendationAlgorithm",
-    "UserInteraction",
-    "EventType",
-    "ABTest",
-    "ABTestVariant",
-    "ABTestStatus",
-    "ABTestType",
-    "ScenarioModelingConfiguration",
-    "ScenarioModel",
-    "ScenarioPrediction",
-    "OptimizationRecommendation",
-    "ScenarioExperiment",
-    "ScenarioType",
-    "OptimizationObjective",
+    "BusinessContextAnalysis",
+    "BusinessContextUsageAnalytics",
+    "TemplateContextScoring",
+    "BusinessSuccessPattern",
+    "EpicIntegrationMetrics",
 ]

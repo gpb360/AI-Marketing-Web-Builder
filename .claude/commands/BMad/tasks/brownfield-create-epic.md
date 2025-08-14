@@ -1,7 +1,3 @@
-# /brownfield-create-epic Task
-
-When this command is used, execute the following task:
-
 # Create Brownfield Epic Task
 
 ## Purpose
