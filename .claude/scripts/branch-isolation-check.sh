@@ -37,7 +37,7 @@ declare -A FILE_OWNERSHIP=(
     ["performance-optimizer"]="web-builder/src/lib/performance/|web-builder/src/utils/optimization/"
     ["workflow-automation-expert"]="web-builder/src/lib/workflow/|web-builder/src/app/api/workflow/"
     ["deployment-manager"]="docker/|.github/|deployment/|infrastructure/"
-    ["qa-automation-agent"]="web-builder/CLAUDE.md|web-builder/bmad-|web-builder/playwright|web-builder/tests/|.claude/scripts/"
+    ["qa-automation-agent"]="web-builder/|.claude/|.github/workflows/|backend/tests/|integration-|scripts/|.*\.md|.*\.py|.*\.ts|.*\.tsx|.*\.yml|.*\.yaml"
 )
 
 echo -e "${BLUE}🔒 Agent Branch Isolation Compliance Checker${NC}"
