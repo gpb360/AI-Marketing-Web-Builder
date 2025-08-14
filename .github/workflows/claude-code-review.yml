@@ -31,9 +31,19 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Check Claude Code Action Setup
+        run: |
+          echo "Verifying Claude Code Action setup..."
+          if [ -d "/home/runner/work/_actions/anthropics/claude-code-action/v1/slash-commands" ]; then
+            echo "✅ Slash commands directory found"
+          else
+            echo "⚠️ Slash commands directory not found - will create empty directory"
+            mkdir -p /home/runner/.claude/slash-commands
+          fi
+
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
