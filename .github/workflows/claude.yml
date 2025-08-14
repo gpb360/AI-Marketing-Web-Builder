@@ -33,7 +33,7 @@ jobs:
       - name: Check Claude Code Action Setup
         run: |
           echo "Verifying Claude Code Action setup..."
-          if [ -d "/home/runner/work/_actions/anthropics/claude-code-action/v1/slash-commands" ]; then
+          if [ -d "/home/runner/work/_actions/anthropics/claude-code-action/v0.0.56/slash-commands" ]; then
             echo "✅ Slash commands directory found"
           else
             echo "⚠️ Slash commands directory not found - will create empty directory"
@@ -42,7 +42,7 @@ jobs:
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@v0.0.56
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
