@@ -16,8 +16,10 @@ import { ExportReporting } from '@/components/analytics/ExportReporting';
 import { AnalyticsConfiguration } from '@/components/analytics/AnalyticsConfiguration';
 import { ABTestingInterface } from '@/components/analytics/ABTestingInterface';
 import { ThresholdOptimizationPanel } from '@/components/builder/ThresholdOptimizationPanel';
+import { SLADashboard } from '@/components/builder/SLADashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BarChart3, 
@@ -125,7 +127,11 @@ export default function AnalyticsPage() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
+<<<<<<< HEAD
+        <TabsList className="grid w-full grid-cols-9">
+=======
         <TabsList className="grid w-full grid-cols-8">
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Gauge className="h-4 w-4" />
             Overview
@@ -146,6 +152,13 @@ export default function AnalyticsPage() {
             <Activity className="h-4 w-4" />
             Real-time
           </TabsTrigger>
+<<<<<<< HEAD
+          <TabsTrigger value="sla-monitoring" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            SLA Monitoring
+          </TabsTrigger>
+=======
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
           <TabsTrigger value="abtesting" className="flex items-center gap-2">
             <TestTube2 className="h-4 w-4" />
             A/B Testing
@@ -164,6 +177,58 @@ export default function AnalyticsPage() {
           <Suspense fallback={<DashboardSkeleton />}>
             <ComprehensiveAnalyticsDashboard />
           </Suspense>
+<<<<<<< HEAD
+          
+          {/* SLA Summary Integration */}
+          <Card className="border-l-4 border-l-blue-500">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Zap className="h-6 w-6 text-blue-600" />
+                  <div>
+                    <CardTitle>SLA Performance Summary</CardTitle>
+                    <CardDescription>
+                      Real-time SLA monitoring and violation prevention
+                    </CardDescription>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => {
+                  // Navigate to SLA monitoring tab
+                  const tabTrigger = document.querySelector('[value="sla-monitoring"]') as HTMLElement;
+                  tabTrigger?.click();
+                }}>
+                  <Activity className="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="text-2xl font-bold text-green-600">94.2%</div>
+                  <div className="text-sm text-green-700">SLA Success Rate</div>
+                  <div className="text-xs text-green-600 mt-1">+2.1% vs last week</div>
+                </div>
+                <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="text-2xl font-bold text-blue-600">2</div>
+                  <div className="text-sm text-blue-700">Active Violations</div>
+                  <div className="text-xs text-blue-600 mt-1">-3 since yesterday</div>
+                </div>
+                <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="text-2xl font-bold text-yellow-600">14.5m</div>
+                  <div className="text-sm text-yellow-700">Avg Resolution Time</div>
+                  <div className="text-xs text-yellow-600 mt-1">-2.3m improvement</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="text-2xl font-bold text-purple-600">87%</div>
+                  <div className="text-sm text-purple-700">Prediction Accuracy</div>
+                  <div className="text-xs text-purple-600 mt-1">Above 85% target</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+=======
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
@@ -188,6 +253,15 @@ export default function AnalyticsPage() {
           <Suspense fallback={<DashboardSkeleton />}>
             <RealTimeMonitoringPanel />
           </Suspense>
+<<<<<<< HEAD
+        </TabsContent>
+
+        <TabsContent value="sla-monitoring" className="space-y-6">
+          <Suspense fallback={<DashboardSkeleton />}>
+            <SLADashboard workflowId={1} className="w-full" />
+          </Suspense>
+=======
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
         </TabsContent>
 
         <TabsContent value="abtesting" className="space-y-6">

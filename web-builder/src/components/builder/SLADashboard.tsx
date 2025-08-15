@@ -15,7 +15,7 @@ import {
   Zap,
   Target,
   BarChart3,
-  Refresh
+  RefreshCw
 } from 'lucide-react';
 import PredictionCard from './PredictionCard';
 import ThresholdOptimizationPanel from './ThresholdOptimizationPanel';
@@ -255,7 +255,11 @@ export const SLADashboard: React.FC<SLADashboardProps> = ({
             onClick={loadPredictions}
             disabled={loading}
           >
+<<<<<<< HEAD
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+=======
             <Refresh className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
           </Button>
         </div>
       </div>

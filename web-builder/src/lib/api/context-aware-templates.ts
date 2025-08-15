@@ -13,6 +13,18 @@ import {
   PersonalizationSettings,
   ContextualRecommendation,
   RecommendationContext,
+<<<<<<< HEAD
+  BusinessAnalysisResponse,
+  TemplateRecommendationResponse,
+  TemplatePersonalizationApiResponse,
+  ContextualRecommendationsApiResponse,
+  TemplateFeedback,
+  LearningData,
+  TemplateIntelligenceScore,
+  ScoringCriteria
+} from '@/types/context-aware-templates';
+import { templateIntelligenceService } from '@/lib/services/template-intelligence-service';
+=======
   BusinessAnalysisApiResponse,
   TemplateRecommendationApiResponse,
   TemplatePersonalizationApiResponse,
@@ -20,6 +32,7 @@ import {
   TemplateFeedback,
   LearningData
 } from '@/types/context-aware-templates';
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -93,10 +106,58 @@ async function apiRequest<T>(
 export class BusinessAnalysisApi {
   /**
    * Analyze business information and classify industry, audience, etc.
+<<<<<<< HEAD
+   * Falls back to local intelligence service if API is unavailable
+=======
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
    */
   static async analyzeBusinessContext(
     request: BusinessAnalysisRequest
   ): Promise<BusinessAnalysisResult> {
+<<<<<<< HEAD
+    try {
+      const response = await apiRequest<{ analysis: BusinessAnalysisResult }>(
+        '/business-analysis/analyze',
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      return response.analysis;
+    } catch (error) {
+      console.warn('API unavailable, using local intelligence service:', error);
+      
+      // Fallback to local service
+      const localResponse = await templateIntelligenceService.analyzeBusinessContext(request);
+      return localResponse.analysis;
+    }
+  }
+
+  /**
+   * Enhanced business analysis with local intelligence service
+   */
+  static async analyzeBusinessContextEnhanced(
+    request: BusinessAnalysisRequest
+  ): Promise<BusinessAnalysisResponse> {
+    try {
+      // Try API first
+      const response = await apiRequest<BusinessAnalysisResponse>(
+        '/business-analysis/analyze-enhanced',
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      return response;
+    } catch (error) {
+      console.warn('Enhanced API unavailable, using local intelligence service:', error);
+      
+      // Fallback to local service
+      return await templateIntelligenceService.analyzeBusinessContext(request);
+    }
+=======
     const response = await apiRequest<BusinessAnalysisApiResponse>(
       '/business-analysis/analyze',
       {
@@ -106,6 +167,7 @@ export class BusinessAnalysisApi {
     );
 
     return response.analysis;
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
   }
 
   /**
@@ -148,6 +210,10 @@ export class BusinessAnalysisApi {
 export class TemplateRecommendationApi {
   /**
    * Get AI-powered template recommendations based on business context
+<<<<<<< HEAD
+   * Falls back to local intelligence service if API is unavailable
+=======
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
    */
   static async getRecommendations(
     businessContext: BusinessAnalysisResult,
@@ -156,6 +222,81 @@ export class TemplateRecommendationApi {
       includeReasoning?: boolean;
       filterByCategory?: string[];
       sortBy?: 'confidence' | 'conversion' | 'popularity';
+<<<<<<< HEAD
+      customCriteria?: Partial<ScoringCriteria>;
+    } = {}
+  ): Promise<TemplateRecommendation[]> {
+    try {
+      const params = new URLSearchParams({
+        max_recommendations: (options.maxRecommendations || 5).toString(),
+        include_reasoning: (options.includeReasoning !== false).toString(),
+        ...(options.filterByCategory && { 
+          categories: options.filterByCategory.join(',') 
+        }),
+        ...(options.sortBy && { sort_by: options.sortBy }),
+      });
+
+      const response = await apiRequest<{ recommendations: TemplateRecommendation[] }>(
+        `/template-recommendations?${params}`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ 
+            business_context: businessContext,
+            custom_criteria: options.customCriteria 
+          }),
+        }
+      );
+
+      return response.recommendations;
+    } catch (error) {
+      console.warn('API unavailable, using local intelligence service:', error);
+      
+      // Fallback to local service
+      const localResponse = await templateIntelligenceService.getTemplateRecommendations(
+        businessContext,
+        options.maxRecommendations || 5,
+        options.customCriteria
+      );
+      
+      return localResponse.recommendations;
+    }
+  }
+
+  /**
+   * Get enhanced template recommendations with full analysis
+   */
+  static async getRecommendationsEnhanced(
+    businessContext: BusinessAnalysisResult,
+    options: {
+      maxRecommendations?: number;
+      customCriteria?: Partial<ScoringCriteria>;
+    } = {}
+  ): Promise<TemplateRecommendationResponse> {
+    try {
+      const response = await apiRequest<TemplateRecommendationResponse>(
+        '/template-recommendations/enhanced',
+        {
+          method: 'POST',
+          body: JSON.stringify({ 
+            business_context: businessContext,
+            max_recommendations: options.maxRecommendations || 5,
+            custom_criteria: options.customCriteria 
+          }),
+        }
+      );
+
+      return response;
+    } catch (error) {
+      console.warn('Enhanced API unavailable, using local intelligence service:', error);
+      
+      // Fallback to local service
+      return await templateIntelligenceService.getTemplateRecommendations(
+        businessContext,
+        options.maxRecommendations || 5,
+        options.customCriteria
+      );
+    }
+=======
     } = {}
   ): Promise<TemplateRecommendation[]> {
     const params = new URLSearchParams({
@@ -176,6 +317,7 @@ export class TemplateRecommendationApi {
     );
 
     return response.recommendations;
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
   }
 
   /**
@@ -194,6 +336,67 @@ export class TemplateRecommendationApi {
     };
     similar_templates: string[];
   }> {
+<<<<<<< HEAD
+    try {
+      return await apiRequest(
+        `/templates/${encodeURIComponent(templateId)}/analysis`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ business_context: businessContext }),
+        }
+      );
+    } catch (error) {
+      console.warn('Template analysis API unavailable, using local service:', error);
+      
+      // Fallback to local intelligence scoring
+      const intelligenceScore = templateIntelligenceService.calculateIntelligenceScore(
+        templateId,
+        businessContext
+      );
+      
+      return {
+        compatibility_score: intelligenceScore.overall_score,
+        customization_requirements: intelligenceScore.improvement_suggestions,
+        expected_performance: {
+          conversion_rate: intelligenceScore.category_scores.conversion_potential,
+          setup_time: 30, // Default estimate
+          maintenance_effort: 1 - intelligenceScore.category_scores.customization_ease
+        },
+        similar_templates: [] // Would need additional logic for similarity
+      };
+    }
+  }
+
+  /**
+   * Calculate template intelligence score for business context matching
+   */
+  static async calculateIntelligenceScore(
+    templateId: string,
+    businessContext: BusinessAnalysisResult,
+    criteria?: ScoringCriteria
+  ): Promise<TemplateIntelligenceScore> {
+    try {
+      return await apiRequest(
+        `/templates/${encodeURIComponent(templateId)}/intelligence-score`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ 
+            business_context: businessContext,
+            scoring_criteria: criteria 
+          }),
+        }
+      );
+    } catch (error) {
+      console.warn('Intelligence scoring API unavailable, using local service:', error);
+      
+      // Fallback to local service
+      return templateIntelligenceService.calculateIntelligenceScore(
+        templateId,
+        businessContext,
+        criteria
+      );
+    }
+=======
     return apiRequest(
       `/templates/${encodeURIComponent(templateId)}/analysis`,
       {
@@ -201,6 +404,7 @@ export class TemplateRecommendationApi {
         body: JSON.stringify({ business_context: businessContext }),
       }
     );
+>>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
   }
 
   /**

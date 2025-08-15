@@ -1,7 +1,18 @@
 import { Template } from '@/store/builderStore';
+import {
+  EnhancedTemplate,
+  TemplateCategory,
+  TemplateIntelligenceScore,
+  TemplatePersonalizationData,
+  TemplateUsageAnalytics,
+  TemplateAIInsights,
+  BusinessIndustry,
+  BusinessType,
+  DesignStyle
+} from '@/types/context-aware-templates';
 
-// Enhanced Template interface extensions
-interface EnhancedTemplate extends Template {
+// Convert legacy Template to EnhancedTemplate compatible format
+type LegacyEnhancedTemplate = Template & {
   subcategory?: string;
   is_premium?: boolean;
   is_featured?: boolean;
@@ -12,10 +23,148 @@ interface EnhancedTemplate extends Template {
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   features?: string[];
   preview_images?: string[];
-}
+  // Add EnhancedTemplate fields
+  target_industries?: BusinessIndustry[];
+  target_business_types?: BusinessType[];
+  design_style?: DesignStyle[];
+  complexity_level?: 'beginner' | 'intermediate' | 'advanced';
+  setup_time_minutes?: number;
+  responsive?: boolean;
+  mobile_optimized?: boolean;
+  seo_optimized?: boolean;
+  analytics_ready?: boolean;
+  conversion_optimized?: boolean;
+  a11y_compliant?: boolean;
+  performance_score?: number;
+  last_updated?: string;
+  version?: string;
+  intelligence_score?: TemplateIntelligenceScore;
+  personalization_data?: TemplatePersonalizationData;
+  usage_analytics?: TemplateUsageAnalytics;
+  ai_insights?: TemplateAIInsights;
+};
+
+// Generate AI Intelligence Score for templates
+const generateIntelligenceScore = (template: Partial<LegacyEnhancedTemplate>): TemplateIntelligenceScore => {
+  const baseScore = (template.rating || 4.0) / 5.0 * 0.8;
+  const usageScore = Math.min((template.usage_count || 1000) / 20000, 1.0) * 0.2;
+  
+  return {
+    overall_score: Math.min(baseScore + usageScore, 1.0),
+    category_scores: {
+      industry_alignment: template.target_industries?.length ? 0.9 : 0.7,
+      audience_fit: 0.85,
+      design_quality: (template.rating || 4.0) / 5.0,
+      performance: template.performance_score || 0.8,
+      conversion_potential: template.conversion_optimized ? 0.9 : 0.7,
+      customization_ease: template.difficulty === 'beginner' ? 0.9 : template.difficulty === 'intermediate' ? 0.7 : 0.5
+    },
+    confidence_level: 0.85,
+    reasoning: [
+      `High user satisfaction with ${(template.rating || 4.0).toFixed(1)}/5.0 rating`,
+      `Proven performance with ${template.usage_count || 1000}+ implementations`,
+      `Optimized for ${template.target_industries?.join(', ') || 'multiple industries'}`
+    ],
+    improvement_suggestions: [
+      'Add more industry-specific customization options',
+      'Enhance mobile responsiveness',
+      'Improve loading performance'
+    ]
+  };
+};
+
+// Add intelligence scoring to all templates
+const addIntelligenceScoring = (template: LegacyEnhancedTemplate): LegacyEnhancedTemplate => ({
+  ...template,
+  intelligence_score: generateIntelligenceScore(template),
+  personalization_data: {
+    customizable_elements: [
+      {
+        id: 'hero-headline',
+        type: 'text',
+        name: 'Main Headline',
+        description: 'Primary value proposition',
+        current_value: template.name,
+        suggestions: ['Transform Your Business', 'Revolutionize Your Workflow', 'Boost Your Productivity'],
+        ai_generated_options: ['AI-Powered Solutions for Modern Business', 'Next-Generation Platform for Growth']
+      },
+      {
+        id: 'color-scheme',
+        type: 'color',
+        name: 'Brand Colors',
+        description: 'Primary color palette',
+        current_value: '#4f46e5',
+        suggestions: ['#0066CC', '#7C3AED', '#059669'],
+        ai_generated_options: ['#4338CA', '#7C2D12']
+      }
+    ],
+    ai_content_suggestions: [
+      {
+        element_id: 'hero-headline',
+        content_type: 'headline',
+        suggestions: ['Transform Your Business with AI', 'Revolutionize Your Workflow Today'],
+        confidence: 0.9,
+        reasoning: 'Based on industry best practices for SaaS landing pages'
+      }
+    ],
+    color_palette_options: [
+      {
+        id: 'modern-blue',
+        name: 'Modern Blue',
+        colors: ['#3B82F6', '#1E40AF', '#1E3A8A'],
+        harmony_type: 'monochromatic',
+        brand_alignment_score: 0.9
+      }
+    ],
+    layout_variations: [
+      {
+        id: 'centered-hero',
+        name: 'Centered Hero Layout',
+        description: 'Center-aligned hero with side imagery',
+        conversion_impact: 'positive',
+        complexity_change: -1
+      }
+    ]
+  },
+  usage_analytics: {
+    total_uses: template.usage_count || 1000,
+    success_rate: 0.87,
+    avg_setup_time: template.setup_time_minutes || 30,
+    user_satisfaction: (template.rating || 4.0) / 5.0,
+    common_customizations: ['Color scheme', 'Hero text', 'Call-to-action buttons'],
+    performance_metrics: {
+      avg_load_time: 1.2,
+      mobile_score: 0.95,
+      seo_score: 0.88,
+      accessibility_score: 0.92
+    }
+  },
+  ai_insights: {
+    optimization_opportunities: [
+      'Add social proof section for higher conversion',
+      'Implement A/B testing for CTA buttons',
+      'Optimize images for faster loading'
+    ],
+    trend_alignment: 0.85,
+    competitive_analysis: [
+      {
+        competitor: 'Webflow Templates',
+        similarity_score: 0.7,
+        differentiators: ['AI-powered customization', 'Workflow integration'],
+        improvement_areas: ['Animation sophistication', 'Design complexity']
+      }
+    ],
+    future_proof_score: 0.8,
+    maintenance_recommendations: [
+      'Update design trends quarterly',
+      'Monitor conversion performance',
+      'Refresh content suggestions monthly'
+    ]
+  }
+});
 
 // Premium SaaS Landing Page Template
-const premiumSaasTemplate: EnhancedTemplate = {
+const premiumSaasTemplate: LegacyEnhancedTemplate = {
   id: 'premium-saas-landing-1',
   name: 'Premium SaaS Landing Page',
   category: 'landing',
@@ -31,6 +180,21 @@ const premiumSaasTemplate: EnhancedTemplate = {
   review_count: 342,
   difficulty: 'intermediate',
   tags: ['saas', 'b2b', 'landing', 'conversion', 'premium', 'animations', 'responsive'],
+  // Enhanced Template fields
+  target_industries: ['technology', 'finance', 'healthcare', 'professional-services'],
+  target_business_types: ['b2b', 'b2b2c'],
+  design_style: ['modern', 'minimal', 'corporate'],
+  complexity_level: 'intermediate',
+  setup_time_minutes: 45,
+  responsive: true,
+  mobile_optimized: true,
+  seo_optimized: true,
+  analytics_ready: true,
+  conversion_optimized: true,
+  a11y_compliant: true,
+  performance_score: 0.92,
+  last_updated: '2024-01-20',
+  version: '2.1.0',
   features: [
     'Conversion-optimized layout',
     'Advanced micro-animations',
@@ -121,128 +285,6 @@ const premiumSaasTemplate: EnhancedTemplate = {
       order: 1,
     },
 
-    // Social Proof Section
-    {
-      id: 'social-proof',
-      type: 'container',
-      name: 'Social Proof Section',
-      content: '',
-      styles: {
-        position: 'relative',
-        width: '100%',
-        backgroundColor: '#f8fafc',
-        padding: '80px 20px',
-        textAlign: 'center',
-      },
-      props: {
-        animation: true,
-      },
-      children: ['social-proof-title', 'social-proof-logos', 'social-proof-stats'],
-      parentId: null,
-      order: 2,
-    },
-
-    // Features Section
-    {
-      id: 'features-section',
-      type: 'container',
-      name: 'Features Section',
-      content: '',
-      styles: {
-        position: 'relative',
-        width: '100%',
-        backgroundColor: '#ffffff',
-        padding: '120px 20px',
-        maxWidth: '1200px',
-        margin: '0 auto',
-      },
-      props: {
-        animation: true,
-      },
-      children: ['features-header', 'features-grid'],
-      parentId: null,
-      order: 3,
-    },
-
-    // Features Grid with Enhanced Cards
-    {
-      id: 'features-grid',
-      type: 'container',
-      name: 'Features Grid',
-      content: '',
-      styles: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-        gap: '40px',
-      },
-      props: {
-        animation: true,
-      },
-      children: ['feature-1', 'feature-2', 'feature-3', 'feature-4', 'feature-5', 'feature-6'],
-      parentId: 'features-section',
-      order: 1,
-    },
-
-    // Enhanced Feature Cards
-    {
-      id: 'feature-1',
-      type: 'card',
-      name: 'AI-Powered Analytics',
-      content: 'Get real-time insights with machine learning algorithms that predict trends and optimize your business performance automatically.',
-      styles: {
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '16px',
-        padding: '40px',
-        transition: 'all 0.3s ease',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-      },
-      props: {
-        variant: 'feature',
-        icon: '🤖',
-        title: 'AI-Powered Analytics',
-        description: 'Get real-time insights with machine learning algorithms that predict trends and optimize your business performance automatically.',
-        features: ['Real-time dashboards', 'Predictive analytics', 'Custom reports'],
-        animation: true,
-        hover: true,
-        interactive: true,
-      },
-      children: [],
-      parentId: 'features-grid',
-      order: 0,
-    },
-
-    {
-      id: 'feature-2',
-      type: 'card',
-      name: 'Workflow Automation',
-      content: 'Automate repetitive tasks and streamline your processes with our intuitive drag-and-drop workflow builder.',
-      styles: {
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '16px',
-        padding: '40px',
-        transition: 'all 0.3s ease',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-      },
-      props: {
-        variant: 'feature',
-        icon: '⚡',
-        title: 'Workflow Automation',
-        description: 'Automate repetitive tasks and streamline your processes with our intuitive drag-and-drop workflow builder.',
-        features: ['Visual workflow builder', 'API integrations', 'Smart triggers'],
-        animation: true,
-        hover: true,
-        interactive: true,
-      },
-      children: [],
-      parentId: 'features-grid',
-      order: 1,
-    },
-
-    // Additional enhanced components...
-    // (Similar pattern for remaining components)
-
     // Final CTA Section
     {
       id: 'final-cta-section',
@@ -303,13 +345,13 @@ const premiumSaasTemplate: EnhancedTemplate = {
 };
 
 // Import VoTemplate
-import { voSaaSTemplate } from './templates/voSaaSTemplate';
+import { voSaaSTemplate } from './voSaaSTemplate';
 
 // Enhanced sample template data
-export const sampleTemplates: EnhancedTemplate[] = [
-  voSaaSTemplate as EnhancedTemplate,
-  premiumSaasTemplate,
-  {
+export const sampleTemplates: LegacyEnhancedTemplate[] = [
+  addIntelligenceScoring(voSaaSTemplate as LegacyEnhancedTemplate),
+  addIntelligenceScoring(premiumSaasTemplate),
+  addIntelligenceScoring({
     id: 'landing-hero-1',
     name: 'Modern Hero Landing',
     category: 'landing',
@@ -325,6 +367,20 @@ export const sampleTemplates: EnhancedTemplate[] = [
     review_count: 189,
     difficulty: 'beginner',
     tags: ['landing', 'hero', 'startup', 'simple', 'clean'],
+    target_industries: ['technology', 'retail', 'education'],
+    target_business_types: ['b2c', 'b2b'],
+    design_style: ['modern', 'minimal'],
+    complexity_level: 'beginner',
+    setup_time_minutes: 20,
+    responsive: true,
+    mobile_optimized: true,
+    seo_optimized: true,
+    analytics_ready: false,
+    conversion_optimized: false,
+    a11y_compliant: true,
+    performance_score: 0.85,
+    last_updated: '2024-01-15',
+    version: '1.0.0',
     features: [
       'Clean modern design',
       'Mobile responsive',
@@ -376,12 +432,11 @@ export const sampleTemplates: EnhancedTemplate[] = [
         parentId: null,
         order: 1,
       },
-      // Additional components...
     ],
-  },
+  }),
   
   // E-commerce Template
-  {
+  addIntelligenceScoring({
     id: 'ecommerce-modern-1',
     name: 'Modern E-commerce Store',
     category: 'ecommerce',
@@ -397,6 +452,20 @@ export const sampleTemplates: EnhancedTemplate[] = [
     review_count: 267,
     difficulty: 'advanced',
     tags: ['ecommerce', 'shopping', 'fashion', 'modern', 'premium'],
+    target_industries: ['retail', 'beauty', 'automotive'],
+    target_business_types: ['b2c'],
+    design_style: ['modern', 'bold'],
+    complexity_level: 'advanced',
+    setup_time_minutes: 90,
+    responsive: true,
+    mobile_optimized: true,
+    seo_optimized: true,
+    analytics_ready: true,
+    conversion_optimized: true,
+    a11y_compliant: true,
+    performance_score: 0.88,
+    last_updated: '2024-01-18',
+    version: '1.5.0',
     features: [
       'Product catalog',
       'Shopping cart',
@@ -410,10 +479,10 @@ export const sampleTemplates: EnhancedTemplate[] = [
     components: [
       // E-commerce specific components
     ],
-  },
+  }),
 
   // Blog Template
-  {
+  addIntelligenceScoring({
     id: 'blog-minimal-1',
     name: 'Minimal Blog',
     category: 'blog',
@@ -429,6 +498,20 @@ export const sampleTemplates: EnhancedTemplate[] = [
     review_count: 98,
     difficulty: 'beginner',
     tags: ['blog', 'minimal', 'writing', 'clean', 'typography'],
+    target_industries: ['entertainment', 'education', 'nonprofit'],
+    target_business_types: ['b2c'],
+    design_style: ['minimal', 'classic'],
+    complexity_level: 'beginner',
+    setup_time_minutes: 15,
+    responsive: true,
+    mobile_optimized: true,
+    seo_optimized: true,
+    analytics_ready: false,
+    conversion_optimized: false,
+    a11y_compliant: true,
+    performance_score: 0.90,
+    last_updated: '2024-01-16',
+    version: '1.0.0',
     features: [
       'Typography focused',
       'Reading time estimates',
@@ -441,10 +524,10 @@ export const sampleTemplates: EnhancedTemplate[] = [
     components: [
       // Blog specific components
     ],
-  },
+  }),
 
   // Portfolio Template
-  {
+  addIntelligenceScoring({
     id: 'portfolio-creative-1',
     name: 'Creative Portfolio',
     category: 'portfolio',
@@ -460,6 +543,20 @@ export const sampleTemplates: EnhancedTemplate[] = [
     review_count: 156,
     difficulty: 'intermediate',
     tags: ['portfolio', 'creative', 'designer', 'gallery', 'showcase'],
+    target_industries: ['entertainment', 'professional-services'],
+    target_business_types: ['b2c', 'b2b'],
+    design_style: ['creative', 'bold'],
+    complexity_level: 'intermediate',
+    setup_time_minutes: 60,
+    responsive: true,
+    mobile_optimized: true,
+    seo_optimized: false,
+    analytics_ready: true,
+    conversion_optimized: false,
+    a11y_compliant: false,
+    performance_score: 0.75,
+    last_updated: '2024-01-19',
+    version: '1.2.0',
     features: [
       'Project galleries',
       'Image optimization',
@@ -472,10 +569,10 @@ export const sampleTemplates: EnhancedTemplate[] = [
     components: [
       // Portfolio specific components
     ],
-  },
+  }),
 
   // Corporate Template
-  {
+  addIntelligenceScoring({
     id: 'corporate-professional-1',
     name: 'Professional Corporate',
     category: 'corporate',
@@ -491,6 +588,20 @@ export const sampleTemplates: EnhancedTemplate[] = [
     review_count: 203,
     difficulty: 'intermediate',
     tags: ['corporate', 'business', 'professional', 'services'],
+    target_industries: ['professional-services', 'finance', 'manufacturing'],
+    target_business_types: ['b2b'],
+    design_style: ['corporate', 'classic'],
+    complexity_level: 'intermediate',
+    setup_time_minutes: 40,
+    responsive: true,
+    mobile_optimized: true,
+    seo_optimized: true,
+    analytics_ready: true,
+    conversion_optimized: false,
+    a11y_compliant: true,
+    performance_score: 0.82,
+    last_updated: '2024-01-17',
+    version: '1.1.0',
     features: [
       'Service pages',
       'Team profiles',
@@ -503,82 +614,148 @@ export const sampleTemplates: EnhancedTemplate[] = [
     components: [
       // Corporate specific components
     ],
-  }
+  })
 ];
 
 // Enhanced template categories with more details
-export const templateCategories = [
+export const templateCategories: TemplateCategory[] = [
   { 
     id: 'all', 
     name: 'All Templates', 
-    count: sampleTemplates.length,
     description: 'Browse all available templates',
-    icon: '🎨'
+    icon: '🎨',
+    template_count: sampleTemplates.length,
+    popularity_score: 1.0,
+    target_industries: ['technology', 'healthcare', 'finance', 'education', 'retail'],
+    subcategories: [
+      {
+        id: 'all-premium',
+        name: 'Premium Templates',
+        description: 'High-quality premium templates',
+        template_count: sampleTemplates.filter(t => t.is_premium).length,
+        recommended_for: ['Professional websites', 'Business applications']
+      }
+    ]
   },
   { 
     id: 'landing', 
     name: 'SaaS & Landing', 
-    count: sampleTemplates.filter(t => t.category === 'landing').length,
     description: 'High-converting landing pages',
-    icon: '🚀'
+    icon: '🚀',
+    template_count: sampleTemplates.filter(t => t.category === 'landing').length,
+    popularity_score: 0.9,
+    target_industries: ['technology', 'professional-services'],
+    subcategories: [
+      {
+        id: 'saas',
+        name: 'SaaS Landing Pages',
+        description: 'Optimized for SaaS conversions',
+        template_count: 2,
+        recommended_for: ['Software companies', 'B2B services']
+      }
+    ]
   },
   { 
     id: 'ecommerce', 
     name: 'E-commerce', 
-    count: sampleTemplates.filter(t => t.category === 'ecommerce').length,
     description: 'Online store templates',
-    icon: '🛒'
+    icon: '🛒',
+    template_count: sampleTemplates.filter(t => t.category === 'ecommerce').length,
+    popularity_score: 0.8,
+    target_industries: ['retail', 'beauty', 'automotive'],
+    subcategories: [
+      {
+        id: 'fashion',
+        name: 'Fashion & Apparel',
+        description: 'Style-focused e-commerce',
+        template_count: 1,
+        recommended_for: ['Fashion brands', 'Clothing stores']
+      }
+    ]
   },
   { 
     id: 'blog', 
     name: 'Blog & Content', 
-    count: sampleTemplates.filter(t => t.category === 'blog').length,
     description: 'Content-focused templates',
-    icon: '📝'
+    icon: '📝',
+    template_count: sampleTemplates.filter(t => t.category === 'blog').length,
+    popularity_score: 0.6,
+    target_industries: ['entertainment', 'education'],
+    subcategories: [
+      {
+        id: 'personal',
+        name: 'Personal Blogs',
+        description: 'Individual content creators',
+        template_count: 1,
+        recommended_for: ['Writers', 'Content creators']
+      }
+    ]
   },
   { 
     id: 'portfolio', 
     name: 'Portfolio', 
-    count: sampleTemplates.filter(t => t.category === 'portfolio').length,
     description: 'Showcase your work',
-    icon: '🎨'
+    icon: '🎨',
+    template_count: sampleTemplates.filter(t => t.category === 'portfolio').length,
+    popularity_score: 0.7,
+    target_industries: ['entertainment', 'professional-services'],
+    subcategories: [
+      {
+        id: 'designer',
+        name: 'Designer Portfolios',
+        description: 'Creative professional showcases',
+        template_count: 1,
+        recommended_for: ['Designers', 'Artists', 'Creatives']
+      }
+    ]
   },
   { 
     id: 'corporate', 
     name: 'Business', 
-    count: sampleTemplates.filter(t => t.category === 'corporate').length,
     description: 'Professional business sites',
-    icon: '🏢'
+    icon: '🏢',
+    template_count: sampleTemplates.filter(t => t.category === 'corporate').length,
+    popularity_score: 0.75,
+    target_industries: ['professional-services', 'finance', 'manufacturing'],
+    subcategories: [
+      {
+        id: 'business',
+        name: 'Corporate Websites',
+        description: 'Professional business presence',
+        template_count: 1,
+        recommended_for: ['Corporations', 'Professional services']
+      }
+    ]
   },
 ];
 
 // Helper functions
-export function getTemplatesByCategory(category: string): EnhancedTemplate[] {
+export function getTemplatesByCategory(category: string): LegacyEnhancedTemplate[] {
   if (category === 'all') {
     return sampleTemplates;
   }
   return sampleTemplates.filter(template => template.category === category);
 }
 
-export function getTemplateById(id: string): EnhancedTemplate | undefined {
+export function getTemplateById(id: string): LegacyEnhancedTemplate | undefined {
   return sampleTemplates.find(template => template.id === id);
 }
 
-export function getFeaturedTemplates(): EnhancedTemplate[] {
+export function getFeaturedTemplates(): LegacyEnhancedTemplate[] {
   return sampleTemplates.filter(template => template.is_featured);
 }
 
-export function getPremiumTemplates(): EnhancedTemplate[] {
+export function getPremiumTemplates(): LegacyEnhancedTemplate[] {
   return sampleTemplates.filter(template => template.is_premium);
 }
 
-export function getPopularTemplates(): EnhancedTemplate[] {
+export function getPopularTemplates(): LegacyEnhancedTemplate[] {
   return sampleTemplates
     .sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0))
     .slice(0, 6);
 }
 
-export function searchTemplates(query: string): EnhancedTemplate[] {
+export function searchTemplates(query: string): LegacyEnhancedTemplate[] {
   const lowerQuery = query.toLowerCase();
   return sampleTemplates.filter(template =>
     template.name.toLowerCase().includes(lowerQuery) ||
@@ -586,5 +763,33 @@ export function searchTemplates(query: string): EnhancedTemplate[] {
     template.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
     template.category.toLowerCase().includes(lowerQuery) ||
     template.subcategory?.toLowerCase().includes(lowerQuery)
+  );
+}
+
+// Filter templates by business intelligence scoring
+export function getTemplatesByIntelligenceScore(minScore: number = 0.8): LegacyEnhancedTemplate[] {
+  return sampleTemplates.filter(template => 
+    template.intelligence_score && template.intelligence_score.overall_score >= minScore
+  );
+}
+
+// Get templates recommended for specific industries
+export function getTemplatesForIndustry(industry: BusinessIndustry): LegacyEnhancedTemplate[] {
+  return sampleTemplates.filter(template =>
+    template.target_industries?.includes(industry)
+  );
+}
+
+// Get templates by business type
+export function getTemplatesForBusinessType(businessType: BusinessType): LegacyEnhancedTemplate[] {
+  return sampleTemplates.filter(template =>
+    template.target_business_types?.includes(businessType)
+  );
+}
+
+// Get templates by design style preference
+export function getTemplatesByDesignStyle(style: DesignStyle): LegacyEnhancedTemplate[] {
+  return sampleTemplates.filter(template =>
+    template.design_style?.includes(style)
   );
 }

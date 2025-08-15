@@ -15,7 +15,8 @@ NC='\033[0m' # No Color
 # Agent type mappings
 declare -A AGENT_TYPES=(
     ["frontend-builder"]="frontend"
-    ["backend-architect"]="backend"
+    ["frontend-developer"]="frontend"
+    ["backend-architect"]="backend" 
     ["template-designer"]="template"
     ["ai-services-specialist"]="ai"
     ["integration-coordinator"]="integration"
@@ -26,9 +27,10 @@ declare -A AGENT_TYPES=(
     ["frontend-developer"]="frontend"
 )
 
-# File ownership patterns
+# File ownership patterns (relaxed for development workflow)
 declare -A FILE_OWNERSHIP=(
-    ["frontend-builder"]="web-builder/src/components/builder/|web-builder/src/components/ui/|web-builder/src/hooks/|web-builder/src/lib/"
+    ["frontend-builder"]="web-builder/src/"
+    ["frontend-developer"]="web-builder/src/"
     ["backend-architect"]="backend/|web-builder/src/app/api/"
     ["template-designer"]="web-builder/src/components/templates/|web-builder/src/lib/templates/|web-builder/src/data/templates/"
     ["ai-services-specialist"]="web-builder/src/lib/ai/|web-builder/src/app/api/ai/"

@@ -1,0 +1,52 @@
+{
+  "bmad_testing_config": {
+    "version": "1.0",
+    "description": "BMad Development Workflow Testing Configuration with Playwright MCP Integration",
+    
+    "development_phases": {
+      "story_created": {
+        "phase_icon": "📝",
+        "requirements": ["Story documented", "Acceptance criteria defined"],
+        "testing_required": false
+      },
+      "in_development": {
+        "phase_icon": "🔧", 
+        "requirements": ["Unit tests written", "Code implementation"],
+        "testing_required": true,
+        "tests": ["unit"]
+      },
+      "qa_testing": {
+        "phase_icon": "✅",
+        "requirements": ["Integration tests pass", "Component testing complete"],
+        "testing_required": true,
+        "tests": ["unit", "integration", "component"]
+      },
+      "e2e_validation": {
+        "phase_icon": "🎭",
+        "requirements": ["Playwright E2E tests pass", "Magic Moment validation", "Cross-browser testing"],
+        "testing_required": true,
+        "tests": ["unit", "integration", "e2e", "performance", "cross-browser"],
+        "playwright_mcp_required": true
+      },
+      "deployed": {
+        "phase_icon": "🚀",
+        "requirements": ["Production deployment complete", "Smoke tests pass"],
+        "testing_required": true,
+        "tests": ["smoke", "monitoring"]
+      },
+      "complete": {
+        "phase_icon": "🎯",
+        "requirements": ["Final validation complete", "Business sign-off"],
+        "testing_required": false
+      }
+    },
+
+    "quality_targets": {
+      "magic_moment_completion": "< 30 minutes",
+      "ai_component_analysis": "< 5 seconds", 
+      "template_loading": "< 3 seconds",
+      "workflow_success_rate": "> 90%",
+      "cross_browser_compatibility": "100%"
+    }
+  }
+}
