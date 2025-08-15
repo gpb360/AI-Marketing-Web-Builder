@@ -1,0 +1,21 @@
+{
+  "name": "archon-bmad-webhook-service",
+  "version": "1.0.0",
+  "description": "Webhook service for Archon-BMad workflow integration",
+  "main": ".claude/scripts/archon-webhook-service.js",
+  "scripts": {
+    "start": "node .claude/scripts/simple-webhook-service.js",
+    "webhook:start": "node .claude/scripts/simple-webhook-service.js",
+    "webhook:express": "node .claude/scripts/archon-webhook-service.js",
+    "sync": "bash .claude/scripts/archon-bmad-sync.sh sync",
+    "status": "bash .claude/scripts/archon-bmad-sync.sh status",
+    "check-isolation": "bash .claude/scripts/branch-isolation-check.sh"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {},
+  "keywords": ["archon", "bmad", "webhook", "workflow", "integration"],
+  "author": "AI Marketing Web Builder Team",
+  "license": "ISC"
+}
