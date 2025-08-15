@@ -219,7 +219,8 @@ export const ComprehensiveAnalyticsDashboard: React.FC<AnalyticsDashboardProps> 
 
   // Handle time range change
   const handleTimeRangeChange = useCallback((range: string) => {
-    setSelectedTimeRange(range);
+    const validRange = range as '24h' | '7d' | '30d' | '90d';
+    setSelectedTimeRange(validRange);
     if (onTimeRangeChange) {
       onTimeRangeChange(range);
     }
