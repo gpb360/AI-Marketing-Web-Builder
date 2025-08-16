@@ -127,11 +127,7 @@ export default function AnalyticsPage() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-<<<<<<< HEAD
         <TabsList className="grid w-full grid-cols-9">
-=======
-        <TabsList className="grid w-full grid-cols-8">
->>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Gauge className="h-4 w-4" />
             Overview
@@ -152,13 +148,10 @@ export default function AnalyticsPage() {
             <Activity className="h-4 w-4" />
             Real-time
           </TabsTrigger>
-<<<<<<< HEAD
           <TabsTrigger value="sla-monitoring" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             SLA Monitoring
           </TabsTrigger>
-=======
->>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
           <TabsTrigger value="abtesting" className="flex items-center gap-2">
             <TestTube2 className="h-4 w-4" />
             A/B Testing
@@ -177,7 +170,6 @@ export default function AnalyticsPage() {
           <Suspense fallback={<DashboardSkeleton />}>
             <ComprehensiveAnalyticsDashboard />
           </Suspense>
-<<<<<<< HEAD
           
           {/* SLA Summary Integration */}
           <Card className="border-l-4 border-l-blue-500">
@@ -227,8 +219,6 @@ export default function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-=======
->>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
@@ -253,15 +243,12 @@ export default function AnalyticsPage() {
           <Suspense fallback={<DashboardSkeleton />}>
             <RealTimeMonitoringPanel />
           </Suspense>
-<<<<<<< HEAD
         </TabsContent>
 
         <TabsContent value="sla-monitoring" className="space-y-6">
           <Suspense fallback={<DashboardSkeleton />}>
             <SLADashboard workflowId={1} className="w-full" />
           </Suspense>
-=======
->>>>>>> 88dc70d760890df4c1470ad1b6f22db85a5cd44b
         </TabsContent>
 
         <TabsContent value="abtesting" className="space-y-6">
