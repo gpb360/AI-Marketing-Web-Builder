@@ -66,7 +66,14 @@ export const MagicConnector: React.FC<MagicConnectorProps> = ({
 
     setIsAnalyzing(true);
     try {
-      const result = await componentAnalyzer.analyzeComponent(component);
+      // Add timeout and fallback for analysis
+      const analysisPromise = componentAnalyzer.analyzeComponent(component);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Analysis timeout')), 5000)
+      );
+      
+      const result = await Promise.race([analysisPromise, timeoutPromise]);
+
       setAnalysis(result);
       
       // Auto-select the highest confidence suggestion
@@ -81,6 +88,20 @@ export const MagicConnector: React.FC<MagicConnectorProps> = ({
       }
     } catch (error) {
       console.error('Error analyzing component:', error);
+      
+      // Provide fallback analysis for timeout or API errors
+      setAnalysis({
+        confidence: 0.5,
+        semanticPurpose: 'generic_component',
+        workflowTriggers: [],
+        suggestedWorkflows: [],
+        businessContext: {
+          industry: 'general',
+          targetAudience: 'all_users',
+          businessGoals: ['engagement']
+        }
+      });
+        
     } finally {
       setIsAnalyzing(false);
     }
