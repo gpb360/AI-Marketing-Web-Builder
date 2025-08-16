@@ -35,8 +35,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: 'scripts/automation/package.json'
         
     - name: Install SLA monitoring dependencies
       run: |
@@ -118,12 +116,22 @@ jobs:
         
     - name: Collect Workflow Analytics
       run: |
-        node scripts/automation/analytics-collector.js --epic=2 --collect-all
+        cd scripts/automation
+        if [ -f "analytics-collector.js" ]; then
+          node analytics-collector.js --epic=2 --collect-all || echo "Analytics collection failed, continuing..."
+        else
+          echo "Analytics collector not found, skipping..."
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Generate Performance Insights
       run: |
-        node scripts/automation/analytics-collector.js --epic=2 --generate-insights
+        cd scripts/automation
+        if [ -f "analytics-collector.js" ]; then
+          node analytics-collector.js --epic=2 --generate-insights || echo "Performance insights generation failed, continuing..."
+        else
+          echo "Analytics collector not found, skipping..."
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
