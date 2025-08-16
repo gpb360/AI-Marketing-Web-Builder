@@ -366,14 +366,23 @@ class AIService:
         Return as JSON array of component suggestions.
         """
         
-        optimal_model = await self.model_router.select_model('component_suggestions', context)
-        suggestions = await self.generate_json_response_with_model(prompt, optimal_model)
-        
-        # Cache for 1 hour
-        self.component_suggestion_cache[cache_key] = suggestions
-        asyncio.create_task(self._expire_cache_key('component_suggestions', cache_key, 3600))
-        
-        return suggestions
+        try:
+            # Add timeout to prevent hanging requests
+            optimal_model = await self.model_router.select_model('component_suggestions', context)
+            
+            async with asyncio.timeout(10):  # 10-second timeout
+                suggestions = await self.generate_json_response_with_model(prompt, optimal_model)
+            
+            # Cache for 1 hour
+            self.component_suggestion_cache[cache_key] = suggestions
+            asyncio.create_task(self._expire_cache_key('component_suggestions', cache_key, 3600))
+            
+            return suggestions
+            
+        except asyncio.TimeoutError:
+            logger.warning(f"Component suggestions timed out for context: {context.get('business_type', 'unknown')}")
+            # Fallback to cached or default suggestions
+            return await self._get_cached_component_suggestions(context)
     
     async def generate_template_from_description(
         self,
@@ -447,14 +456,23 @@ class AIService:
         Return as structured JSON.
         """
         
-        optimal_model = await self.model_router.select_model('template_generation')
-        template = await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=6000)
-        
-        # Cache for 2 hours
-        self.template_generation_cache[cache_key] = template
-        asyncio.create_task(self._expire_cache_key('template_generation', cache_key, 7200))
-        
-        return template
+        try:
+            # Add timeout to prevent hanging requests
+            optimal_model = await self.model_router.select_model('template_generation')
+            
+            async with asyncio.timeout(15):  # 15-second timeout for complex template generation
+                template = await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=6000)
+            
+            # Cache for 2 hours
+            self.template_generation_cache[cache_key] = template
+            asyncio.create_task(self._expire_cache_key('template_generation', cache_key, 7200))
+            
+            return template
+            
+        except asyncio.TimeoutError:
+            logger.warning(f"Template generation timed out for description: {description[:50]}...")
+            # Fallback to cached or default template
+            return await self._get_cached_template_generation(business_context, description)
     
     async def create_workflow_from_natural_language(
         self,
@@ -527,14 +545,23 @@ class AIService:
         Return as structured JSON.
         """
         
-        optimal_model = await self.model_router.select_model('workflow_creation')
-        workflow = await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=4000)
-        
-        # Cache for 30 minutes
-        self.workflow_creation_cache[cache_key] = workflow
-        asyncio.create_task(self._expire_cache_key('workflow_creation', cache_key, 1800))
-        
-        return workflow
+        try:
+            # Add timeout to prevent hanging requests
+            optimal_model = await self.model_router.select_model('workflow_creation')
+            
+            async with asyncio.timeout(12):  # 12-second timeout for workflow creation
+                workflow = await self.generate_json_response_with_model(prompt, optimal_model, max_tokens=4000)
+            
+            # Cache for 30 minutes
+            self.workflow_creation_cache[cache_key] = workflow
+            asyncio.create_task(self._expire_cache_key('workflow_creation', cache_key, 1800))
+            
+            return workflow
+            
+        except asyncio.TimeoutError:
+            logger.warning(f"Workflow creation timed out for input: {user_input[:50]}...")
+            # Fallback to cached or default workflow
+            return await self._get_cached_workflow_creation(context, user_input)
     
     async def predict_template_performance(
         self,
@@ -778,3 +805,211 @@ class AIService:
         self.workflow_creation_cache.clear()
         
         logger.info("All AI service caches cleared")
+    
+    # Fallback methods for timeout scenarios
+    
+    async def _get_cached_component_suggestions(self, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Fallback method for component suggestions when timeout occurs."""
+        
+        # Try to find similar cached suggestions first
+        for cached_key, cached_suggestions in self.component_suggestion_cache.items():
+            if 'component_suggestions' in cached_key:
+                logger.info("Using cached component suggestions as fallback")
+                return cached_suggestions
+        
+        # Generate basic fallback suggestions based on context
+        business_type = context.get('business_type', 'general')
+        fallback_suggestions = []
+        
+        if business_type == 'e-commerce':
+            fallback_suggestions = [
+                {
+                    "component_type": "product-showcase",
+                    "reasoning": "Essential for e-commerce to display products",
+                    "priority": "high",
+                    "expected_impact": "High conversion potential",
+                    "customization_suggestions": ["Add product filtering", "Include customer reviews"]
+                },
+                {
+                    "component_type": "shopping-cart",
+                    "reasoning": "Required for e-commerce functionality",
+                    "priority": "high", 
+                    "expected_impact": "Essential for sales completion",
+                    "customization_suggestions": ["Quick checkout", "Save for later option"]
+                }
+            ]
+        elif business_type == 'saas':
+            fallback_suggestions = [
+                {
+                    "component_type": "feature-list",
+                    "reasoning": "Showcase software capabilities",
+                    "priority": "high",
+                    "expected_impact": "Improved user understanding",
+                    "customization_suggestions": ["Interactive demos", "Comparison tables"]
+                },
+                {
+                    "component_type": "pricing-table",
+                    "reasoning": "Clear pricing builds trust",
+                    "priority": "medium",
+                    "expected_impact": "Increased conversions",
+                    "customization_suggestions": ["Popular plan highlighting", "Feature comparisons"]
+                }
+            ]
+        else:
+            # Generic fallback suggestions
+            fallback_suggestions = [
+                {
+                    "component_type": "hero-section",
+                    "reasoning": "Strong first impression",
+                    "priority": "high",
+                    "expected_impact": "Immediate engagement",
+                    "customization_suggestions": ["Clear value proposition", "Call-to-action button"]
+                },
+                {
+                    "component_type": "contact-form",
+                    "reasoning": "Enable customer communication",
+                    "priority": "medium",
+                    "expected_impact": "Lead generation",
+                    "customization_suggestions": ["Simple fields", "Privacy assurance"]
+                }
+            ]
+        
+        logger.info(f"Generated fallback component suggestions for {business_type}")
+        return fallback_suggestions
+    
+    async def _get_cached_template_generation(self, business_context: Dict[str, Any], description: str) -> Dict[str, Any]:
+        """Fallback method for template generation when timeout occurs."""
+        
+        # Try to find similar cached templates first
+        for cached_key, cached_template in self.template_generation_cache.items():
+            if 'template_generation' in cached_key:
+                logger.info("Using cached template as fallback")
+                return cached_template
+        
+        # Generate basic fallback template
+        industry = business_context.get('industry_classification', {}).get('primary', 'general')
+        business_type = business_context.get('business_type', 'general')
+        
+        fallback_template = {
+            "template_metadata": {
+                "name": f"Basic {industry.title()} Template",
+                "category": industry,
+                "description": f"Simple, effective template for {business_type} businesses",
+                "target_audience": "General audience",
+                "estimated_conversion_rate": 0.03
+            },
+            "page_structure": {
+                "sections": ["header", "hero", "features", "contact", "footer"],
+                "layout_type": "flex",
+                "responsive_breakpoints": ["mobile", "tablet", "desktop"]
+            },
+            "components": [
+                {
+                    "id": "header-1",
+                    "type": "header",
+                    "position": {"section": "header", "order": 1},
+                    "props": {"navigation": True, "logo": True},
+                    "content": {"logo_text": "Your Business"},
+                    "styling": {"background": "#ffffff", "text_color": "#333333"}
+                },
+                {
+                    "id": "hero-1", 
+                    "type": "hero",
+                    "position": {"section": "hero", "order": 1},
+                    "props": {"cta_button": True, "background_image": True},
+                    "content": {"headline": "Welcome to Our Business", "subheadline": "We provide excellent service"},
+                    "styling": {"background": "#f8f9fa", "text_color": "#212529"}
+                }
+            ],
+            "color_scheme": {
+                "primary_color": "#007bff",
+                "secondary_color": "#6c757d", 
+                "background_colors": ["#ffffff", "#f8f9fa"],
+                "text_colors": ["#212529", "#6c757d"]
+            },
+            "typography": {
+                "heading_fonts": ["Inter", "system-ui"],
+                "body_fonts": ["Inter", "system-ui"],
+                "font_sizes": {"h1": "2.5rem", "h2": "2rem", "body": "1rem"}
+            },
+            "optimization_features": {
+                "seo_recommendations": ["Meta descriptions", "Alt tags", "Structured data"],
+                "performance_optimizations": ["Image optimization", "Lazy loading"],
+                "accessibility_features": ["ARIA labels", "Keyboard navigation"],
+                "conversion_optimizations": ["Clear CTAs", "Social proof"]
+            }
+        }
+        
+        logger.info(f"Generated fallback template for {industry} {business_type}")
+        return fallback_template
+    
+    async def _get_cached_workflow_creation(self, context: Dict[str, Any], user_input: str) -> Dict[str, Any]:
+        """Fallback method for workflow creation when timeout occurs."""
+        
+        # Try to find similar cached workflows first
+        for cached_key, cached_workflow in self.workflow_creation_cache.items():
+            if 'workflow_creation' in cached_key:
+                logger.info("Using cached workflow as fallback")
+                return cached_workflow
+        
+        # Generate basic fallback workflow based on input keywords
+        workflow_type = "general"
+        if any(keyword in user_input.lower() for keyword in ["email", "newsletter", "subscribe"]):
+            workflow_type = "email"
+        elif any(keyword in user_input.lower() for keyword in ["form", "contact", "lead"]):
+            workflow_type = "lead_capture"
+        elif any(keyword in user_input.lower() for keyword in ["purchase", "buy", "order", "payment"]):
+            workflow_type = "e-commerce"
+        
+        fallback_workflow = {
+            "workflow_metadata": {
+                "name": f"Basic {workflow_type.title()} Workflow",
+                "description": f"Simple {workflow_type} automation based on user request",
+                "category": workflow_type,
+                "estimated_execution_time": "1-5 minutes",
+                "complexity_level": "simple"
+            },
+            "trigger": {
+                "trigger_type": "form_submit" if workflow_type == "lead_capture" else "button_click",
+                "trigger_config": {"form_id": "main-form"},
+                "conditions": []
+            },
+            "workflow_steps": [
+                {
+                    "step_id": "step-1",
+                    "step_type": "data_capture",
+                    "name": "Capture User Data",
+                    "description": "Collect and validate user information",
+                    "configuration": {"required_fields": ["email"]},
+                    "error_handling": "retry_with_validation",
+                    "retry_policy": {"max_attempts": 3, "delay": 1}
+                },
+                {
+                    "step_id": "step-2",
+                    "step_type": "email" if workflow_type == "email" else "notification",
+                    "name": "Send Confirmation",
+                    "description": "Send confirmation to user",
+                    "configuration": {"template": "basic_confirmation"},
+                    "error_handling": "log_and_continue",
+                    "retry_policy": {"max_attempts": 2, "delay": 5}
+                }
+            ],
+            "data_flow": {
+                "input_data": {"email": "string", "name": "string"},
+                "data_transformations": [],
+                "output_data": {"status": "string", "user_id": "string"}
+            },
+            "success_criteria": {
+                "completion_conditions": ["all_steps_completed", "user_notified"],
+                "success_metrics": ["completion_rate", "error_rate"],
+                "failure_conditions": ["critical_step_failure", "timeout"]
+            },
+            "optimization_suggestions": {
+                "performance_tips": ["Minimize API calls", "Cache common data"],
+                "reliability_improvements": ["Add more error handling", "Implement circuit breakers"],
+                "user_experience_enhancements": ["Provide progress feedback", "Optimize response times"]
+            }
+        }
+        
+        logger.info(f"Generated fallback workflow for type: {workflow_type}")
+        return fallback_workflow
