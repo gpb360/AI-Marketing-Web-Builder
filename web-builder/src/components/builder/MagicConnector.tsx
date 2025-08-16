@@ -73,6 +73,7 @@ export const MagicConnector: React.FC<MagicConnectorProps> = ({
       );
       
       const result = await Promise.race([analysisPromise, timeoutPromise]);
+
       setAnalysis(result);
       
       // Auto-select the highest confidence suggestion
@@ -100,6 +101,7 @@ export const MagicConnector: React.FC<MagicConnectorProps> = ({
           businessGoals: ['engagement']
         }
       });
+        
     } finally {
       setIsAnalyzing(false);
     }
