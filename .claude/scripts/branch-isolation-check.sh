@@ -38,7 +38,7 @@ declare -A FILE_OWNERSHIP=(
     ["performance-optimizer"]="web-builder/src/lib/performance/|web-builder/src/utils/optimization/"
     ["workflow-automation-expert"]="web-builder/src/lib/workflow/|web-builder/src/app/api/workflow/"
     ["deployment-manager"]="docker/|.github/|deployment/|infrastructure/"
-    ["qa-automation-agent"]="web-builder/CLAUDE.md|web-builder/bmad-|web-builder/playwright|web-builder/tests/|.claude/scripts/|.github/workflows/"
+    ["qa-automation-agent"]="web-builder/bmad-.*\\.md$|web-builder/tests/|web-builder/playwright\\.config\\.|web-builder/e2e/|.github/workflows/.*test.*\\.yml$"
     ["frontend-developer"]="web-builder/src/|web-builder/CLAUDE.md|web-builder/package|web-builder/tests/|web-builder/bmad-|.*\\.md$|.*\\.py$"
 )
 
