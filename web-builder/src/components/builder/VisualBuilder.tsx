@@ -16,7 +16,7 @@ interface VisualBuilderProps {
 export function VisualBuilder({ className }: VisualBuilderProps) {
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={cn("h-screen bg-gray-100 flex flex-col", className)}>
+      <div className={cn("h-screen bg-gray-800 flex flex-col", className)}>
         {/* Toolbar */}
         <BuilderToolbar />
 
