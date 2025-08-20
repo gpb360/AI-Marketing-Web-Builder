@@ -9,6 +9,7 @@ import {
   Template,
   ComponentElement
 } from '@/types/builder';
+import { ViewportState, ResponsivePreviewSettings } from '@/types/responsive';
 
 // Export types that other components need
 export type { ComponentData, Template };
@@ -49,6 +50,13 @@ interface BuilderStore extends CanvasState {
   addDroppableZone: (zone: DroppableZone) => void;
   removeDroppableZone: (zoneId: string) => void;
   
+  // Responsive Design
+  viewport: ViewportState;
+  responsiveSettings: ResponsivePreviewSettings;
+  setViewport: (viewport: Partial<ViewportState>) => void;
+  setResponsiveSettings: (settings: Partial<ResponsivePreviewSettings>) => void;
+  getResponsiveCanvasSize: () => { width: number; height: number };
+  
   // Utilities
   getComponentById: (componentId: string) => ComponentData | undefined;
   getSelectedComponent: () => ComponentData | undefined;
@@ -68,6 +76,21 @@ export const useBuilderStore = create<BuilderStore>()(
     snapToGrid: true,
     aiContext: null,
     currentTemplate: null,
+    
+    // Responsive Design State
+    viewport: {
+      currentBreakpoint: 'desktop',
+      width: 1024,
+      height: 768,
+      zoom: 1,
+      orientation: 'landscape'
+    },
+    responsiveSettings: {
+      showBreakpointBorders: true,
+      showResponsiveGrid: false,
+      autoRotate: false,
+      simulateTouch: false
+    },
 
     // Component management
     addComponent: (component: ComponentData) => {
@@ -462,6 +485,39 @@ export const useBuilderStore = create<BuilderStore>()(
       
       // Return direct children array (already ComponentData[])
       return element.children;
+    },
+
+    // Responsive Design Actions
+    setViewport: (viewport: Partial<ViewportState>) => {
+      set((state) => ({
+        viewport: { ...state.viewport, ...viewport }
+      }));
+      
+      // Update canvas zoom when viewport zoom changes
+      if (viewport.zoom !== undefined) {
+        set({ zoom: viewport.zoom });
+      }
+    },
+
+    setResponsiveSettings: (settings: Partial<ResponsivePreviewSettings>) => {
+      set((state) => ({
+        responsiveSettings: { ...state.responsiveSettings, ...settings }
+      }));
+    },
+
+    getResponsiveCanvasSize: () => {
+      const { viewport, canvasSize } = get();
+      
+      // Return viewport size when in responsive preview mode
+      if (viewport.currentBreakpoint !== 'desktop') {
+        return {
+          width: viewport.width,
+          height: viewport.height
+        };
+      }
+      
+      // Return default canvas size for desktop
+      return canvasSize;
     },
   }))
 );
