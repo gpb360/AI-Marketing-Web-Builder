@@ -8,6 +8,7 @@ import { useBuilderStore } from '@/store/builderStore';
 import { SimpleResizeHandles } from './SimpleResizeHandles';
 import { EnhancedComponentRenderer } from './EnhancedComponentRenderer';
 import { WorkflowConnector } from './WorkflowConnector';
+import { ResponsiveComponentWrapper } from './ResponsiveComponentWrapper';
 import { cn } from '@/lib/utils';
 import { Zap, Settings2, Move } from 'lucide-react';
 
@@ -314,12 +315,14 @@ export const CanvasComponent = React.memo(function CanvasComponent({
     >
       {/* Component Content */}
       <div className="w-full h-full relative">
-        <MemoizedComponentRenderer
-          component={component}
-          isSelected={isSelected}
-          isBuilderMode={isBuilderMode}
-          onUpdateProps={handlePropsUpdate}
-        />
+        <ResponsiveComponentWrapper component={component}>
+          <MemoizedComponentRenderer
+            component={component}
+            isSelected={isSelected}
+            isBuilderMode={isBuilderMode}
+            onUpdateProps={handlePropsUpdate}
+          />
+        </ResponsiveComponentWrapper>
 
         {/* Selection UI */}
         {selectionUI}
