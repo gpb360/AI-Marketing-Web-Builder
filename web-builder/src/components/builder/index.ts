@@ -22,6 +22,10 @@ export { SimpleResizeHandles } from './SimpleResizeHandles';
 export { SelectionBox } from './SelectionBox';
 export { GridOverlay } from './GridOverlay';
 
+// Publishing components
+export { PublishButton } from './PublishButton';
+export { PublishingPanel } from './PublishingPanel';
+
 // Workflow and debugging components
 export { WorkflowDebuggingPanel } from './WorkflowDebuggingPanel';
 export { WorkflowConnector } from './WorkflowConnector';

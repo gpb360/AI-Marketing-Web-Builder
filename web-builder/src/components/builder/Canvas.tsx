@@ -123,15 +123,21 @@ export const Canvas = React.memo(React.forwardRef<HTMLDivElement, CanvasProps>(f
     zoom,
     gridEnabled,
     snapToGrid,
+    viewport,
+    responsiveSettings,
     addComponent,
     selectComponent,
     updateComponentPosition,
     getComponentById,
     setCanvasSize,
+    getResponsiveCanvasSize,
   } = useBuilderStore();
 
+  // Get responsive canvas size
+  const responsiveCanvasSize = getResponsiveCanvasSize();
+  
   // PERFORMANCE: Virtual canvas for large component counts
-  const { visibleComponents } = useVirtualCanvas(components, canvasSize);
+  const { visibleComponents } = useVirtualCanvas(components, responsiveCanvasSize);
   
   // PERFORMANCE: Throttled canvas resize
   useThrottledCanvasResize(components, canvasSize, setCanvasSize);
@@ -309,17 +315,38 @@ export const Canvas = React.memo(React.forwardRef<HTMLDivElement, CanvasProps>(f
           isDragging && "border-blue-400"
         )}
         style={{
-          width: canvasSize.width * zoom,
-          height: canvasSize.height * zoom,
-          minWidth: '100%',
-          minHeight: '100%',
+          width: responsiveCanvasSize.width * zoom,
+          height: responsiveCanvasSize.height * zoom,
+          minWidth: viewport.currentBreakpoint === 'desktop' ? '100%' : `${responsiveCanvasSize.width}px`,
+          minHeight: viewport.currentBreakpoint === 'desktop' ? '100%' : `${responsiveCanvasSize.height}px`,
+          maxWidth: viewport.currentBreakpoint !== 'desktop' ? `${responsiveCanvasSize.width * zoom}px` : 'none',
+          maxHeight: viewport.currentBreakpoint !== 'desktop' ? `${responsiveCanvasSize.height * zoom}px` : 'none',
           transform: `scale(${zoom})`,
           transformOrigin: 'top left',
+          margin: viewport.currentBreakpoint !== 'desktop' ? '20px auto' : '0',
+          border: responsiveSettings.showBreakpointBorders ? '2px solid #3b82f6' : undefined,
+          borderRadius: viewport.currentBreakpoint === 'mobile' ? '12px' : undefined,
         }}
         onClick={handleCanvasClick}
       >
         {/* Grid Overlay - PERFORMANCE: Only render when enabled */}
         {gridEnabled && <GridOverlay zoom={zoom} />}
+        
+        {/* Responsive Grid Overlay */}
+        {responsiveSettings.showResponsiveGrid && (
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Responsive grid lines */}
+            <div className="grid grid-cols-12 h-full opacity-20">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="border-r border-blue-400" />
+              ))}
+            </div>
+            {/* Breakpoint indicators */}
+            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+              {viewport.currentBreakpoint.toUpperCase()} - {responsiveCanvasSize.width}×{responsiveCanvasSize.height}
+            </div>
+          </div>
+        )}
 
         {/* Drop Zones */}
         <DropZone
