@@ -34,7 +34,8 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
 }
 
 export interface AuthToken {
@@ -54,7 +55,8 @@ export interface AuthResponse {
 export interface User {
   id: number;
   email: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   is_active: boolean;
   is_admin: boolean;
   created_at: string;
