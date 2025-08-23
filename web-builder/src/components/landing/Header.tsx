@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { UserNav } from '@/components/auth/UserNav';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -85,14 +86,9 @@ export function Header() {
           ))}
         </ul>
 
-        {/* CTA Button */}
+        {/* CTA Button / User Nav */}
         <div className="hidden md:block">
-          <Link
-            href="/builder"
-            className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold px-6 py-2 rounded-lg hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-400/30"
-          >
-            Start Building
-          </Link>
+          <UserNav />
         </div>
 
         {/* Mobile Menu Button */}
@@ -139,13 +135,9 @@ export function Header() {
                 )}
               </div>
             ))}
-            <Link
-              href="/builder"
-              className="block w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold px-6 py-3 rounded-lg text-center hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Start Building
-            </Link>
+            <div className="pt-4">
+              <UserNav />
+            </div>
           </div>
         </motion.div>
       )}
