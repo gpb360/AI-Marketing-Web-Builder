@@ -1,0 +1,267 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - navigation [ref=e4]:
+      - link "AI AI Marketing Pro" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e9] [cursor=pointer]: AI
+        - generic [ref=e10] [cursor=pointer]: AI Marketing Pro
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - link "Platform" [ref=e13] [cursor=pointer]:
+            - /url: "#platform"
+        - listitem [ref=e14]:
+          - link "Features" [ref=e15] [cursor=pointer]:
+            - /url: "#features"
+        - listitem [ref=e16]:
+          - link "Templates" [ref=e17] [cursor=pointer]:
+            - /url: /templates
+        - listitem [ref=e18]:
+          - link "Pricing" [ref=e19] [cursor=pointer]:
+            - /url: "#pricing"
+      - generic [ref=e21]:
+        - button "Sign In" [ref=e22]
+        - button "Get Started" [ref=e23]
+      - button "Toggle mobile menu" [ref=e24]:
+        - img [ref=e25]
+  - generic [ref=e30]:
+    - heading "Beautiful Websites That Actually Work for Your Business" [level=1] [ref=e31]:
+      - text: Beautiful Websites That
+      - generic [ref=e32]: Actually Work
+      - text: for Your Business
+    - paragraph [ref=e33]: The first drag-and-drop builder where every component connects directly to CRM, workflows, and automation. No integrations. No complexity. Just results.
+    - generic [ref=e34]:
+      - link "Build My Marketing System" [ref=e35] [cursor=pointer]:
+        - /url: /builder
+        - text: Build My Marketing System
+        - img [ref=e36] [cursor=pointer]
+      - button "See Platform Demo" [ref=e39]:
+        - img [ref=e40]
+        - text: See Platform Demo
+    - generic [ref=e42]:
+      - paragraph [ref=e43]: Trusted by 10,000+ businesses worldwide
+      - generic [ref=e44]:
+        - generic [ref=e45]: Company 1
+        - generic [ref=e46]: Company 2
+        - generic [ref=e47]: Company 3
+        - generic [ref=e48]: Company 4
+        - generic [ref=e49]: Company 5
+  - generic [ref=e51]:
+    - generic [ref=e52]:
+      - heading "See It In Action" [level=2] [ref=e53]
+      - paragraph [ref=e54]: Watch how our platform transforms your ideas into high-converting marketing systems
+    - generic [ref=e55]:
+      - generic [ref=e56]:
+        - button "Visual Builder" [ref=e57]:
+          - img [ref=e58]
+          - text: Visual Builder
+        - button "AI Workflows" [ref=e62]:
+          - img [ref=e63]
+          - text: AI Workflows
+        - button "Live Analytics" [ref=e65]:
+          - img [ref=e66]
+          - text: Live Analytics
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - heading "COMPONENTS" [level=3] [ref=e73]
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - img [ref=e77]
+              - generic [ref=e81]: Header
+            - generic [ref=e82]:
+              - img [ref=e84]
+              - generic [ref=e88]: Text Block
+            - generic [ref=e89]:
+              - img [ref=e91]
+              - generic [ref=e95]: Image
+            - generic [ref=e96]:
+              - img [ref=e98]
+              - generic [ref=e100]: CTA Button
+            - generic [ref=e101]:
+              - img [ref=e103]
+              - generic [ref=e106]: Contact Form
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - heading "CANVAS" [level=3] [ref=e109]
+            - generic [ref=e110]: Contact Form Component
+          - generic [ref=e114]: Submit
+        - generic [ref=e115]:
+          - heading "AI SUGGESTIONS" [level=3] [ref=e116]:
+            - img [ref=e117]
+            - text: AI SUGGESTIONS
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - generic [ref=e125]:
+                - img [ref=e126]
+                - paragraph [ref=e129]: Add urgency with countdown timer
+              - generic [ref=e131]: 95%
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - img [ref=e134]
+                - paragraph [ref=e137]: Optimize form for mobile conversion
+              - generic [ref=e139]: 88%
+            - generic [ref=e140]:
+              - generic [ref=e141]:
+                - img [ref=e142]
+                - paragraph [ref=e145]: A/B test button color variations
+              - generic [ref=e147]: 92%
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - img [ref=e150]
+                - paragraph [ref=e153]: Add social proof testimonials
+              - generic [ref=e155]: 85%
+  - generic [ref=e157]:
+    - generic [ref=e158]:
+      - heading "Everything You Need. Nothing You Don't." [level=2] [ref=e159]
+      - paragraph [ref=e160]: The complete marketing platform that bridges the gap between beautiful design and powerful automation
+    - generic [ref=e161]:
+      - generic [ref=e162]:
+        - img [ref=e164]
+        - generic [ref=e170]:
+          - heading "Visual Drag & Drop" [level=3] [ref=e171]
+          - paragraph [ref=e172]: Intuitive visual editor with professional components. Build stunning pages without touching code.
+          - generic [ref=e173]:
+            - text: Learn more
+            - img [ref=e174]
+      - generic [ref=e177]:
+        - img [ref=e179]
+        - generic [ref=e181]:
+          - heading "AI-Powered Automation" [level=3] [ref=e182]
+          - paragraph [ref=e183]: Smart workflows that connect your website to CRM, email marketing, and lead nurturing automatically.
+          - generic [ref=e184]:
+            - text: Learn more
+            - img [ref=e185]
+      - generic [ref=e188]:
+        - img [ref=e190]
+        - generic [ref=e195]:
+          - heading "Real-Time Analytics" [level=3] [ref=e196]
+          - paragraph [ref=e197]: Track conversions, user behavior, and ROI with built-in analytics that actually matter for your business.
+          - generic [ref=e198]:
+            - text: Learn more
+            - img [ref=e199]
+      - generic [ref=e202]:
+        - img [ref=e204]
+        - generic [ref=e207]:
+          - heading "Mobile-First Design" [level=3] [ref=e208]
+          - paragraph [ref=e209]: Every component is optimized for mobile. Your sites look perfect on any device, automatically.
+          - generic [ref=e210]:
+            - text: Learn more
+            - img [ref=e211]
+      - generic [ref=e214]:
+        - img [ref=e216]
+        - generic [ref=e218]:
+          - heading "Enterprise Security" [level=3] [ref=e219]
+          - paragraph [ref=e220]: Bank-level security with SSL, GDPR compliance, and data protection built into every feature.
+          - generic [ref=e221]:
+            - text: Learn more
+            - img [ref=e222]
+      - generic [ref=e225]:
+        - img [ref=e227]
+        - generic [ref=e232]:
+          - heading "Lightning Fast" [level=3] [ref=e233]
+          - paragraph [ref=e234]: Optimized for speed with CDN delivery, image compression, and performance monitoring included.
+          - generic [ref=e235]:
+            - text: Learn more
+            - img [ref=e236]
+    - generic [ref=e239]:
+      - paragraph [ref=e240]: Ready to see these features in action?
+      - button "Try All Features Free" [ref=e241]:
+        - text: Try All Features Free
+        - img [ref=e242]
+  - contentinfo [ref=e245]:
+    - generic [ref=e246]:
+      - generic [ref=e248]:
+        - heading "Stay Updated with AI Marketing Pro" [level=3] [ref=e249]
+        - paragraph [ref=e250]: Get the latest features, templates, and marketing insights delivered to your inbox.
+        - generic [ref=e251]:
+          - textbox "Enter your email" [ref=e252]
+          - button "Subscribe" [ref=e253]:
+            - text: Subscribe
+            - img [ref=e254]
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - link "AI Marketing Pro" [ref=e259] [cursor=pointer]:
+            - /url: /
+          - paragraph [ref=e260]: The complete platform for building beautiful websites that actually work for your business. Drag, drop, and watch your marketing system come to life.
+          - generic [ref=e261]:
+            - link "Twitter" [ref=e262] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e263] [cursor=pointer]
+            - link "LinkedIn" [ref=e265] [cursor=pointer]:
+              - /url: https://linkedin.com
+              - img [ref=e266] [cursor=pointer]
+            - link "GitHub" [ref=e270] [cursor=pointer]:
+              - /url: https://github.com
+              - img [ref=e271] [cursor=pointer]
+            - link "Email" [ref=e274] [cursor=pointer]:
+              - /url: mailto:hello@aimarketingpro.com
+              - img [ref=e275] [cursor=pointer]
+        - generic [ref=e278]:
+          - heading "Product" [level=4] [ref=e279]
+          - list [ref=e280]:
+            - listitem [ref=e281]:
+              - link "Features" [ref=e282] [cursor=pointer]:
+                - /url: "#features"
+            - listitem [ref=e283]:
+              - link "Templates" [ref=e284] [cursor=pointer]:
+                - /url: "#templates"
+            - listitem [ref=e285]:
+              - link "Pricing" [ref=e286] [cursor=pointer]:
+                - /url: "#pricing"
+            - listitem [ref=e287]:
+              - link "Integrations" [ref=e288] [cursor=pointer]:
+                - /url: /integrations
+        - generic [ref=e289]:
+          - heading "Company" [level=4] [ref=e290]
+          - list [ref=e291]:
+            - listitem [ref=e292]:
+              - link "About" [ref=e293] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e294]:
+              - link "Blog" [ref=e295] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e296]:
+              - link "Careers" [ref=e297] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e298]:
+              - link "Contact" [ref=e299] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e300]:
+          - heading "Resources" [level=4] [ref=e301]
+          - list [ref=e302]:
+            - listitem [ref=e303]:
+              - link "Documentation" [ref=e304] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e305]:
+              - link "Help Center" [ref=e306] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e307]:
+              - link "Community" [ref=e308] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e309]:
+              - link "API Reference" [ref=e310] [cursor=pointer]:
+                - /url: /api
+        - generic [ref=e311]:
+          - heading "Legal" [level=4] [ref=e312]
+          - list [ref=e313]:
+            - listitem [ref=e314]:
+              - link "Privacy Policy" [ref=e315] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e316]:
+              - link "Terms of Service" [ref=e317] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e318]:
+              - link "Cookie Policy" [ref=e319] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e320]:
+              - link "GDPR" [ref=e321] [cursor=pointer]:
+                - /url: /gdpr
+      - generic [ref=e322]:
+        - paragraph [ref=e323]: © 2024 AI Marketing Pro. All rights reserved.
+        - paragraph [ref=e324]:
+          - text: Made with
+          - img [ref=e325]
+          - text: for marketers worldwide
+```

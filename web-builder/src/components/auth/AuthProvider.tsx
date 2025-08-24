@@ -20,10 +20,14 @@ interface AuthProviderProps {
 
 // Routes that don't require authentication
 const publicRoutes = [
+  '/', // Landing page - CRITICAL ADDITION
   '/auth/login',
   '/auth/register',
   '/auth/forgot-password',
   '/auth/reset-password',
+  '/templates', // Public template showcase
+  '/pricing',   // Public pricing page
+  '/about',     // Public about page
 ];
 
 // Routes that should redirect authenticated users
@@ -50,9 +54,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-    // Redirect authenticated users away from auth pages
+    // Redirect authenticated users away from auth pages to dashboard
     if (isAuthenticated && isAuthRoute) {
-      router.push('/');
+      router.push('/dashboard');
       return;
     }
 

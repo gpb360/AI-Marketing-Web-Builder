@@ -2,7 +2,7 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp", "--browser", "chromium", "--headless", "--viewport-size", "1920,1080", "--save-trace", "--save-session"],
+      "args": ["@playwright/mcp", "--browser", "chromium", "--headless", "--isolated", "--save-trace", "--save-session"],
       "env": {
         "HEADLESS": "true",
         "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
@@ -10,14 +10,14 @@
     },
     "playwright-firefox": {
       "command": "npx",
-      "args": ["@playwright/mcp", "--browser", "firefox", "--headless", "--viewport-size", "1920,1080"],
+      "args": ["@playwright/mcp", "--browser", "firefox", "--headless", "--isolated"],
       "env": {
         "HEADLESS": "true"
       }
     },
     "playwright-webkit": {
       "command": "npx",
-      "args": ["@playwright/mcp", "--browser", "webkit", "--headless", "--viewport-size", "1920,1080"],
+      "args": ["@playwright/mcp", "--browser", "webkit", "--headless", "--isolated"],
       "env": {
         "HEADLESS": "true"
       }

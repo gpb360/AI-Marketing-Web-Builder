@@ -65,7 +65,7 @@ export interface MasterTheme {
  * Simplified color system matching story requirements
  * Dark theme colors (AC: 2, 3) with WCAG 2.1 AA contrast compliance
  */
-export const colors: ThemeColors = {
+const colors: ThemeColors = {
   // Background Colors (AC: 2)
   background: {
     primary: 'bg-gray-900',     // Main dark background
@@ -81,119 +81,302 @@ export const colors: ThemeColors = {
   },
 };
 
-// Extended colors for backward compatibility with existing components
-export const extendedColors = {
-  // Background Colors
-  background: {
-    primary: 'bg-gradient-to-br from-black via-gray-900 to-black',
-    secondary: 'bg-gray-900',
-    tertiary: 'bg-gray-800',
-    card: 'bg-gray-900/50',
-    cardHover: 'bg-gray-800/80',
-    overlay: 'bg-black/50',
-    glass: 'bg-gray-900/50 backdrop-blur-sm',
-  },
+// ===== LUXURY BRAND THEME SYSTEM =====
+// Enhanced theme system for consistent luxury brand experience
+const luxuryTheme = {
+  // Core Luxury Colors
+  colors: {
+    // Backgrounds - Luxury Gold & Black Theme
+    background: {
+      primary: 'bg-gradient-to-br from-black via-gray-900 to-black',
+      secondary: 'bg-gray-900',
+      tertiary: 'bg-gray-800',
+      card: 'bg-gray-900/80 backdrop-blur-xl',
+      cardHover: 'bg-gray-800/90 backdrop-blur-xl',
+      overlay: 'bg-black/60 backdrop-blur-sm',
+      glass: 'bg-gray-900/50 backdrop-blur-xl',
+      // Form & Auth specific backgrounds
+      form: 'bg-gradient-to-br from-gray-900 via-black to-gray-900',
+      auth: 'bg-gradient-to-br from-black via-gray-900 to-gray-800',
+      dashboard: 'bg-gradient-to-br from-gray-900 to-black',
+    },
 
-  // Text Colors
-  text: {
-    primary: 'text-white',
-    secondary: 'text-gray-300',
-    tertiary: 'text-gray-400',
-    muted: 'text-gray-500',
-    accent: 'text-yellow-400',
-    gradient: 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-500',
-  },
+    // Luxury Text Colors
+    text: {
+      primary: 'text-white',
+      secondary: 'text-gray-300',
+      tertiary: 'text-gray-400',
+      muted: 'text-gray-500',
+      accent: 'text-yellow-400',
+      accentHover: 'text-yellow-300',
+      gradient: 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500',
+      goldGradient: 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-600',
+      // Brand specific text colors
+      brand: 'text-yellow-400',
+      brandSecondary: 'text-amber-300',
+      error: 'text-red-400',
+      success: 'text-green-400',
+      warning: 'text-yellow-400',
+    },
 
-  // Border Colors
-  border: {
-    primary: 'border-gray-700',
-    secondary: 'border-gray-600',
-    accent: 'border-yellow-400',
-    accentHover: 'border-yellow-400/50',
-    focus: 'border-yellow-400',
-  },
+    // Luxury Border Colors
+    border: {
+      primary: 'border-gray-700',
+      secondary: 'border-gray-600',
+      accent: 'border-yellow-400',
+      accentHover: 'border-yellow-300',
+      focus: 'border-yellow-400',
+      glass: 'border-white/10',
+      glassHover: 'border-yellow-400/30',
+    },
 
-  // Button Colors
-  button: {
-    primary: 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black',
-    primaryHover: 'hover:from-yellow-300 hover:to-yellow-400',
-    secondary: 'border border-gray-600 text-gray-300',
-    secondaryHover: 'hover:border-yellow-400 hover:text-yellow-400',
-    ghost: 'text-gray-300 hover:text-yellow-400',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
-  },
+    // Professional Button System
+    button: {
+      // Primary luxury button
+      primary: 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold',
+      primaryHover: 'hover:from-yellow-300 hover:to-yellow-400 hover:shadow-xl hover:shadow-yellow-400/30 hover:-translate-y-1',
+      // Secondary professional button
+      secondary: 'bg-transparent border-2 border-gray-600 text-gray-300 font-semibold',
+      secondaryHover: 'hover:border-yellow-400 hover:text-yellow-400 hover:bg-yellow-400/5',
+      // Ghost button
+      ghost: 'bg-transparent text-gray-300 font-medium',
+      ghostHover: 'hover:text-yellow-400 hover:bg-yellow-400/10',
+      // Professional outline button
+      outline: 'bg-transparent border-2 border-yellow-400 text-yellow-400 font-semibold',
+      outlineHover: 'hover:bg-yellow-400 hover:text-black hover:shadow-lg hover:shadow-yellow-400/30',
+      // Danger button
+      danger: 'bg-red-600 text-white font-semibold',
+      dangerHover: 'hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/30',
+    },
 
-  // Status Colors
-  status: {
-    success: 'text-green-400 bg-green-400/10 border-green-400/20',
-    warning: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20',
-    error: 'text-red-400 bg-red-400/10 border-red-400/20',
-    info: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
-  },
+    // Enhanced Status Colors
+    status: {
+      success: {
+        text: 'text-green-400',
+        bg: 'bg-green-400/10',
+        border: 'border-green-400/20',
+        full: 'text-green-400 bg-green-400/10 border border-green-400/20',
+      },
+      warning: {
+        text: 'text-yellow-400',
+        bg: 'bg-yellow-400/10',
+        border: 'border-yellow-400/20',
+        full: 'text-yellow-400 bg-yellow-400/10 border border-yellow-400/20',
+      },
+      error: {
+        text: 'text-red-400',
+        bg: 'bg-red-400/10',
+        border: 'border-red-400/20',
+        full: 'text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-4',
+      },
+      info: {
+        text: 'text-blue-400',
+        bg: 'bg-blue-400/10',
+        border: 'border-blue-400/20',
+        full: 'text-blue-400 bg-blue-400/10 border border-blue-400/20',
+      },
+    },
 
-  // Special Colors
-  accent: {
-    yellow: {
-      50: '#fefce8',
-      100: '#fef3c7',
-      400: '#facc15', // Primary accent
-      500: '#eab308',
-      600: '#ca8a04',
+    // Luxury Gold Palette
+    luxury: {
+      gold: {
+        50: '#fefce8',
+        100: '#fef3c7',
+        200: '#fde68a',
+        300: '#fcd34d',
+        400: '#facc15', // Primary luxury gold
+        500: '#eab308',
+        600: '#ca8a04',
+        700: '#a16207',
+        800: '#854d0e',
+        900: '#713f12',
+      },
+      black: {
+        50: '#f8f8f8',
+        900: '#0a0a0a', // Luxury black
+        950: '#050505', // Deep luxury black
+      }
     }
-  }
+  },
+
+  // Professional Component Styles
+  components: {
+    // Auth Form Styling
+    authForm: {
+      container: 'min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-gray-800',
+      wrapper: 'w-full max-w-md space-y-8',
+      card: 'bg-gray-900/80 backdrop-blur-xl border border-gray-700 rounded-2xl shadow-2xl shadow-black/50',
+      cardHover: 'hover:border-yellow-400/30 transition-all duration-300',
+      header: 'text-center space-y-2',
+      title: 'text-3xl font-bold text-white',
+      subtitle: 'text-gray-300',
+      link: 'text-yellow-400 hover:text-yellow-300 font-medium transition-colors',
+    },
+
+    // Dashboard Styling
+    dashboard: {
+      container: 'min-h-screen bg-gradient-to-br from-gray-900 to-black',
+      header: 'bg-gray-900/90 backdrop-blur-xl border-b border-gray-700 shadow-xl',
+      headerTitle: 'text-2xl font-bold text-white',
+      headerSubtitle: 'text-gray-300',
+      card: 'bg-gray-900/80 backdrop-blur-xl border border-gray-700 rounded-xl shadow-lg',
+      cardHover: 'hover:border-yellow-400/30 hover:shadow-xl hover:shadow-black/20 transition-all duration-300',
+      statCard: 'bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-xl p-6',
+      statNumber: 'text-3xl font-bold text-white',
+      statLabel: 'text-gray-400 font-medium',
+    },
+
+    // Input & Form Elements
+    input: {
+      base: 'bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3',
+      focus: 'focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400',
+      disabled: 'disabled:bg-gray-700 disabled:text-gray-500',
+      full: 'bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-colors',
+    },
+
+    // Loading States
+    loading: {
+      spinner: 'animate-spin rounded-full border-2 border-gray-700 border-t-yellow-400',
+      container: 'min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black',
+      text: 'text-gray-300 mt-4',
+    },
+
+    // Navigation Elements
+    nav: {
+      link: 'text-gray-300 hover:text-yellow-400 transition-colors duration-200 font-medium',
+      activeLink: 'text-yellow-400 font-semibold',
+      button: 'text-gray-300 hover:text-yellow-400 hover:bg-yellow-400/10 px-4 py-2 rounded-lg transition-all duration-200',
+    },
+  },
+
+  // Professional Typography
+  typography: {
+    heading: {
+      hero: 'text-6xl md:text-8xl font-black text-white leading-tight',
+      h1: 'text-4xl md:text-5xl font-bold text-white',
+      h2: 'text-3xl md:text-4xl font-bold text-white',
+      h3: 'text-2xl md:text-3xl font-semibold text-white',
+      h4: 'text-xl md:text-2xl font-semibold text-white',
+    },
+    body: {
+      large: 'text-lg text-gray-300 leading-relaxed',
+      base: 'text-base text-gray-300',
+      small: 'text-sm text-gray-400',
+      xs: 'text-xs text-gray-500',
+    },
+  },
+
+  // Professional Animations
+  animations: {
+    hover: {
+      lift: 'hover:-translate-y-1 transition-transform duration-200',
+      scale: 'hover:scale-105 transition-transform duration-200',
+      glow: 'hover:shadow-xl hover:shadow-yellow-400/30 transition-all duration-300',
+      goldGlow: 'hover:shadow-2xl hover:shadow-yellow-400/40 transition-all duration-300',
+    },
+    button: {
+      primary: 'transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-400/30',
+      secondary: 'transition-all duration-200 hover:scale-105',
+    },
+  },
 } as const;
 
-// ===== COMPONENT STYLES =====
-export const componentStyles = {
-  // Card Styles
+// Backward compatibility - extend existing colors with luxury theme
+const extendedColors = luxuryTheme.colors;
+
+// ===== ENHANCED COMPONENT STYLES =====
+const componentStyles = {
+  // Professional Card System
   card: {
-    base: `${colors.background.glass} ${colors.border.primary} border rounded-xl`,
-    interactive: `${colors.background.glass} ${colors.border.primary} border rounded-xl hover:${colors.border.accentHover} transition-all duration-300 hover:shadow-2xl hover:shadow-black/20`,
-    featured: `${colors.background.glass} ${colors.border.accent} border rounded-xl shadow-xl shadow-yellow-400/10`,
+    base: `${luxuryTheme.components.dashboard.card}`,
+    interactive: `${luxuryTheme.components.dashboard.cardHover}`,
+    featured: `bg-gradient-to-br from-gray-900 to-gray-800 border border-yellow-400/50 rounded-xl shadow-xl shadow-yellow-400/20`,
+    auth: `${luxuryTheme.components.authForm.card}`,
+    dashboard: `${luxuryTheme.components.dashboard.statCard}`,
   },
 
-  // Button Styles
+  // Professional Button System
   button: {
-    primary: `${colors.button.primary} ${colors.button.primaryHover} font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-400/30`,
-    secondary: `${colors.button.secondary} ${colors.button.secondaryHover} font-semibold px-6 py-3 rounded-lg transition-all duration-200`,
-    ghost: `${colors.button.ghost} font-semibold px-4 py-2 rounded-lg transition-all duration-200`,
-    icon: `${colors.text.secondary} hover:${colors.text.accent} p-2 rounded-lg transition-colors duration-200`,
+    // Primary luxury button
+    primary: `${luxuryTheme.colors.button.primary} ${luxuryTheme.colors.button.primaryHover} px-6 py-3 rounded-lg ${luxuryTheme.animations.button.primary}`,
+    // Secondary professional button
+    secondary: `${luxuryTheme.colors.button.secondary} ${luxuryTheme.colors.button.secondaryHover} px-6 py-3 rounded-lg ${luxuryTheme.animations.button.secondary}`,
+    // Ghost button
+    ghost: `${luxuryTheme.colors.button.ghost} ${luxuryTheme.colors.button.ghostHover} px-4 py-2 rounded-lg transition-all duration-200`,
+    // Outline button
+    outline: `${luxuryTheme.colors.button.outline} ${luxuryTheme.colors.button.outlineHover} px-6 py-3 rounded-lg transition-all duration-200`,
+    // Icon button
+    icon: `${luxuryTheme.colors.text.secondary} hover:${luxuryTheme.colors.text.accent} p-2 rounded-lg transition-colors duration-200`,
+    // Danger button
+    danger: `${luxuryTheme.colors.button.danger} ${luxuryTheme.colors.button.dangerHover} px-6 py-3 rounded-lg transition-all duration-200`,
   },
 
-  // Input Styles
+  // Professional Input System
   input: {
-    base: `${colors.background.tertiary} ${colors.border.primary} ${colors.text.primary} border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-400 focus:${colors.border.focus} transition-colors`,
-    search: `${colors.background.tertiary} ${colors.border.primary} ${colors.text.primary} border rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-yellow-400 focus:${colors.border.focus}`,
+    base: `${luxuryTheme.components.input.full}`,
+    search: `${luxuryTheme.components.input.base} ${luxuryTheme.components.input.focus} pl-10 pr-4 py-3`,
+    disabled: `${luxuryTheme.components.input.base} ${luxuryTheme.components.input.disabled}`,
   },
 
-  // Badge/Tag Styles
+  // Enhanced Status Badges
   badge: {
-    featured: 'bg-yellow-400 text-yellow-900 text-xs font-medium px-2 py-1 rounded-full',
-    premium: 'bg-purple-500 text-white text-xs font-medium px-2 py-1 rounded-full',
-    category: 'bg-gray-700 text-gray-300 text-xs font-medium px-2 py-1 rounded-full',
+    featured: 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg',
+    premium: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg',
+    published: 'bg-green-400/20 text-green-400 border border-green-400/30 text-xs font-medium px-3 py-1 rounded-full',
+    draft: 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 text-xs font-medium px-3 py-1 rounded-full',
+    archived: 'bg-gray-600/20 text-gray-400 border border-gray-600/30 text-xs font-medium px-3 py-1 rounded-full',
   },
 
-  // Navigation Styles
+  // Professional Navigation
   nav: {
-    link: `${colors.text.secondary} hover:${colors.text.accent} transition-colors duration-200`,
-    activeLink: `${colors.text.accent} font-medium`,
+    link: `${luxuryTheme.components.nav.link}`,
+    activeLink: `${luxuryTheme.components.nav.activeLink}`,
+    button: `${luxuryTheme.components.nav.button}`,
   },
 
-  // Layout Styles
+  // Enhanced Layout System
   layout: {
     container: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8',
     section: 'py-12 md:py-20',
     hero: 'min-h-screen flex flex-col justify-center items-center text-center px-6 pt-16',
+    // Auth specific layouts
+    authContainer: `${luxuryTheme.components.authForm.container}`,
+    authWrapper: `${luxuryTheme.components.authForm.wrapper}`,
+    // Dashboard specific layouts
+    dashboardContainer: `${luxuryTheme.components.dashboard.container}`,
+    dashboardHeader: `${luxuryTheme.components.dashboard.header}`,
+  },
+
+  // Loading States
+  loading: {
+    spinner: `${luxuryTheme.components.loading.spinner} h-8 w-8`,
+    container: `${luxuryTheme.components.loading.container}`,
+    text: `${luxuryTheme.components.loading.text}`,
+  },
+
+  // Error States
+  error: {
+    container: `${luxuryTheme.colors.status.error.full}`,
+    text: `${luxuryTheme.colors.status.error.text}`,
   },
 } as const;
 
-// ===== ANIMATION STYLES =====
-export const animations = {
-  // Hover Effects
+// ===== PROFESSIONAL ANIMATION SYSTEM =====
+const animations = {
+  // Enhanced Hover Effects
   hover: {
-    lift: 'hover:-translate-y-1 transition-transform duration-200',
-    scale: 'hover:scale-105 transition-transform duration-200',
-    glow: 'hover:shadow-xl hover:shadow-yellow-400/30 transition-all duration-200',
+    lift: `${luxuryTheme.animations.hover.lift}`,
+    scale: `${luxuryTheme.animations.hover.scale}`,
+    glow: `${luxuryTheme.animations.hover.glow}`,
+    goldGlow: `${luxuryTheme.animations.hover.goldGlow}`,
+    card: 'hover:border-yellow-400/30 hover:shadow-xl hover:shadow-black/20 transition-all duration-300',
+  },
+
+  // Button Animations
+  button: {
+    primary: `${luxuryTheme.animations.button.primary}`,
+    secondary: `${luxuryTheme.animations.button.secondary}`,
+    ghost: 'transition-all duration-200 hover:bg-yellow-400/10',
   },
 
   // Loading States
@@ -224,7 +407,7 @@ export const animations = {
 } as const;
 
 // ===== TYPOGRAPHY STYLES =====
-export const typography = {
+const typography = {
   // Headings
   heading: {
     hero: 'text-4xl md:text-5xl lg:text-6xl font-bold leading-tight',
@@ -257,7 +440,7 @@ export const typography = {
  * 8px grid-based spacing system (AC: 4)
  * Mobile-first responsive design approach
  */
-export const spacing: ThemeSpacing = {
+const spacing: ThemeSpacing = {
   component: {
     padding: 'p-4 md:p-6 lg:p-8',    // Responsive component padding
     margin: 'm-4 md:m-6 lg:m-8',     // Responsive component margins
@@ -272,7 +455,7 @@ export const spacing: ThemeSpacing = {
 };
 
 // Extended spacing for backward compatibility
-export const extendedSpacing = {
+const extendedSpacing = {
   // Container Spacing
   container: {
     xs: 'px-4',
@@ -302,16 +485,16 @@ export const extendedSpacing = {
 } as const;
 
 // ===== THEME VARIANTS =====
-export const themes = {
+const themes = {
   // Dark theme (default/primary)
   dark: {
     name: 'dark',
     background: colors.background.primary,
-    surface: colors.background.glass,
+    surface: luxuryTheme.colors.background.glass,
     text: colors.text.primary,
     textSecondary: colors.text.secondary,
     accent: colors.text.accent,
-    border: colors.border.primary,
+    border: luxuryTheme.colors.border.primary,
   },
 
   // Alternative light theme for specific sections (use sparingly)
@@ -334,7 +517,7 @@ export const themes = {
  * Theme presets for common component combinations (AC: 5)
  * Pre-composed classes for consistent styling
  */
-export const presets: ThemePresets = {
+const presets: ThemePresets = {
   landingPage: `${colors.background.primary} ${colors.text.primary}`,
   builderCanvas: `${colors.background.secondary} ${colors.text.primary}`,
   navigation: `${colors.background.primary} ${colors.text.primary} border-b border-gray-700`,
@@ -343,7 +526,7 @@ export const presets: ThemePresets = {
 /**
  * Master theme configuration object (AC: 1)
  */
-export const masterTheme: MasterTheme = {
+const masterTheme: MasterTheme = {
   colors,
   spacing,
   presets,
@@ -356,7 +539,7 @@ export const masterTheme: MasterTheme = {
 /**
  * Validates theme structure completeness (AC: 8)
  */
-export function validateThemeStructure(theme: Partial<MasterTheme>): boolean {
+function validateThemeStructure(theme: Partial<MasterTheme>): boolean {
   const requiredPaths = [
     'colors.background.primary',
     'colors.background.secondary', 
@@ -381,7 +564,7 @@ export function validateThemeStructure(theme: Partial<MasterTheme>): boolean {
  * Runtime theme validation with development warnings (AC: 8)
  * Detects hardcoded values that violate theme system
  */
-export function validateThemeUsage(className: string): boolean {
+function validateThemeUsage(className: string): boolean {
   const hardcodedPatterns = [
     /bg-white/,
     /text-gray-900/,
@@ -406,7 +589,7 @@ export function validateThemeUsage(className: string): boolean {
 /**
  * Creates theme-compliant Tailwind classes (AC: 6)
  */
-export function createThemeClass(...classes: string[]): string {
+function createThemeClass(...classes: string[]): string {
   const combinedClasses = classes.filter(Boolean).join(' ');
   
   // Validate in development
@@ -424,10 +607,15 @@ export function createThemeClass(...classes: string[]): string {
 /**
  * Convenience utilities for common theme operations (AC: 6)
  */
-export const themeUtils = {
+const themeUtils = {
   validate: validateThemeStructure,
   checkUsage: validateThemeUsage,
   createClass: createThemeClass,
+  
+  // Button style utilities
+  getButtonClasses: (variant: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' = 'primary'): string => {
+    return componentStyles.button[variant];
+  },
   
   // Quick access to common combinations
   cardStyle: `${colors.background.secondary} ${colors.text.primary} rounded-lg shadow-lg`,
@@ -441,50 +629,50 @@ export const themeUtils = {
 /**
  * Combines multiple theme classes into a single string
  */
-export const cn = (...classes: (string | undefined | null | false)[]): string => {
+const cn = (...classes: (string | undefined | null | false)[]): string => {
   return classes.filter(Boolean).join(' ');
 };
 
 /**
  * Gets the complete card style for a given variant
  */
-export const getCardStyle = (variant: 'base' | 'interactive' | 'featured' = 'base'): string => {
+const getCardStyle = (variant: 'base' | 'interactive' | 'featured' = 'base'): string => {
   return componentStyles.card[variant];
 };
 
 /**
  * Gets the complete button style for a given variant
  */
-export const getButtonStyle = (variant: 'primary' | 'secondary' | 'ghost' | 'icon' = 'primary'): string => {
+const getButtonStyle = (variant: 'primary' | 'secondary' | 'ghost' | 'icon' = 'primary'): string => {
   return componentStyles.button[variant];
 };
 
 /**
  * Gets themed input styles
  */
-export const getInputStyle = (variant: 'base' | 'search' = 'base'): string => {
+const getInputStyle = (variant: 'base' | 'search' = 'base'): string => {
   return componentStyles.input[variant];
 };
 
 /**
  * Gets status-specific styling
  */
-export const getStatusStyle = (status: 'success' | 'warning' | 'error' | 'info'): string => {
-  return colors.status[status];
+const getStatusStyle = (status: 'success' | 'warning' | 'error' | 'info'): string => {
+  return luxuryTheme.colors.status[status].full;
 };
 
-// ===== COMPONENT PRESETS =====
+// ===== COMPONENT PRESETS UTILITIES =====
 
 /**
- * Pre-configured component styles for common patterns
+ * Additional preset utilities for component patterns
  */
-export const presets = {
+const componentPresets = {
   // Page layouts
   landingPage: `min-h-screen ${colors.background.primary}`,
   dashboardPage: `min-h-screen ${colors.background.secondary}`,
   
   // Common cards
-  featureCard: `${getCardStyle('interactive')} ${spacing.component.lg}`,
+  featureCard: `${getCardStyle('interactive')} ${extendedSpacing.component.lg}`,
   templateCard: `${getCardStyle('interactive')} overflow-hidden cursor-pointer`,
   
   // Common buttons
@@ -507,14 +695,6 @@ export const presets = {
 
 // Primary exports matching story requirements
 export {
-  masterTheme,
-  colors,
-  spacing,
-  presets,
-  validateThemeStructure,
-  validateThemeUsage,
-  createThemeClass,
-  themeUtils,
   type MasterTheme,
   type ThemeColors,
   type ThemeSpacing,
@@ -535,14 +715,17 @@ export default {
   
   // Extended functionality for backward compatibility
   extendedColors,
-  extendedSpacing,
   componentStyles,
   animations,
   typography,
-  themes,
   cn,
   getCardStyle,
   getButtonStyle,
   getInputStyle,
   getStatusStyle,
+  componentPresets,
+  
+  // New luxury theme exports
+  luxuryTheme,
+  theme: luxuryTheme,
 } as const;

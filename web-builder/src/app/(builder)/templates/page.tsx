@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   Zap,
@@ -19,6 +20,8 @@ import {
 import { Header } from '@/components/landing/Header';
 import { Footer } from '@/components/landing/Footer';
 import { TemplatePreviewModal } from '@/components/TemplatePreviewModal';
+import { useBuilderStore } from '@/store/builderStore';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import debounce from 'lodash.debounce';
 
 interface Template {
@@ -54,7 +57,39 @@ const extendedTemplates: Template[] = [
     review_count: 156,
     tags: ["SaaS", "Conversion", "Modern", "Premium"],
     created_at: "2024-01-15",
-    components: []
+    components: [
+      {
+        id: "saas-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 600 },
+        order: 1,
+        props: {
+          heading: "Scale Your SaaS Business",
+          subheading: "Powerful tools and analytics to grow your subscription business faster",
+          buttonText: "Start Free Trial",
+          backgroundImage: "/templates/saas-hero-bg.jpg",
+          theme: "dark"
+        }
+      },
+      {
+        id: "saas-features-1",
+        type: "features",
+        name: "Features Section",
+        position: { x: 0, y: 620 },
+        size: { width: 1200, height: 400 },
+        order: 2,
+        props: {
+          title: "Everything you need to succeed",
+          features: [
+            { title: "Advanced Analytics", description: "Deep insights into your business metrics" },
+            { title: "Team Collaboration", description: "Work together seamlessly" },
+            { title: "API Integration", description: "Connect with your favorite tools" }
+          ]
+        }
+      }
+    ]
   },
   {
     id: 2,
@@ -70,7 +105,36 @@ const extendedTemplates: Template[] = [
     review_count: 203,
     tags: ["E-commerce", "Shopping", "Products", "Checkout"],
     created_at: "2024-01-20",
-    components: []
+    components: [
+      {
+        id: "ecom-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 500 },
+        order: 1,
+        props: {
+          heading: "Premium Fashion Store",
+          subheading: "Discover the latest trends and timeless classics",
+          buttonText: "Shop Now",
+          theme: "light"
+        }
+      },
+      {
+        id: "ecom-products-1",
+        type: "products",
+        name: "Product Grid",
+        position: { x: 0, y: 520 },
+        size: { width: 1200, height: 600 },
+        order: 2,
+        props: {
+          title: "Featured Products",
+          columns: 4,
+          showPricing: true,
+          showRatings: true
+        }
+      }
+    ]
   },
   {
     id: 3,
@@ -86,7 +150,38 @@ const extendedTemplates: Template[] = [
     review_count: 189,
     tags: ["Agency", "Portfolio", "Professional", "Services"],
     created_at: "2024-01-10",
-    components: []
+    components: [
+      {
+        id: "agency-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 650 },
+        order: 1,
+        props: {
+          heading: "Creative Digital Agency",
+          subheading: "We create exceptional digital experiences that drive results",
+          buttonText: "View Our Work",
+          theme: "gradient"
+        }
+      },
+      {
+        id: "agency-services-1",
+        type: "services",
+        name: "Services Section",
+        position: { x: 0, y: 670 },
+        size: { width: 1200, height: 400 },
+        order: 2,
+        props: {
+          title: "Our Services",
+          services: [
+            { title: "Web Design", description: "Custom website design and development" },
+            { title: "Branding", description: "Complete brand identity solutions" },
+            { title: "Digital Marketing", description: "Data-driven marketing strategies" }
+          ]
+        }
+      }
+    ]
   },
   {
     id: 4,
@@ -102,7 +197,22 @@ const extendedTemplates: Template[] = [
     review_count: 67,
     tags: ["Startup", "Investor", "Pitch", "Growth"],
     created_at: "2024-01-25",
-    components: []
+    components: [
+      {
+        id: "startup-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 600 },
+        order: 1,
+        props: {
+          heading: "The Future is Here",
+          subheading: "Revolutionary technology that changes everything",
+          buttonText: "Join Waitlist",
+          theme: "tech"
+        }
+      }
+    ]
   },
   {
     id: 5,
@@ -118,7 +228,22 @@ const extendedTemplates: Template[] = [
     review_count: 89,
     tags: ["Enterprise", "Corporate", "Security", "Scale"],
     created_at: "2024-01-08",
-    components: []
+    components: [
+      {
+        id: "enterprise-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 550 },
+        order: 1,
+        props: {
+          heading: "Enterprise Solutions",
+          subheading: "Secure, scalable, and compliant solutions for large organizations",
+          buttonText: "Contact Sales",
+          theme: "corporate"
+        }
+      }
+    ]
   },
   {
     id: 6,
@@ -134,7 +259,22 @@ const extendedTemplates: Template[] = [
     review_count: 78,
     tags: ["Portfolio", "Creative", "Gallery", "Designer"],
     created_at: "2024-01-22",
-    components: []
+    components: [
+      {
+        id: "portfolio-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 700 },
+        order: 1,
+        props: {
+          heading: "Creative Portfolio",
+          subheading: "Showcasing innovative design and development work",
+          buttonText: "View Projects",
+          theme: "creative"
+        }
+      }
+    ]
   },
   {
     id: 7,
@@ -150,7 +290,22 @@ const extendedTemplates: Template[] = [
     review_count: 134,
     tags: ["Blog", "Content", "SEO", "Newsletter"],
     created_at: "2024-01-18",
-    components: []
+    components: [
+      {
+        id: "blog-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 400 },
+        order: 1,
+        props: {
+          heading: "The Authority Blog",
+          subheading: "Insights, tips, and strategies from industry experts",
+          buttonText: "Subscribe",
+          theme: "minimal"
+        }
+      }
+    ]
   },
   {
     id: 8,
@@ -166,7 +321,22 @@ const extendedTemplates: Template[] = [
     review_count: 56,
     tags: ["Restaurant", "Food", "Reservations", "Menu"],
     created_at: "2024-01-12",
-    components: []
+    components: [
+      {
+        id: "restaurant-hero-1",
+        type: "hero",
+        name: "Hero Section",
+        position: { x: 0, y: 0 },
+        size: { width: 1200, height: 600 },
+        order: 1,
+        props: {
+          heading: "Fine Dining Experience",
+          subheading: "Exquisite cuisine crafted with passion and precision",
+          buttonText: "Make Reservation",
+          theme: "elegant"
+        }
+      }
+    ]
   }
 ];
 
@@ -190,6 +360,9 @@ export default function TemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
+  
+  const router = useRouter();
+  const { loadTemplate } = useBuilderStore();
 
   // Debounced search
   const debouncedSearch = useMemo(
@@ -253,6 +426,18 @@ export default function TemplatesPage() {
     );
   };
 
+  const handleUseTemplate = (template: Template) => {
+    try {
+      // Load template into builder store
+      loadTemplate(template);
+      
+      // Navigate to canvas with template loaded
+      router.push('/canvas?template=' + template.id);
+    } catch (error) {
+      console.error('Failed to load template:', error);
+    }
+  };
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -263,12 +448,13 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black overflow-x-hidden">
-      {/* Header */}
-      <Header />
+    <AuthGuard requireAuth={true}>
+      <div className="min-h-screen bg-black overflow-x-hidden">
+        {/* Header */}
+        <Header />
 
-      {/* Main Content */}
-      <main className="pt-20">
+        {/* Main Content */}
+        <main className="pt-20">
         {/* Hero Section */}
         <section className="py-20 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-purple-500/5" />
@@ -482,11 +668,17 @@ export default function TemplatesPage() {
 
                       {/* Actions */}
                       <div className="flex gap-2">
-                        <button className="flex-1 bg-yellow-400 text-black py-2 rounded-lg font-semibold hover:bg-yellow-300 transition-colors flex items-center justify-center gap-1">
+                        <button 
+                          onClick={() => handleUseTemplate(template)}
+                          className="flex-1 bg-yellow-400 text-black py-2 rounded-lg font-semibold hover:bg-yellow-300 transition-colors flex items-center justify-center gap-1"
+                        >
                           <Download className="w-4 h-4" />
                           Use Template
                         </button>
-                        <button className="px-3 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors">
+                        <button 
+                          onClick={() => handlePreview(template)}
+                          className="px-3 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors"
+                        >
                           <ExternalLink className="w-4 h-4" />
                         </button>
                       </div>
@@ -615,5 +807,6 @@ export default function TemplatesPage() {
         />
       )}
     </div>
-  );
+  </AuthGuard>
+);
 }

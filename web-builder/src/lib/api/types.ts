@@ -349,6 +349,14 @@ export interface ProjectUpdate extends Partial<ProjectCreate> {
   is_published?: boolean;
 }
 
+export interface ProjectFilters {
+  status?: 'draft' | 'published' | 'archived';
+  template?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
 // Analytics Types
 export interface AnalyticsOverview {
   total_projects: number;

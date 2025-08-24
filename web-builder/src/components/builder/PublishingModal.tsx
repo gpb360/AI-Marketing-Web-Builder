@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { useBuilderStore } from '@/store/builderStore';
+import { publishingService, PublishingProgress } from '@/lib/services/PublishingService';
+import DomainManager from '@/components/publishing/DomainManager';
 import { cn } from '@/lib/utils';
 import {
   Globe,
@@ -21,11 +23,12 @@ interface PublishingModalProps {
 }
 
 interface DeploymentStatus {
-  status: 'idle' | 'building' | 'deploying' | 'success' | 'error';
+  status: 'idle' | 'generating' | 'optimizing' | 'uploading' | 'deploying' | 'configuring' | 'complete' | 'error';
   progress: number;
   message: string;
   url?: string;
   error?: string;
+  taskId?: string;
 }
 
 export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
@@ -38,6 +41,8 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
   const [siteName, setSiteName] = useState('my-awesome-site');
   const [customDomain, setCustomDomain] = useState('');
   const [isCustomDomainEnabled, setIsCustomDomainEnabled] = useState(false);
+  const [currentTab, setCurrentTab] = useState<'basic' | 'domain'>('basic');
+  const [deploymentId, setDeploymentId] = useState<string>('');
 
   const handlePublish = useCallback(async () => {
     if (!currentTemplate || components.length === 0) {
@@ -51,55 +56,53 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
     }
 
     try {
-      // Step 1: Build site
-      setDeploymentStatus({
-        status: 'building',
-        progress: 10,
-        message: 'Generating static site...',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate build
-
-      // Step 2: Optimize assets
-      setDeploymentStatus({
-        status: 'building',
-        progress: 40,
-        message: 'Optimizing assets...',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Step 3: Deploy
-      setDeploymentStatus({
-        status: 'deploying',
-        progress: 70,
-        message: 'Deploying to CDN...',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Step 4: Configure domain
-      if (isCustomDomainEnabled && customDomain) {
+      // Set up progress callback
+      publishingService.setProgressCallback((progress: PublishingProgress) => {
         setDeploymentStatus({
-          status: 'deploying',
-          progress: 90,
-          message: 'Configuring custom domain...',
+          status: progress.stage === 'complete' ? 'complete' : progress.stage,
+          progress: progress.progress,
+          message: progress.message,
+          url: progress.deploymentUrl,
+          error: progress.error
         });
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      // Success
-      const finalUrl = isCustomDomainEnabled && customDomain 
-        ? `https://${customDomain}`
-        : `https://${siteName}.marketingbuilder.app`;
-
-      setDeploymentStatus({
-        status: 'success',
-        progress: 100,
-        message: 'Site published successfully!',
-        url: finalUrl,
       });
+
+      // Start publishing process
+      const result = await publishingService.publishSite(
+        components,
+        currentTemplate,
+        {
+          siteName,
+          customDomain: isCustomDomainEnabled ? customDomain : undefined,
+          seoSettings: {
+            title: `${siteName} | AI Marketing Website`,
+            description: `Professional website built with AI Marketing Web Builder`,
+            keywords: ['website', 'marketing', 'business', siteName],
+            author: 'AI Marketing Web Builder'
+          },
+          performanceOptimization: true,
+          includeAnalytics: true
+        }
+      );
+
+      if (result.success) {
+        const newDeploymentId = result.taskId || `deployment-${Date.now()}`;
+        setDeploymentId(newDeploymentId);
+        setDeploymentStatus({
+          status: 'complete',
+          progress: 100,
+          message: 'Site published successfully!',
+          url: result.deploymentUrl,
+          taskId: newDeploymentId
+        });
+      } else {
+        setDeploymentStatus({
+          status: 'error',
+          progress: 0,
+          message: 'Publishing failed',
+          error: result.error || 'Unknown error occurred'
+        });
+      }
 
     } catch (error) {
       setDeploymentStatus({
@@ -130,7 +133,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                 <Globe className="w-5 h-5 text-white" />
@@ -147,12 +150,40 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
               ×
             </button>
           </div>
+
+          {/* Tab Navigation */}
+          {deploymentStatus.status === 'idle' && (
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setCurrentTab('basic')}
+                className={cn(
+                  'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                  currentTab === 'basic'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                Basic Settings
+              </button>
+              <button
+                onClick={() => setCurrentTab('domain')}
+                className={cn(
+                  'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                  currentTab === 'domain'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                Domain & SSL
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Site Configuration */}
-          {deploymentStatus.status === 'idle' && (
+          {/* Site Configuration - Basic Tab */}
+          {deploymentStatus.status === 'idle' && currentTab === 'basic' && (
             <>
               <div className="space-y-4">
                 <div>
@@ -221,6 +252,19 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 </div>
               </div>
             </>
+          )}
+
+          {/* Domain & SSL Configuration Tab */}
+          {deploymentStatus.status === 'idle' && currentTab === 'domain' && (
+            <DomainManager
+              deploymentId={deploymentId || 'preview'}
+              currentDomain={isCustomDomainEnabled ? customDomain : undefined}
+              onDomainConfigured={(domain, verified) => {
+                setCustomDomain(domain);
+                setIsCustomDomainEnabled(true);
+                // Could show success message or update UI based on verification status
+              }}
+            />
           )}
 
           {/* Deployment Progress */}
@@ -302,7 +346,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
           )}
 
           {/* Success State */}
-          {deploymentStatus.status === 'success' && deploymentStatus.url && (
+          {deploymentStatus.status === 'complete' && deploymentStatus.url && (
             <div className="space-y-4 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                 <CheckCircle className="w-8 h-8 text-green-600" />
@@ -377,7 +421,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 <span>Publish Site</span>
               </button>
             </>
-          ) : deploymentStatus.status === 'success' ? (
+          ) : deploymentStatus.status === 'complete' ? (
             <>
               <button
                 onClick={resetPublishing}
