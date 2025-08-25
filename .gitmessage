@@ -1,0 +1,99 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# === CONVENTIONAL COMMIT FORMAT ===
+# 
+# TYPE (required):
+#   feat:     A new feature
+#   fix:      A bug fix
+#   docs:     Documentation only changes
+#   style:    Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+#   refactor: A code change that neither fixes a bug nor adds a feature
+#   perf:     A code change that improves performance
+#   test:     Adding missing tests or correcting existing tests
+#   build:    Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+#   ci:       Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+#   chore:    Other changes that don't modify src or test files
+#   revert:   Reverts a previous commit
+#
+# SCOPE (optional):
+#   auth, api, ui, docs, tests, build, ci, etc.
+#   Scope should be noun describing a section of the codebase
+#
+# SUBJECT (required):
+#   - Use imperative, present tense: "change" not "changed" nor "changes"
+#   - Don't capitalize first letter
+#   - No dot (.) at the end
+#   - Maximum 50 characters
+#
+# BODY (optional):
+#   - Use imperative, present tense
+#   - Include motivation for the change and contrasts with previous behavior
+#   - Wrap at 72 characters
+#
+# FOOTER (optional):
+#   - Reference issues and breaking changes
+#   - Breaking changes should start with BREAKING CHANGE: followed by a description
+#   - Reference issues like: Closes #123, Fixes #456
+#
+# EXAMPLES:
+#   feat(auth): add JWT token validation
+#   fix(api): resolve timeout error in user service  
+#   docs: update installation instructions
+#   style(ui): format button components
+#   refactor(database): optimize query performance
+#   perf(canvas): improve drag and drop performance
+#   test(auth): add unit tests for login flow
+#   build(deps): update dependencies to latest versions
+#   ci: add automated deployment pipeline
+#   chore: update .gitignore file
+#
+# BREAKING CHANGES:
+#   feat(api)!: remove deprecated v1 endpoints
+#   
+#   BREAKING CHANGE: The v1 API endpoints have been removed.
+#   Please upgrade to v2 endpoints. See migration guide.
+#
+# === AI MARKETING WEB BUILDER SPECIFIC SCOPES ===
+#
+# Frontend:
+#   - ui: User interface components
+#   - canvas: Drag and drop builder
+#   - auth: Authentication system
+#   - templates: Template management
+#   - workflow: Workflow automation
+#   - theme: Theming system
+#   - components: React components
+#   - hooks: React hooks
+#   - api: API integration layer
+#   - routing: Next.js routing
+#   - build: Build configuration
+#
+# Backend:
+#   - api: API endpoints
+#   - auth: Authentication services
+#   - database: Database models and migrations
+#   - services: Business logic services
+#   - workflows: Workflow engine
+#   - ai: AI integration
+#   - crm: CRM functionality
+#   - templates: Template services
+#   - publishing: Site publishing
+#   - analytics: Analytics and monitoring
+#   - migration: Data migration tools
+#   - tasks: Background tasks
+#
+# Infrastructure:
+#   - docker: Docker configuration
+#   - deploy: Deployment scripts
+#   - ci: Continuous integration
+#   - docs: Documentation
+#   - scripts: Utility scripts
+#   - tests: Test configuration
+#   - security: Security measures
+#   - monitoring: Monitoring and logging
+#
+# Remove these comment lines before committing!
