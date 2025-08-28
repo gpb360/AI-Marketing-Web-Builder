@@ -54,15 +54,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-<<<<<<< HEAD
     // Redirect authenticated users away from auth pages to dashboard
     if (isAuthenticated && isAuthRoute) {
       router.push('/dashboard');
-=======
-    // Redirect authenticated users away from auth pages
-    if (isAuthenticated && isAuthRoute) {
-      router.push('/');
->>>>>>> origin/main
       return;
     }
 
