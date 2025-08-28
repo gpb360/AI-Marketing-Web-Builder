@@ -119,6 +119,7 @@ export function Header() {
           <UserNav />
         </motion.div>
 
+
         {/* Mobile Menu Button with Enhanced Styling */}
         <motion.button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

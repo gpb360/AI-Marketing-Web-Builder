@@ -40,16 +40,16 @@ export function UserNav({ isMobile = false }: UserNavProps) {
         >
           Sign In
         </motion.button>
-        
-        {/* Sign Up Button - Outline variant with yellow border */}
+
+        {/* Sign Up Button - Primary CTA with luxury gold gradient */}
         <motion.button
           onClick={() => router.push('/auth/register')}
           className={`${
             isMobile
               ? 'w-full justify-center py-3 px-6'
               : 'px-6 py-2.5'
-          } bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold rounded-xl transition-all duration-300 hover:from-yellow-300 hover:to-yellow-400 hover:shadow-2xl hover:shadow-yellow-400/30 hover:-translate-y-1`}
-          whileHover={{ scale: isMobile ? 1 : 1.05, y: isMobile ? 0 : -2 }}
+          } bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-yellow-400/25 hover:shadow-yellow-400/40`}
+          whileHover={{ scale: isMobile ? 1 : 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           Get Started
@@ -104,12 +104,12 @@ export function UserNav({ isMobile = false }: UserNavProps) {
           {isMobile && <span className="text-sm font-medium">Settings</span>}
         </motion.button>
         
-        {/* Professional Sign Out Button */}
+        {/* Logout Button - Professional red styling */}
         <motion.button 
           onClick={handleLogout}
           className={`${
             isMobile ? 'flex-1 py-3' : 'p-2.5'
-          } bg-gray-800/50 backdrop-blur-md border border-gray-700 ${luxuryTheme.colors.text.secondary} hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2`}
+          } bg-red-900/30 backdrop-blur-md border border-red-700 text-red-300 hover:text-red-200 hover:border-red-500 hover:bg-red-900/50 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
