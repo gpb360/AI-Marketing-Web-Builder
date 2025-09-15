@@ -60,8 +60,8 @@ class WorkflowAnalyticsEvent(Base, UUIDMixin, TimestampMixin):
     resource_usage: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     
     # Business metrics
-    conversion_value: Mapped[Optional[Decimal]] = mapped_column(Float(precision=10, scale=2))
-    revenue_impact: Mapped[Optional[Decimal]] = mapped_column(Float(precision=10, scale=2))
+    conversion_value: Mapped[Optional[Decimal]] = mapped_column(Float(precision=10))
+    revenue_impact: Mapped[Optional[Decimal]] = mapped_column(Float(precision=10))
     
     # Context
     component_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
@@ -84,7 +84,7 @@ class WorkflowPerformanceMetrics(Base, UUIDMixin, TimestampMixin):
     Aggregated performance metrics for workflows.
     Updated periodically for dashboard performance.
     """
-    __tablename__ = "workflow_performance_metrics"
+    __tablename__ = "workflow_aggregated_performance_metrics"
 
     # Identifiers
     workflow_id: Mapped[str] = mapped_column(ForeignKey("workflows.id"), index=True, unique=True)
@@ -108,12 +108,12 @@ class WorkflowPerformanceMetrics(Base, UUIDMixin, TimestampMixin):
     # Business metrics
     total_conversions: Mapped[int] = mapped_column(Integer, default=0)
     conversion_rate: Mapped[float] = mapped_column(Float, default=0.0)
-    total_revenue: Mapped[Decimal] = mapped_column(Float(precision=12, scale=2), default=0.0)
-    avg_revenue_per_execution: Mapped[Decimal] = mapped_column(Float(precision=10, scale=2), default=0.0)
+    total_revenue: Mapped[Decimal] = mapped_column(Float(precision=12), default=0.0)
+    avg_revenue_per_execution: Mapped[Decimal] = mapped_column(Float(precision=10), default=0.0)
     
     # Cost analysis
-    total_execution_cost: Mapped[Decimal] = mapped_column(Float(precision=10, scale=4), default=0.0)
-    cost_per_execution: Mapped[Decimal] = mapped_column(Float(precision=8, scale=4), default=0.0)
+    total_execution_cost: Mapped[Decimal] = mapped_column(Float(precision=10), default=0.0)
+    cost_per_execution: Mapped[Decimal] = mapped_column(Float(precision=8), default=0.0)
     roi_percentage: Mapped[float] = mapped_column(Float, default=0.0)
     
     # Engagement metrics
@@ -177,15 +177,15 @@ class WorkflowCostAnalysis(Base, UUIDMixin, TimestampMixin):
     execution_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
     
     # Resource costs
-    compute_cost: Mapped[Decimal] = mapped_column(Float(precision=8, scale=4), default=0.0)
-    storage_cost: Mapped[Decimal] = mapped_column(Float(precision=8, scale=4), default=0.0)
-    network_cost: Mapped[Decimal] = mapped_column(Float(precision=8, scale=4), default=0.0)
-    email_cost: Mapped[Decimal] = mapped_column(Float(precision=8, scale=4), default=0.0)
-    external_api_cost: Mapped[Decimal] = mapped_column(Float(precision=8, scale=4), default=0.0)
+    compute_cost: Mapped[Decimal] = mapped_column(Float(precision=8), default=0.0)
+    storage_cost: Mapped[Decimal] = mapped_column(Float(precision=8), default=0.0)
+    network_cost: Mapped[Decimal] = mapped_column(Float(precision=8), default=0.0)
+    email_cost: Mapped[Decimal] = mapped_column(Float(precision=8), default=0.0)
+    external_api_cost: Mapped[Decimal] = mapped_column(Float(precision=8), default=0.0)
     
     # Time savings
     manual_time_saved_minutes: Mapped[Optional[int]] = mapped_column(Integer)
-    automation_value: Mapped[Optional[Decimal]] = mapped_column(Float(precision=10, scale=2))
+    automation_value: Mapped[Optional[Decimal]] = mapped_column(Float(precision=10))
     
     # Resource usage details
     cpu_seconds: Mapped[Optional[float]] = mapped_column(Float)

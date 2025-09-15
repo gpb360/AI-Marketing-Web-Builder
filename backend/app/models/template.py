@@ -64,7 +64,9 @@ class Template(Base, TimestampMixin, UUIDMixin):
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
     
     # Relationships
+    sites: Mapped[List["Site"]] = relationship("Site", back_populates="template")
     projects: Mapped[List["Project"]] = relationship("Project", back_populates="template")
+    context_scorings: Mapped[List["TemplateContextScoring"]] = relationship("TemplateContextScoring", back_populates="template")
     
     def __repr__(self) -> str:
         return f"<Template(id={self.id}, name='{self.name}', category='{self.category}')>"

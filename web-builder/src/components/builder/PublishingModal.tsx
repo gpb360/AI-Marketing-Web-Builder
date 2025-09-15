@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useBuilderStore } from '@/store/builderStore';
 import { publishingService, PublishingProgress } from '@/lib/services/PublishingService';
+import { deploymentService, type DeploymentProvider } from '@/lib/services/DeploymentService';
 import DomainManager from '@/components/publishing/DomainManager';
 import { cn } from '@/lib/utils';
 import {
@@ -15,6 +16,10 @@ import {
   ExternalLink,
   Copy,
   RefreshCw,
+  Zap,
+  Shield,
+  Server,
+  BadgeInfo,
 } from 'lucide-react';
 
 interface PublishingModalProps {
@@ -22,32 +27,48 @@ interface PublishingModalProps {
   onClose: () => void;
 }
 
-interface DeploymentStatus {
-  status: 'idle' | 'generating' | 'optimizing' | 'uploading' | 'deploying' | 'configuring' | 'complete' | 'error';
-  progress: number;
-  message: string;
-  url?: string;
-  error?: string;
-  taskId?: string;
-}
-
 export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
-  const { components, currentTemplate } = useBuilderStore();
-  const [deploymentStatus, setDeploymentStatus] = useState<DeploymentStatus>({
-    status: 'idle',
-    progress: 0,
-    message: 'Ready to publish',
-  });
+  const {
+    components,
+    currentTemplate,
+    publishingStatus,
+    setPublishingStatus,
+    resetPublishingStatus
+  } = useBuilderStore();
+  
   const [siteName, setSiteName] = useState('my-awesome-site');
   const [customDomain, setCustomDomain] = useState('');
   const [isCustomDomainEnabled, setIsCustomDomainEnabled] = useState(false);
-  const [currentTab, setCurrentTab] = useState<'basic' | 'domain'>('basic');
+  const [currentTab, setCurrentTab] = useState<'basic' | 'domain' | 'advanced'>('basic');
   const [deploymentId, setDeploymentId] = useState<string>('');
+  
+  // Deployment configuration state
+  const [deploymentProvider, setDeploymentProvider] = useState('vercel');
+  const [performanceOptimization, setPerformanceOptimization] = useState(true);
+  const [includeAnalytics, setIncludeAnalytics] = useState(true);
+  const [providers, setProviders] = useState<DeploymentProvider[]>([]);
+  
+  // Advanced settings
+  const [region, setRegion] = useState('us-east-1');
+  const [cachingEnabled, setCachingEnabled] = useState(true);
+  const [cachingTTL, setCachingTTL] = useState(3600);
+  const [compressionEnabled, setCompressionEnabled] = useState(true);
+
+  // Initialize providers
+  useEffect(() => {
+    const availableProviders = deploymentService.getProviders();
+    setProviders(availableProviders);
+    
+    // Set default site name based on template
+    if (currentTemplate?.name && siteName === 'my-awesome-site') {
+      setSiteName(currentTemplate.name.toLowerCase().replace(/\s+/g, '-'));
+    }
+  }, [currentTemplate, siteName]);
 
   const handlePublish = useCallback(async () => {
     if (!currentTemplate || components.length === 0) {
-      setDeploymentStatus({
-        status: 'error',
+      setPublishingStatus({
+        stage: 'error',
         progress: 0,
         message: 'No content to publish',
         error: 'Please add some components to your site before publishing.',
@@ -58,8 +79,8 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
     try {
       // Set up progress callback
       publishingService.setProgressCallback((progress: PublishingProgress) => {
-        setDeploymentStatus({
-          status: progress.stage === 'complete' ? 'complete' : progress.stage,
+        setPublishingStatus({
+          stage: progress.stage,
           progress: progress.progress,
           message: progress.message,
           url: progress.deploymentUrl,
@@ -74,30 +95,31 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
         {
           siteName,
           customDomain: isCustomDomainEnabled ? customDomain : undefined,
+          deploymentProvider,
           seoSettings: {
             title: `${siteName} | AI Marketing Website`,
             description: `Professional website built with AI Marketing Web Builder`,
             keywords: ['website', 'marketing', 'business', siteName],
             author: 'AI Marketing Web Builder'
           },
-          performanceOptimization: true,
-          includeAnalytics: true
+          performanceOptimization,
+          includeAnalytics
         }
       );
 
       if (result.success) {
         const newDeploymentId = result.taskId || `deployment-${Date.now()}`;
         setDeploymentId(newDeploymentId);
-        setDeploymentStatus({
-          status: 'complete',
+        setPublishingStatus({
+          stage: 'complete',
           progress: 100,
           message: 'Site published successfully!',
           url: result.deploymentUrl,
           taskId: newDeploymentId
         });
       } else {
-        setDeploymentStatus({
-          status: 'error',
+        setPublishingStatus({
+          stage: 'error',
           progress: 0,
           message: 'Publishing failed',
           error: result.error || 'Unknown error occurred'
@@ -105,32 +127,28 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
       }
 
     } catch (error) {
-      setDeploymentStatus({
-        status: 'error',
+      setPublishingStatus({
+        stage: 'error',
         progress: 0,
         message: 'Publishing failed',
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       });
     }
-  }, [components, currentTemplate, siteName, customDomain, isCustomDomainEnabled]);
+  }, [components, currentTemplate, siteName, customDomain, isCustomDomainEnabled, deploymentProvider, performanceOptimization, includeAnalytics, setPublishingStatus]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
   const resetPublishing = () => {
-    setDeploymentStatus({
-      status: 'idle',
-      progress: 0,
-      message: 'Ready to publish',
-    });
+    resetPublishingStatus();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -152,7 +170,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
           </div>
 
           {/* Tab Navigation */}
-          {deploymentStatus.status === 'idle' && (
+          {publishingStatus.stage === 'idle' && (
             <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setCurrentTab('basic')}
@@ -176,6 +194,17 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
               >
                 Domain & SSL
               </button>
+              <button
+                onClick={() => setCurrentTab('advanced')}
+                className={cn(
+                  'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                  currentTab === 'advanced'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                Advanced
+              </button>
             </div>
           )}
         </div>
@@ -183,7 +212,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Site Configuration - Basic Tab */}
-          {deploymentStatus.status === 'idle' && currentTab === 'basic' && (
+          {publishingStatus.stage === 'idle' && currentTab === 'basic' && (
             <>
               <div className="space-y-4">
                 <div>
@@ -200,6 +229,27 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                   <p className="text-xs text-gray-500 mt-1">
                     Your site will be available at: <code>https://{siteName}.marketingbuilder.app</code>
                   </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Deployment Provider
+                  </label>
+                  <select
+                    value={deploymentProvider}
+                    onChange={(e) => setDeploymentProvider(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {providers.map((provider) => (
+                      <option key={provider.id} value={provider.id}>
+                        {provider.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="mt-2 text-xs text-gray-500 flex items-center">
+                    <BadgeInfo className="w-3 h-3 mr-1" />
+                    {providers.find(p => p.id === deploymentProvider)?.description}
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -232,6 +282,44 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                     </p>
                   </div>
                 )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      <span>Performance Optimization</span>
+                    </div>
+                    <button
+                      onClick={() => setPerformanceOptimization(!performanceOptimization)}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium",
+                        performanceOptimization 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-gray-100 text-gray-800"
+                      )}
+                    >
+                      {performanceOptimization ? 'On' : 'Off'}
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      <span>Analytics</span>
+                    </div>
+                    <button
+                      onClick={() => setIncludeAnalytics(!includeAnalytics)}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium",
+                        includeAnalytics 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-gray-100 text-gray-800"
+                      )}
+                    >
+                      {includeAnalytics ? 'On' : 'Off'}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
@@ -247,7 +335,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                   </div>
                   <div className="flex justify-between">
                     <span>Deployment target:</span>
-                    <span>Global CDN</span>
+                    <span>{providers.find(p => p.id === deploymentProvider)?.name || 'Global CDN'}</span>
                   </div>
                 </div>
               </div>
@@ -255,7 +343,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
           )}
 
           {/* Domain & SSL Configuration Tab */}
-          {deploymentStatus.status === 'idle' && currentTab === 'domain' && (
+          {publishingStatus.stage === 'idle' && currentTab === 'domain' && (
             <DomainManager
               deploymentId={deploymentId || 'preview'}
               currentDomain={isCustomDomainEnabled ? customDomain : undefined}
@@ -267,23 +355,121 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
             />
           )}
 
+          {/* Advanced Settings Tab */}
+          {publishingStatus.stage === 'idle' && currentTab === 'advanced' && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                <div className="flex items-start">
+                  <BadgeInfo className="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-800">Advanced Deployment Settings</h3>
+                    <p className="text-xs text-blue-700 mt-1">
+                      These settings control advanced deployment behavior. Only modify if you understand the implications.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Server className="w-4 h-4 inline mr-1" />
+                    Deployment Region
+                  </label>
+                  <select
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="us-east-1">US East (N. Virginia)</option>
+                    <option value="us-west-1">US West (N. California)</option>
+                    <option value="eu-west-1">EU (Ireland)</option>
+                    <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                    <option value="global">Global (CDN)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      <span>Asset Compression</span>
+                    </div>
+                    <button
+                      onClick={() => setCompressionEnabled(!compressionEnabled)}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium",
+                        compressionEnabled 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-gray-100 text-gray-800"
+                      )}
+                    >
+                      {compressionEnabled ? 'On' : 'Off'}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      <span>CDN Caching</span>
+                    </div>
+                    <button
+                      onClick={() => setCachingEnabled(!cachingEnabled)}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium",
+                        cachingEnabled 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-gray-100 text-gray-800"
+                      )}
+                    >
+                      {cachingEnabled ? 'On' : 'Off'}
+                    </button>
+                  </div>
+
+                  {cachingEnabled && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Cache TTL (seconds)
+                      </label>
+                      <input
+                        type="number"
+                        value={cachingTTL}
+                        onChange={(e) => setCachingTTL(Number(e.target.value))}
+                        min="0"
+                        max="86400"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Time-to-live for cached content (0 = no cache, max 86400 = 24 hours)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Deployment Progress */}
-          {(deploymentStatus.status === 'building' || deploymentStatus.status === 'deploying') && (
+          {(publishingStatus.stage === 'generating' || 
+            publishingStatus.stage === 'optimizing' || 
+            publishingStatus.stage === 'uploading' || 
+            publishingStatus.stage === 'deploying' || 
+            publishingStatus.stage === 'configuring') && (
             <div className="space-y-4">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-500 mb-2" />
-                <h3 className="text-lg font-medium text-gray-900">{deploymentStatus.message}</h3>
+                <h3 className="text-lg font-medium text-gray-900">{publishingStatus.message}</h3>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Progress</span>
-                  <span>{deploymentStatus.progress}%</span>
+                  <span>{publishingStatus.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${deploymentStatus.progress}%` }}
+                    style={{ width: `${publishingStatus.progress}%` }}
                   />
                 </div>
               </div>
@@ -291,9 +477,9 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
               <div className="space-y-2 text-sm">
                 <div className={cn(
                   "flex items-center space-x-2",
-                  deploymentStatus.progress > 10 ? "text-green-600" : "text-gray-400"
+                  publishingStatus.progress > 10 ? "text-green-600" : "text-gray-400"
                 )}>
-                  {deploymentStatus.progress > 10 ? (
+                  {publishingStatus.progress > 10 ? (
                     <CheckCircle className="w-4 h-4" />
                   ) : (
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -302,11 +488,11 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 </div>
                 <div className={cn(
                   "flex items-center space-x-2",
-                  deploymentStatus.progress > 40 ? "text-green-600" : "text-gray-400"
+                  publishingStatus.progress > 30 ? "text-green-600" : "text-gray-400"
                 )}>
-                  {deploymentStatus.progress > 40 ? (
+                  {publishingStatus.progress > 30 ? (
                     <CheckCircle className="w-4 h-4" />
-                  ) : deploymentStatus.progress > 10 ? (
+                  ) : publishingStatus.progress > 10 ? (
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />
@@ -315,11 +501,24 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 </div>
                 <div className={cn(
                   "flex items-center space-x-2",
-                  deploymentStatus.progress > 70 ? "text-green-600" : "text-gray-400"
+                  publishingStatus.progress > 50 ? "text-green-600" : "text-gray-400"
                 )}>
-                  {deploymentStatus.progress > 70 ? (
+                  {publishingStatus.progress > 50 ? (
                     <CheckCircle className="w-4 h-4" />
-                  ) : deploymentStatus.progress > 40 ? (
+                  ) : publishingStatus.progress > 30 ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />
+                  )}
+                  <span>Upload files</span>
+                </div>
+                <div className={cn(
+                  "flex items-center space-x-2",
+                  publishingStatus.progress > 70 ? "text-green-600" : "text-gray-400"
+                )}>
+                  {publishingStatus.progress > 70 ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : publishingStatus.progress > 50 ? (
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />
@@ -329,11 +528,11 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 {isCustomDomainEnabled && customDomain && (
                   <div className={cn(
                     "flex items-center space-x-2",
-                    deploymentStatus.progress > 90 ? "text-green-600" : "text-gray-400"
+                    publishingStatus.progress > 90 ? "text-green-600" : "text-gray-400"
                   )}>
-                    {deploymentStatus.progress > 90 ? (
+                    {publishingStatus.progress > 90 ? (
                       <CheckCircle className="w-4 h-4" />
-                    ) : deploymentStatus.progress > 70 ? (
+                    ) : publishingStatus.progress > 70 ? (
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />
@@ -346,7 +545,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
           )}
 
           {/* Success State */}
-          {deploymentStatus.status === 'complete' && deploymentStatus.url && (
+          {publishingStatus.stage === 'complete' && publishingStatus.url && (
             <div className="space-y-4 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                 <CheckCircle className="w-8 h-8 text-green-600" />
@@ -365,38 +564,38 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                     <span className="text-green-800 font-medium">Live URL:</span>
                   </div>
                   <button
-                    onClick={() => copyToClipboard(deploymentStatus.url!)}
+                    onClick={() => copyToClipboard(publishingStatus.url!)}
                     className="text-green-600 hover:text-green-700"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
                 </div>
                 <a
-                  href={deploymentStatus.url}
+                  href={publishingStatus.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-green-700 hover:text-green-800 underline break-all"
                 >
-                  {deploymentStatus.url}
+                  {publishingStatus.url}
                 </a>
               </div>
             </div>
           )}
 
           {/* Error State */}
-          {deploymentStatus.status === 'error' && (
+          {publishingStatus.stage === 'error' && (
             <div className="space-y-4 text-center">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
                 <AlertCircle className="w-8 h-8 text-red-600" />
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Publishing Failed</h3>
-                <p className="text-gray-600">{deploymentStatus.error}</p>
+                <p className="text-gray-600">{publishingStatus.error}</p>
               </div>
 
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-left">
                 <h4 className="text-red-800 font-medium mb-1">Error Details:</h4>
-                <p className="text-red-700 text-sm">{deploymentStatus.error}</p>
+                <p className="text-red-700 text-sm">{publishingStatus.error}</p>
               </div>
             </div>
           )}
@@ -404,7 +603,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-200 flex justify-between">
-          {deploymentStatus.status === 'idle' ? (
+          {publishingStatus.stage === 'idle' ? (
             <>
               <button
                 onClick={onClose}
@@ -421,7 +620,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 <span>Publish Site</span>
               </button>
             </>
-          ) : deploymentStatus.status === 'complete' ? (
+          ) : publishingStatus.stage === 'complete' ? (
             <>
               <button
                 onClick={resetPublishing}
@@ -432,7 +631,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
               </button>
               <div className="space-x-2">
                 <a
-                  href={deploymentStatus.url}
+                  href={publishingStatus.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
@@ -448,7 +647,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
                 </button>
               </div>
             </>
-          ) : deploymentStatus.status === 'error' ? (
+          ) : publishingStatus.stage === 'error' ? (
             <>
               <button
                 onClick={resetPublishing}
@@ -468,7 +667,7 @@ export function PublishingModal({ isOpen, onClose }: PublishingModalProps) {
               <button
                 onClick={() => {/* Allow cancellation */}}
                 className="px-4 py-2 text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                disabled={deploymentStatus.status === 'deploying'}
+                disabled={publishingStatus.stage === 'deploying'}
               >
                 Cancel
               </button>

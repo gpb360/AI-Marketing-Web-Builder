@@ -7,80 +7,80 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from datetime import datetime, timedelta
 
-from app.models.crm import CRMContact, CRMActivity, EmailCampaign, ContactStatus, EmailCampaignStatus
+from app.models.crm import Contact, ContactActivity, EmailCampaign, ContactStatus, CampaignStatus as EmailCampaignStatus
 from app.schemas.crm import CRMContactCreate, CRMContactUpdate, CRMActivityCreate, CRMActivityUpdate, EmailCampaignCreate, EmailCampaignUpdate
 from app.services.base_service import BaseService
 
 
-class CRMContactService(BaseService[CRMContact, CRMContactCreate, CRMContactUpdate]):
+class CRMContactService(BaseService[Contact, CRMContactCreate, CRMContactUpdate]):
     """CRM contact service for contact management."""
     
     def __init__(self, db: AsyncSession):
-        super().__init__(CRMContact, db)
+        super().__init__(Contact, db)
     
-    async def get_by_owner(self, owner_id: int, skip: int = 0, limit: int = 100) -> List[CRMContact]:
+    async def get_by_owner(self, owner_id: int, skip: int = 0, limit: int = 100) -> List[Contact]:
         """Get contacts by owner."""
         result = await self.db.execute(
-            select(CRMContact)
-            .where(CRMContact.owner_id == owner_id)
-            .order_by(CRMContact.created_at.desc())
+            select(Contact)
+            .where(Contact.owner_id == owner_id)
+            .order_by(Contact.created_at.desc())
             .offset(skip)
             .limit(limit)
         )
         return result.scalars().all()
     
-    async def get_by_email(self, owner_id: int, email: str) -> Optional[CRMContact]:
+    async def get_by_email(self, owner_id: int, email: str) -> Optional[Contact]:
         """Get contact by owner and email."""
         result = await self.db.execute(
-            select(CRMContact)
-            .where(and_(CRMContact.owner_id == owner_id, CRMContact.email == email))
+            select(Contact)
+            .where(and_(Contact.owner_id == owner_id, Contact.email == email))
         )
         return result.scalar_one_or_none()
     
-    async def search_contacts(self, owner_id: int, query: str, skip: int = 0, limit: int = 100) -> List[CRMContact]:
+    async def search_contacts(self, owner_id: int, query: str, skip: int = 0, limit: int = 100) -> List[Contact]:
         """Search contacts by name, email, or company."""
         search_filter = or_(
-            CRMContact.first_name.ilike(f"%{query}%"),
-            CRMContact.last_name.ilike(f"%{query}%"),
-            CRMContact.email.ilike(f"%{query}%"),
-            CRMContact.company.ilike(f"%{query}%")
+            Contact.first_name.ilike(f"%{query}%"),
+            Contact.last_name.ilike(f"%{query}%"),
+            Contact.email.ilike(f"%{query}%"),
+            Contact.company.ilike(f"%{query}%")
         )
         
         result = await self.db.execute(
-            select(CRMContact)
-            .where(and_(CRMContact.owner_id == owner_id, search_filter))
-            .order_by(CRMContact.lead_score.desc())
+            select(Contact)
+            .where(and_(Contact.owner_id == owner_id, search_filter))
+            .order_by(Contact.lead_score.desc())
             .offset(skip)
             .limit(limit)
         )
         return result.scalars().all()
     
-    async def get_by_status(self, owner_id: int, status: ContactStatus, skip: int = 0, limit: int = 100) -> List[CRMContact]:
+    async def get_by_status(self, owner_id: int, status: ContactStatus, skip: int = 0, limit: int = 100) -> List[Contact]:
         """Get contacts by status."""
         result = await self.db.execute(
-            select(CRMContact)
-            .where(and_(CRMContact.owner_id == owner_id, CRMContact.status == status))
-            .order_by(CRMContact.created_at.desc())
+            select(Contact)
+            .where(and_(Contact.owner_id == owner_id, Contact.status == status))
+            .order_by(Contact.created_at.desc())
             .offset(skip)
             .limit(limit)
         )
         return result.scalars().all()
     
-    async def get_high_value_leads(self, owner_id: int, min_score: int = 80, limit: int = 50) -> List[CRMContact]:
+    async def get_high_value_leads(self, owner_id: int, min_score: int = 80, limit: int = 50) -> List[Contact]:
         """Get high-value leads by score."""
         result = await self.db.execute(
-            select(CRMContact)
+            select(Contact)
             .where(and_(
-                CRMContact.owner_id == owner_id,
-                CRMContact.lead_score >= min_score,
-                CRMContact.status.in_([ContactStatus.NEW, ContactStatus.CONTACTED, ContactStatus.QUALIFIED])
+                Contact.owner_id == owner_id,
+                Contact.lead_score >= min_score,
+                Contact.status.in_([ContactStatus.NEW, ContactStatus.CONTACTED, ContactStatus.QUALIFIED])
             ))
-            .order_by(CRMContact.lead_score.desc())
+            .order_by(Contact.lead_score.desc())
             .limit(limit)
         )
         return result.scalars().all()
     
-    async def update_lead_score(self, contact_id: int, score: int) -> Optional[CRMContact]:
+    async def update_lead_score(self, contact_id: int, score: int) -> Optional[Contact]:
         """Update contact lead score."""
         contact = await self.get_by_id(contact_id)
         if contact:
@@ -89,7 +89,7 @@ class CRMContactService(BaseService[CRMContact, CRMContactCreate, CRMContactUpda
             await self.db.refresh(contact)
         return contact
     
-    async def update_last_activity(self, contact_id: int) -> Optional[CRMContact]:
+    async def update_last_activity(self, contact_id: int) -> Optional[Contact]:
         """Update contact's last activity timestamp."""
         contact = await self.get_by_id(contact_id)
         if contact:
@@ -103,38 +103,38 @@ class CRMContactService(BaseService[CRMContact, CRMContactCreate, CRMContactUpda
         """Get contact statistics."""
         # Total contacts
         total_result = await self.db.execute(
-            select(func.count(CRMContact.id))
-            .where(CRMContact.owner_id == owner_id)
+            select(func.count(Contact.id))
+            .where(Contact.owner_id == owner_id)
         )
         total_contacts = total_result.scalar()
         
         # New contacts this month
         month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         new_this_month_result = await self.db.execute(
-            select(func.count(CRMContact.id))
+            select(func.count(Contact.id))
             .where(and_(
-                CRMContact.owner_id == owner_id,
-                CRMContact.created_at >= month_start
+                Contact.owner_id == owner_id,
+                Contact.created_at >= month_start
             ))
         )
         new_contacts_this_month = new_this_month_result.scalar()
         
         # Qualified leads
         qualified_result = await self.db.execute(
-            select(func.count(CRMContact.id))
+            select(func.count(Contact.id))
             .where(and_(
-                CRMContact.owner_id == owner_id,
-                CRMContact.status == ContactStatus.QUALIFIED
+                Contact.owner_id == owner_id,
+                Contact.status == ContactStatus.QUALIFIED
             ))
         )
         qualified_leads = qualified_result.scalar()
         
         # Conversion rate (closed won / total qualified)
         closed_won_result = await self.db.execute(
-            select(func.count(CRMContact.id))
+            select(func.count(Contact.id))
             .where(and_(
-                CRMContact.owner_id == owner_id,
-                CRMContact.status == ContactStatus.CLOSED_WON
+                Contact.owner_id == owner_id,
+                Contact.status == ContactStatus.CLOSED_WON
             ))
         )
         closed_won = closed_won_result.scalar()
@@ -144,8 +144,8 @@ class CRMContactService(BaseService[CRMContact, CRMContactCreate, CRMContactUpda
         
         # Average lead score
         avg_score_result = await self.db.execute(
-            select(func.avg(CRMContact.lead_score))
-            .where(CRMContact.owner_id == owner_id)
+            select(func.avg(Contact.lead_score))
+            .where(Contact.owner_id == owner_id)
         )
         avg_lead_score = avg_score_result.scalar() or 0
         
@@ -159,48 +159,48 @@ class CRMContactService(BaseService[CRMContact, CRMContactCreate, CRMContactUpda
         }
 
 
-class CRMActivityService(BaseService[CRMActivity, CRMActivityCreate, CRMActivityUpdate]):
+class CRMActivityService(BaseService[ContactActivity, CRMActivityCreate, CRMActivityUpdate]):
     """CRM activity service for activity tracking."""
     
     def __init__(self, db: AsyncSession):
-        super().__init__(CRMActivity, db)
+        super().__init__(ContactActivity, db)
     
-    async def get_by_contact(self, contact_id: int, skip: int = 0, limit: int = 100) -> List[CRMActivity]:
+    async def get_by_contact(self, contact_id: int, skip: int = 0, limit: int = 100) -> List[ContactActivity]:
         """Get activities by contact."""
         result = await self.db.execute(
-            select(CRMActivity)
-            .where(CRMActivity.contact_id == contact_id)
-            .order_by(CRMActivity.activity_date.desc())
+            select(ContactActivity)
+            .where(ContactActivity.contact_id == contact_id)
+            .order_by(ContactActivity.activity_date.desc())
             .offset(skip)
             .limit(limit)
         )
         return result.scalars().all()
     
-    async def get_recent_activities(self, owner_id: int, days: int = 7, limit: int = 50) -> List[CRMActivity]:
+    async def get_recent_activities(self, owner_id: int, days: int = 7, limit: int = 50) -> List[ContactActivity]:
         """Get recent activities for owner's contacts."""
         since_date = datetime.utcnow() - timedelta(days=days)
         
         result = await self.db.execute(
-            select(CRMActivity)
-            .join(CRMContact)
+            select(ContactActivity)
+            .join(Contact)
             .where(and_(
-                CRMContact.owner_id == owner_id,
-                CRMActivity.activity_date >= since_date
+                Contact.owner_id == owner_id,
+                ContactActivity.activity_date >= since_date
             ))
-            .order_by(CRMActivity.activity_date.desc())
+            .order_by(ContactActivity.activity_date.desc())
             .limit(limit)
         )
         return result.scalars().all()
     
-    async def get_activities_by_type(self, contact_id: int, activity_type: str) -> List[CRMActivity]:
+    async def get_activities_by_type(self, contact_id: int, activity_type: str) -> List[ContactActivity]:
         """Get activities by type for a contact."""
         result = await self.db.execute(
-            select(CRMActivity)
+            select(ContactActivity)
             .where(and_(
-                CRMActivity.contact_id == contact_id,
-                CRMActivity.activity_type == activity_type
+                ContactActivity.contact_id == contact_id,
+                ContactActivity.type == activity_type
             ))
-            .order_by(CRMActivity.activity_date.desc())
+            .order_by(ContactActivity.activity_date.desc())
         )
         return result.scalars().all()
 
@@ -240,19 +240,19 @@ class EmailCampaignService(BaseService[EmailCampaign, EmailCampaignCreate, Email
         if not campaign:
             return {}
         
-        open_rate = (campaign.opened_count / campaign.delivered_count * 100) if campaign.delivered_count > 0 else 0
-        click_rate = (campaign.clicked_count / campaign.delivered_count * 100) if campaign.delivered_count > 0 else 0
-        bounce_rate = (campaign.bounced_count / campaign.recipient_count * 100) if campaign.recipient_count > 0 else 0
-        unsubscribe_rate = (campaign.unsubscribed_count / campaign.delivered_count * 100) if campaign.delivered_count > 0 else 0
+        open_rate = (campaign.opens_count / campaign.delivered_count * 100) if campaign.delivered_count > 0 else 0
+        click_rate = (campaign.clicks_count / campaign.delivered_count * 100) if campaign.delivered_count > 0 else 0
+        bounce_rate = (campaign.bounces_count / campaign.recipients_count * 100) if campaign.recipients_count > 0 else 0
+        unsubscribe_rate = (campaign.unsubscribes_count / campaign.delivered_count * 100) if campaign.delivered_count > 0 else 0
         
         return {
             "campaign_id": campaign_id,
-            "recipient_count": campaign.recipient_count,
+            "recipient_count": campaign.recipients_count,
             "delivered_count": campaign.delivered_count,
-            "opened_count": campaign.opened_count,
-            "clicked_count": campaign.clicked_count,
-            "bounced_count": campaign.bounced_count,
-            "unsubscribed_count": campaign.unsubscribed_count,
+            "opened_count": campaign.opens_count,
+            "clicked_count": campaign.clicks_count,
+            "bounced_count": campaign.bounces_count,
+            "unsubscribed_count": campaign.unsubscribes_count,
             "open_rate": open_rate,
             "click_rate": click_rate,
             "bounce_rate": bounce_rate,

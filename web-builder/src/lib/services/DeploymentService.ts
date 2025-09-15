@@ -833,9 +833,11 @@ export class DeploymentService {
     totalSize += new Blob([siteData.css]).size;
     totalSize += new Blob([siteData.js]).size;
     
-    siteData.assets.forEach((asset: any) => {
-      totalSize += new Blob([asset.content]).size;
-    });
+    if (siteData.assets && Array.isArray(siteData.assets)) {
+      siteData.assets.forEach((asset: any) => {
+        totalSize += new Blob([asset.content]).size;
+      });
+    }
 
     return totalSize;
   }
@@ -844,7 +846,8 @@ export class DeploymentService {
    * Count files in site data
    */
   private countFiles(siteData: any): number {
-    return 3 + siteData.assets.length; // html + css + js + assets
+    const assetsLength = siteData.assets && Array.isArray(siteData.assets) ? siteData.assets.length : 0;
+    return 3 + assetsLength; // html + css + js + assets
   }
 
   /**

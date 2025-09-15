@@ -66,13 +66,14 @@
     "@eslint/eslintrc": "^3.1.0",
     "@next/eslint-plugin-next": "^15.4.5",
     "@playwright/test": "^1.51.0",
+    "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^15.0.7",
     "@types/istanbul-lib-coverage": "^2.0.6",
     "@types/istanbul-lib-report": "^3.0.3",
     "@types/istanbul-reports": "^3.0.4",
     "@types/jest": "^30.0.0",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.19.11",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/yargs": "^17.0.33",
@@ -86,6 +87,7 @@
     "postcss": "^8.4.32",
     "recharts": "^3.1.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.0.0"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }

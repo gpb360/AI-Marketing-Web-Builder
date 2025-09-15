@@ -28,10 +28,16 @@ class User(Base, TimestampMixin, UUIDMixin):
     bio: Mapped[Optional[str]] = mapped_column(Text)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
     
-    # Relationships
+    # Relationships (using string references to avoid circular imports)
+    sites: Mapped[List["Site"]] = relationship("Site", back_populates="owner")
     projects: Mapped[List["Project"]] = relationship("Project", back_populates="owner")
-    crm_contacts: Mapped[List["CRMContact"]] = relationship("CRMContact", back_populates="owner")
     workflows: Mapped[List["Workflow"]] = relationship("Workflow", back_populates="owner")
+    contacts: Mapped[List["Contact"]] = relationship("Contact", back_populates="user")
+    email_campaigns: Mapped[List["EmailCampaign"]] = relationship("EmailCampaign", back_populates="user")
+    business_context_analyses: Mapped[List["BusinessContextAnalysis"]] = relationship("BusinessContextAnalysis", back_populates="user")
+    business_context_usage: Mapped[List["BusinessContextUsageAnalytics"]] = relationship("BusinessContextUsageAnalytics", back_populates="user")
+    template_context_scorings: Mapped[List["TemplateContextScoring"]] = relationship("TemplateContextScoring", back_populates="user")
+    epic_integration_metrics: Mapped[List["EpicIntegrationMetrics"]] = relationship("EpicIntegrationMetrics", back_populates="user")
     
     @property
     def full_name(self) -> str:

@@ -8,39 +8,53 @@ import os
 # Add the current directory to the path
 sys.path.append('.')
 
-from app.schemas.user import UserCreate
-from app.services.user_service import UserService
+from sqlalchemy import text
+from app.models.user import User
 from app.db.session import AsyncSessionLocal
 from app.core.security import get_password_hash
 
 async def create_test_user():
     """Create a test user for authentication testing"""
     async with AsyncSessionLocal() as db:
-        user_service = UserService(db)
-        
-        # Test user data
-        user_data = UserCreate(
-            email="test3@example.com",
-            password="Password123!",
-            first_name="Test",
-            last_name="User3"
-        )
-        
         try:
             # Check if user already exists
-            existing_user = await user_service.get_by_email("test3@example.com")
-            if existing_user:
-                print(f"User already exists: {existing_user.email}")
+            existing_user = await db.execute(
+                text("SELECT * FROM users WHERE email = :email"),
+                {"email": "test3@example.com"}
+            )
+            user_row = existing_user.fetchone()
+            
+            if user_row:
+                print(f"User already exists: test3@example.com")
                 # Update password to ensure it's properly hashed
-                updated_user = await user_service.update_password(existing_user.id, "Password123!")
-                print(f"Updated password for user: {updated_user.email}")
-                return updated_user
+                hashed_password = get_password_hash("Password123!")
+                await db.execute(
+                    text("UPDATE users SET hashed_password = :password WHERE email = :email"),
+                    {"password": hashed_password, "email": "test3@example.com"}
+                )
+                await db.commit()
+                print(f"Updated password for user: test3@example.com")
+                return
             
             # Create the user
-            user = await user_service.create(user_data)
-            print(f"✅ Successfully created test user: {user.email}")
-            print(f"User ID: {user.id}")
-            return user
+            hashed_password = get_password_hash("Password123!")
+            new_user = User(
+                email="test3@example.com",
+                hashed_password=hashed_password,
+                first_name="Test",
+                last_name="User3",
+                is_active=True,
+                is_superuser=False,
+                is_verified=True
+            )
+            
+            db.add(new_user)
+            await db.commit()
+            await db.refresh(new_user)
+            
+            print(f"✅ Successfully created test user: {new_user.email}")
+            print(f"User ID: {new_user.id}")
+            return new_user
         except Exception as e:
             print(f"❌ Error creating test user: {e}")
             import traceback

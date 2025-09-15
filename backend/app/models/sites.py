@@ -74,7 +74,7 @@ class Site(BaseModel, UUIDMixin, TimestampMixin):
     __tablename__ = "sites"
     
     user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
-    template_id = Column(String(36), ForeignKey("templates.id"))
+    template_id = Column(String(36), ForeignKey("templates.id"))  # Reference templates.id
     
     # Basic site info
     name = Column(String(255), nullable=False)
@@ -104,9 +104,8 @@ class Site(BaseModel, UUIDMixin, TimestampMixin):
     
     # Relationships
     owner = relationship("User", back_populates="sites")
-    template = relationship("Template", back_populates="sites")
+    template = relationship("Template", back_populates="sites")  # Reference Template model
     components = relationship("Component", back_populates="site", cascade="all, delete-orphan")
-    workflows = relationship("Workflow", back_populates="site", cascade="all, delete-orphan")
     published_sites = relationship("PublishedSite", back_populates="site", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
@@ -278,47 +277,3 @@ class Component(BaseModel, UUIDMixin, TimestampMixin):
     def has_workflows(self) -> bool:
         """Check if component has connected workflows."""
         return len(self.workflows_connected) > 0
-
-
-class SiteTemplate(BaseModel, UUIDMixin, TimestampMixin):
-    """Site template definition."""
-    
-    __tablename__ = "site_templates"
-    
-    # Template metadata
-    name = Column(String(255), nullable=False)
-    description = Column(Text)
-    category = Column(SQLEnum(TemplateCategory), nullable=False)
-    
-    # Template content
-    components_data = Column(JSON, nullable=False)  # Complete template structure
-    default_settings = Column(JSON, default=dict)  # Default site settings
-    
-    # Visual assets
-    preview_image_url = Column(String(500))
-    thumbnail_url = Column(String(500))
-    
-    # Template properties
-    is_premium = Column(Boolean, default=False)
-    is_active = Column(Boolean, default=True)
-    sort_order = Column(Integer, default=0)
-    
-    # Usage statistics
-    usage_count = Column(Integer, default=0)
-    average_rating = Column(Integer, default=0)  # Rating * 100
-    
-    # Relationships
-    sites = relationship("Site", back_populates="template")
-    
-    def __repr__(self) -> str:
-        return f"<Template(name='{self.name}', category='{self.category}')>"
-    
-    @property
-    def rating(self) -> float:
-        """Get template rating as float."""
-        return self.average_rating / 100.0
-    
-    @property
-    def is_popular(self) -> bool:
-        """Check if template is popular (high usage)."""
-        return self.usage_count > 100

@@ -9,9 +9,9 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPExce
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
-from ..core.database import get_db
-from ..services.collaboration_manager import connection_manager
-from ..models.collaboration import (
+from ....core.database import get_db
+from ....services.collaboration_manager import connection_manager
+from ....models.collaboration import (
     CollaborationRoom,
     RoomCreateModel,
     RoomJoinModel,
@@ -199,7 +199,7 @@ async def get_room_users(
             raise HTTPException(status_code=404, detail="Collaboration room not found")
         
         # Get active user sessions from database
-        from ..models.collaboration import UserSession, UserStatus
+        from ....models.collaboration import UserSession, UserStatus
         
         sessions = db.query(UserSession).filter(
             UserSession.room_id == room_id,
@@ -238,7 +238,7 @@ async def get_room_locks(
     """Get list of active component locks in room"""
     
     try:
-        from ..models.collaboration import ComponentLock
+        from ....models.collaboration import ComponentLock
         from datetime import datetime
         
         # Get non-expired locks from database
@@ -275,7 +275,7 @@ async def get_room_messages(
     """Get chat messages for collaboration room"""
     
     try:
-        from ..models.collaboration import ChatMessage, UserSession
+        from ....models.collaboration import ChatMessage, UserSession
         
         # Check if room exists
         room = db.query(CollaborationRoom).filter(CollaborationRoom.id == room_id).first()

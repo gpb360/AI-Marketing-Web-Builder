@@ -14,6 +14,17 @@ import { ViewportState, ResponsivePreviewSettings } from '@/types/responsive';
 // Export types that other components need
 export type { ComponentData, Template };
 
+// Publishing types
+export interface PublishingStatus {
+  isPublishing: boolean;
+  progress: number;
+  stage: 'idle' | 'generating' | 'optimizing' | 'uploading' | 'deploying' | 'configuring' | 'complete' | 'error';
+  message: string;
+  url?: string;
+  error?: string;
+  taskId?: string;
+}
+
 interface BuilderStore extends CanvasState {
   // Template Management
   currentTemplate: Template | null;
@@ -57,6 +68,11 @@ interface BuilderStore extends CanvasState {
   setResponsiveSettings: (settings: Partial<ResponsivePreviewSettings>) => void;
   getResponsiveCanvasSize: () => { width: number; height: number };
   
+  // Publishing
+  publishingStatus: PublishingStatus;
+  setPublishingStatus: (status: Partial<PublishingStatus>) => void;
+  resetPublishingStatus: () => void;
+  
   // Utilities
   getComponentById: (componentId: string) => ComponentData | undefined;
   getSelectedComponent: () => ComponentData | undefined;
@@ -91,7 +107,15 @@ export const useBuilderStore = create<BuilderStore>()(
       autoRotate: false,
       simulateTouch: false
     },
-
+    
+    // Publishing State
+    publishingStatus: {
+      isPublishing: false,
+      progress: 0,
+      stage: 'idle',
+      message: '',
+    },
+    
     // Component management
     addComponent: (component: ComponentData) => {
       set((state) => ({
@@ -304,6 +328,57 @@ export const useBuilderStore = create<BuilderStore>()(
       }));
     },
 
+    // Responsive Design Actions
+    setViewport: (viewport: Partial<ViewportState>) => {
+      set((state) => ({
+        viewport: { ...state.viewport, ...viewport }
+      }));
+      
+      // Update canvas zoom when viewport zoom changes
+      if (viewport.zoom !== undefined) {
+        set({ zoom: viewport.zoom });
+      }
+    },
+
+    setResponsiveSettings: (settings: Partial<ResponsivePreviewSettings>) => {
+      set((state) => ({
+        responsiveSettings: { ...state.responsiveSettings, ...settings }
+      }));
+    },
+
+    getResponsiveCanvasSize: () => {
+      const { viewport, canvasSize } = get();
+      
+      // Return viewport size when in responsive preview mode
+      if (viewport.currentBreakpoint !== 'desktop') {
+        return {
+          width: viewport.width,
+          height: viewport.height
+        };
+      }
+      
+      // Return default canvas size for desktop
+      return canvasSize;
+    },
+    
+    // Publishing Actions
+    setPublishingStatus: (status: Partial<PublishingStatus>) => {
+      set((state) => ({
+        publishingStatus: { ...state.publishingStatus, ...status }
+      }));
+    },
+    
+    resetPublishingStatus: () => {
+      set({
+        publishingStatus: {
+          isPublishing: false,
+          progress: 0,
+          stage: 'idle',
+          message: '',
+        }
+      });
+    },
+
     // Utilities
     getComponentById: (componentId: string) => {
       return get().components.find((c) => c.id === componentId);
@@ -485,39 +560,6 @@ export const useBuilderStore = create<BuilderStore>()(
       
       // Return direct children array (already ComponentData[])
       return element.children;
-    },
-
-    // Responsive Design Actions
-    setViewport: (viewport: Partial<ViewportState>) => {
-      set((state) => ({
-        viewport: { ...state.viewport, ...viewport }
-      }));
-      
-      // Update canvas zoom when viewport zoom changes
-      if (viewport.zoom !== undefined) {
-        set({ zoom: viewport.zoom });
-      }
-    },
-
-    setResponsiveSettings: (settings: Partial<ResponsivePreviewSettings>) => {
-      set((state) => ({
-        responsiveSettings: { ...state.responsiveSettings, ...settings }
-      }));
-    },
-
-    getResponsiveCanvasSize: () => {
-      const { viewport, canvasSize } = get();
-      
-      // Return viewport size when in responsive preview mode
-      if (viewport.currentBreakpoint !== 'desktop') {
-        return {
-          width: viewport.width,
-          height: viewport.height
-        };
-      }
-      
-      // Return default canvas size for desktop
-      return canvasSize;
     },
   }))
 );

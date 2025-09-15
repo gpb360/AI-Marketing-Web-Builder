@@ -17,6 +17,16 @@ class ContactStatus(str, enum.Enum):
     ARCHIVED = "archived"
 
 
+class ContactSource(str, enum.Enum):
+    """Contact source options."""
+    WEBSITE = "website"
+    FORM = "form"
+    IMPORT = "import"
+    API = "api"
+    MANUAL = "manual"
+    WORKFLOW = "workflow"
+
+
 class ActivityType(str, enum.Enum):
     """Contact activity types."""
     FORM_SUBMISSION = "form_submission"

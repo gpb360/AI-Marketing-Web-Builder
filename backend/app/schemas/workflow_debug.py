@@ -12,7 +12,7 @@ class DebugSessionConfig(BaseModel):
     """Configuration for starting a debug session."""
     
     session_name: Optional[str] = None
-    debug_level: str = Field(default="INFO", regex="^(DEBUG|INFO|WARN|ERROR)$")
+    debug_level: str = Field(default="INFO", pattern="^(DEBUG|INFO|WARN|ERROR)$")
     capture_logs: bool = True
     capture_metrics: bool = True
     capture_data_flow: bool = False
@@ -172,7 +172,7 @@ class WorkflowStatusEvent(WebSocketMessage):
     workflow_id: int
     execution_id: int
     node_id: str
-    status: str = Field(..., regex="^(pending|running|success|failed)$")
+    status: str = Field(..., pattern="^(pending|running|success|failed)$")
     execution_time_ms: Optional[int]
     error_details: Optional[str]
     next_nodes: List[str] = []
