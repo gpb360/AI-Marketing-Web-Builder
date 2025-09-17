@@ -33,6 +33,11 @@ const nextConfig = {
         aggregateTimeout: 300,
       };
     }
+    
+    // Exclude problematic native modules like Lightning CSS
+    config.externals = config.externals || [];
+    config.externals.push('lightningcss');
+    
     return config;
   },
 };

@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { Zap, Link, Unlink, Settings, ChevronDown, Wand2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MagicConnector } from './MagicConnector';
+import { ComponentData } from '@/types/builder';
+import WorkflowLinkingModal from '../workflow/WorkflowLinkingModal';
 
 interface WorkflowConnectorProps {
   componentId: string;
   isConnected: boolean;
   workflowId?: string;
-  component?: any; // Component data for Magic Connector analysis
+  component?: ComponentData; // Component data for Magic Connector analysis
   onConnect: (workflowId: string) => void;
   onDisconnect: () => void;
   enableMagicConnector?: boolean; // Toggle Magic Connector features
@@ -63,51 +64,44 @@ export function WorkflowConnector({
   onDisconnect,
   enableMagicConnector = true,
 }: WorkflowConnectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<string>('');
-  const [showMagicConnector, setShowMagicConnector] = useState(false);
-  const [connectionMode, setConnectionMode] = useState<'manual' | 'magic'>('magic');
+  const [showLinkingModal, setShowLinkingModal] = useState(false);
 
   const connectedWorkflow = workflowId 
     ? availableWorkflows.find(w => w.id === workflowId)
     : null;
 
   const handleConnect = () => {
-    if (selectedWorkflow) {
-      onConnect(selectedWorkflow);
-      setIsOpen(false);
-      setSelectedWorkflow('');
+    if (component) {
+      setShowLinkingModal(true);
     }
   };
 
   const handleDisconnect = () => {
     onDisconnect();
-    setIsOpen(false);
   };
 
-  const handleMagicConnect = (workflowId: string, component: any) => {
-    onConnect(workflowId);
-    setShowMagicConnector(false);
-    setIsOpen(false);
+  const handleWorkflowLinked = (newWorkflowId: string) => {
+    onConnect(newWorkflowId);
+    setShowLinkingModal(false);
   };
 
-  const openMagicConnector = () => {
-    setShowMagicConnector(true);
-    setIsOpen(false);
+  const handleWorkflowUnlinked = () => {
+    onDisconnect();
+    setShowLinkingModal(false);
   };
 
-  if (!isOpen) {
-    return (
-      <div className="relative">
+  return (
+    <>
+      <div className="relative group">
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={handleConnect}
           className={cn(
             "absolute -bottom-7 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center space-x-1 shadow-sm border",
             isConnected
               ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
               : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-blue-300"
           )}
-          title={isConnected ? 'Workflow connected' : 'Connect to workflow'}
+          title={isConnected ? 'Workflow connected - click to manage' : 'Connect to workflow'}
         >
           <Zap className="w-3 h-3" />
           <span className="hidden group-hover:inline">
@@ -115,104 +109,46 @@ export function WorkflowConnector({
           </span>
         </button>
         
-        {/* Magic Connector Trigger */}
+        {/* Enhanced Magic Connector Indicator */}
         {enableMagicConnector && !isConnected && component && (
-          <button
-            onClick={openMagicConnector}
-            className="absolute -bottom-7 left-1/2 transform translate-x-6 px-2 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center space-x-1 shadow-sm border bg-gradient-to-r from-blue-50 to-purple-50 text-purple-700 border-purple-200 hover:from-blue-100 hover:to-purple-100"
-            title="AI-powered workflow suggestions"
-          >
-            <Wand2 className="w-3 h-3" />
-            <Sparkles className="w-2 h-2" />
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="absolute -bottom-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Zap className="w-4 h-4 text-blue-500" />
-            <h3 className="text-sm font-medium text-gray-900">
-              Workflow Connection
-            </h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            {enableMagicConnector && !isConnected && component && (
-              <button
-                onClick={openMagicConnector}
-                className="px-2 py-1 text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-1"
-                title="AI-powered workflow suggestions"
-              >
-                <Wand2 className="w-3 h-3" />
-                <span>Magic</span>
-              </button>
-            )}
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-
-        {/* Connection Mode Toggle */}
-        {enableMagicConnector && !isConnected && component && (
-          <div className="mt-3 flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
-            <button
-              onClick={() => setConnectionMode('magic')}
-              className={cn(
-                "flex-1 px-3 py-1 text-xs rounded flex items-center justify-center space-x-1 transition-all",
-                connectionMode === 'magic'
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-              )}
-            >
-              <Wand2 className="w-3 h-3" />
-              <span>AI Suggestions</span>
-            </button>
-            <button
-              onClick={() => setConnectionMode('manual')}
-              className={cn(
-                "flex-1 px-3 py-1 text-xs rounded flex items-center justify-center space-x-1 transition-all",
-                connectionMode === 'manual'
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-              )}
-            >
-              <Settings className="w-3 h-3" />
-              <span>Manual</span>
-            </button>
+          <div className="absolute -bottom-7 left-1/2 transform translate-x-6">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-purple-200 rounded px-2 py-1 flex items-center space-x-1">
+              <Wand2 className="w-3 h-3 text-purple-600" />
+              <Sparkles className="w-2 h-2 text-purple-600" />
+            </div>
           </div>
         )}
-        
-        {connectedWorkflow && (
-          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-green-800">
-                  {connectedWorkflow.name}
-                </div>
-                <div className="text-xs text-green-600">
-                  {connectedWorkflow.description}
-                </div>
-              </div>
+
+        {/* Connected Workflow Info */}
+        {isConnected && connectedWorkflow && (
+          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-green-50 border border-green-200 rounded px-2 py-1 text-xs text-green-700 whitespace-nowrap">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>{connectedWorkflow.name}</span>
               <button
-                onClick={handleDisconnect}
-                className="p-1 text-green-600 hover:text-green-800"
-                title="Disconnect workflow"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDisconnect();
+                }}
+                className="ml-1 text-green-600 hover:text-green-800"
               >
-                <Unlink className="w-4 h-4" />
+                <Unlink className="w-3 h-3" />
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Enhanced Workflow Linking Modal */}
+      {component && (
+        <WorkflowLinkingModal
+          isOpen={showLinkingModal}
+          onClose={() => setShowLinkingModal(false)}
+          component={component}
+          onWorkflowLinked={handleWorkflowLinked}
+          onWorkflowUnlinked={handleWorkflowUnlinked}
+        />
+      )}
 
       {/* AI-Powered Quick Suggestions */}
       {enableMagicConnector && !isConnected && component && connectionMode === 'magic' && (
@@ -364,6 +300,6 @@ export function WorkflowConnector({
           autoShow={true}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -28,8 +28,8 @@ import {
   AlertTriangle,
   Info
 } from 'lucide-react';
-import { usePublishing, PublishingOptions } from '@/hooks/usePublishing';
 import { useBuilderStore } from '@/store/builderStore';
+import { publishingService, type PublishingOptions } from '@/lib/services/PublishingService';
 
 interface PublishingPanelProps {
   isOpen: boolean;
@@ -44,15 +44,14 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
   onClose,
   className = ''
 }) => {
-  const { canvasElements, siteName, setSiteName } = useBuilderStore();
   const { 
-    publishingStatus, 
-    publishSite, 
-    checkDomainStatus,
-    getPublishingHistory,
-    resetPublishing 
-  } = usePublishing();
-
+    components: canvasElements, 
+    currentTemplate,
+    publishingStatus,
+    setPublishingStatus,
+    resetPublishingStatus
+  } = useBuilderStore();
+  
   const [activeTab, setActiveTab] = useState<TabType>('publish');
   const [customDomain, setCustomDomain] = useState('');
   const [domainVerified, setDomainVerified] = useState(false);
@@ -64,6 +63,14 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
   });
   const [publishHistory, setPublishHistory] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const [siteName, setSiteName] = useState('my-awesome-site');
+
+  // Set site name based on template
+  useEffect(() => {
+    if (currentTemplate?.name && siteName === 'my-awesome-site') {
+      setSiteName(currentTemplate.name.toLowerCase().replace(/\s+/g, '-'));
+    }
+  }, [currentTemplate, siteName]);
 
   useEffect(() => {
     if (isOpen && activeTab === 'history') {
@@ -72,29 +79,72 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
   }, [isOpen, activeTab]);
 
   const loadPublishingHistory = async () => {
-    const history = await getPublishingHistory();
-    setPublishHistory(history.deployments || []);
+    // Mock implementation - in a real app this would fetch from an API
+    setPublishHistory([
+      {
+        id: '1',
+        message: 'Site published successfully',
+        timestamp: '2023-05-15T10:30:00Z',
+        url: 'https://example.vercel.app',
+        status: 'success'
+      }
+    ]);
   };
 
   const handlePublish = async () => {
-    const options: PublishingOptions = {
-      customDomain: customDomain || undefined,
-      seoSettings,
-      performanceOptimization: true
-    };
+    if (!currentTemplate || canvasElements.length === 0) {
+      setPublishingStatus({
+        stage: 'error',
+        progress: 0,
+        message: 'No content to publish',
+        error: 'Please add some components to your site before publishing.',
+      });
+      return;
+    }
 
-    const result = await publishSite(options);
-    
-    if (result.success && activeTab !== 'publish') {
-      setActiveTab('publish'); // Switch to publish tab to show progress
+    try {
+      // Set up progress callback
+      publishingService.setProgressCallback((progress) => {
+        setPublishingStatus({
+          stage: progress.stage,
+          progress: progress.progress,
+          message: progress.message,
+          url: progress.deploymentUrl,
+          error: progress.error
+        });
+      });
+
+      const options: PublishingOptions = {
+        siteName,
+        customDomain: customDomain || undefined,
+        seoSettings,
+        performanceOptimization: true
+      };
+
+      const result = await publishingService.publishSite(
+        canvasElements,
+        currentTemplate,
+        options
+      );
+      
+      if (result.success && activeTab !== 'publish') {
+        setActiveTab('publish'); // Switch to publish tab to show progress
+      }
+    } catch (error) {
+      setPublishingStatus({
+        stage: 'error',
+        progress: 0,
+        message: 'Publishing failed',
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
     }
   };
 
   const handleDomainVerification = async () => {
     if (!customDomain) return;
     
-    const result = await checkDomainStatus(customDomain);
-    setDomainVerified(result.verified);
+    // Mock implementation - in a real app this would call an API
+    setDomainVerified(true);
   };
 
   const copyToClipboard = (text: string) => {
@@ -193,13 +243,13 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
                   </div>
 
                   {/* Publishing Status */}
-                  {publishingStatus.status !== 'idle' && (
+                  {publishingStatus.stage !== 'idle' && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                          {publishingStatus.status === 'success' ? (
+                          {publishingStatus.stage === 'complete' ? (
                             <CheckCircle className="w-5 h-5 text-white" />
-                          ) : publishingStatus.status === 'error' ? (
+                          ) : publishingStatus.stage === 'error' ? (
                             <AlertCircle className="w-5 h-5 text-white" />
                           ) : (
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -207,12 +257,12 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-blue-900">
-                            {publishingStatus.status === 'success' ? 'Site Published!' : 
-                             publishingStatus.status === 'error' ? 'Publishing Failed' : 
+                            {publishingStatus.stage === 'complete' ? 'Site Published!' : 
+                             publishingStatus.stage === 'error' ? 'Publishing Failed' : 
                              'Publishing in Progress'}
                           </h4>
                           <p className="text-sm text-blue-700">{publishingStatus.message}</p>
-                          {publishingStatus.status !== 'error' && publishingStatus.status !== 'success' && (
+                          {publishingStatus.stage !== 'error' && publishingStatus.stage !== 'complete' && (
                             <div className="mt-2">
                               <div className="w-full bg-blue-200 rounded-full h-2">
                                 <div 
@@ -226,24 +276,24 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
                         </div>
                       </div>
                       
-                      {publishingStatus.status === 'success' && publishingStatus.publishedUrl && (
+                      {publishingStatus.stage === 'complete' && publishingStatus.url && (
                         <div className="mt-3 pt-3 border-t border-blue-200">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <Globe className="w-4 h-4 text-blue-600" />
                               <span className="text-sm font-medium text-blue-900">
-                                {publishingStatus.publishedUrl}
+                                {publishingStatus.url}
                               </span>
                             </div>
                             <div className="flex space-x-2">
                               <button
-                                onClick={() => copyToClipboard(publishingStatus.publishedUrl!)}
+                                onClick={() => copyToClipboard(publishingStatus.url!)}
                                 className="p-1 text-blue-600 hover:bg-blue-100 rounded"
                               >
                                 <Copy className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => window.open(publishingStatus.publishedUrl, '_blank')}
+                                onClick={() => window.open(publishingStatus.url, '_blank')}
                                 className="p-1 text-blue-600 hover:bg-blue-100 rounded"
                               >
                                 <ExternalLink className="w-4 h-4" />
@@ -259,18 +309,18 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
                   <div className="space-y-4">
                     <button
                       onClick={handlePublish}
-                      disabled={publishingStatus.status === 'publishing' || canvasElements.length === 0}
+                      disabled={publishingStatus.stage !== 'idle' && publishingStatus.stage !== 'complete' && publishingStatus.stage !== 'error'}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2"
                     >
                       <Rocket className="w-5 h-5" />
                       <span>
-                        {publishingStatus.status === 'publishing' ? 'Publishing...' : 'Publish Site'}
+                        {publishingStatus.stage !== 'idle' && publishingStatus.stage !== 'complete' && publishingStatus.stage !== 'error' ? 'Publishing...' : 'Publish Site'}
                       </span>
                     </button>
                     
-                    {publishingStatus.status !== 'idle' && (
+                    {(publishingStatus.stage !== 'idle') && (
                       <button
-                        onClick={resetPublishing}
+                        onClick={resetPublishingStatus}
                         className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
                       >
                         Reset
@@ -435,7 +485,7 @@ export const PublishingPanel: React.FC<PublishingPanelProps> = ({
                               }`} />
                               <div>
                                 <p className="font-medium text-gray-900">{deployment.message}</p>
-                                <p className="text-sm text-gray-500">{deployment.timestamp}</p>
+                                <p className="text-sm text-gray-500">{new Date(deployment.timestamp).toLocaleString()}</p>
                               </div>
                             </div>
                             {deployment.url && (

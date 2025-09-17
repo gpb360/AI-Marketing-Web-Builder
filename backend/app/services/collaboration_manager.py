@@ -13,7 +13,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from ..core.database import get_db_session
+from ..core.database import get_db
 from ..models.collaboration import (
     CollaborationRoom,
     UserSession,
@@ -46,7 +46,6 @@ class ConnectionManager:
         
         # Cleanup task
         self._cleanup_task: Optional[asyncio.Task] = None
-        self._start_cleanup_task()
 
     def _start_cleanup_task(self):
         """Start background task for cleaning up expired locks and inactive sessions"""
@@ -85,7 +84,9 @@ class ConnectionManager:
                         logger.info(f"Cleaned up expired lock for component {component_id} in room {room_id}")
 
                 # Update database with expired locks
-                with get_db_session() as db:
+                db_gen = get_db()
+                db = next(db_gen)
+                try:
                     expired_db_locks = db.query(ComponentLock).filter(
                         ComponentLock.expires_at < current_time
                     ).all()
@@ -94,7 +95,11 @@ class ConnectionManager:
                         db.delete(lock)
                     
                     db.commit()
-
+                finally:
+                    try:
+                        next(db_gen)
+                    except StopIteration:
+                        pass
             except Exception as e:
                 logger.error(f"Error in cleanup task: {e}")
 
@@ -133,7 +138,9 @@ class ConnectionManager:
         }
 
         # Create database session
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             # Ensure room exists
             room = db.query(CollaborationRoom).filter(CollaborationRoom.id == room_id).first()
             if not room:
@@ -164,6 +171,11 @@ class ConnectionManager:
                 db.add(session)
 
             db.commit()
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         # Notify room about new user
         user_model = CollaborationUserModel(
@@ -232,7 +244,9 @@ class ConnectionManager:
                 })
 
         # Update database
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             # Update session
             session = db.query(UserSession).filter(UserSession.id == connection_id).first()
             if session:
@@ -242,6 +256,11 @@ class ConnectionManager:
             # Remove user's locks
             db.query(ComponentLock).filter(ComponentLock.user_id == user_id).delete()
             db.commit()
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         # Notify room about user leaving
         await self._broadcast_to_room(room_id, {
@@ -327,7 +346,9 @@ class ConnectionManager:
         cursor_data = event_data.get("cursor", {})
         
         # Update user session with cursor position
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             session = db.query(UserSession).filter(
                 and_(UserSession.room_id == room_id, UserSession.user_id == user_id)
             ).first()
@@ -337,6 +358,11 @@ class ConnectionManager:
                 session.cursor_visible = cursor_data.get("visible", True)
                 session.last_seen = datetime.utcnow()
                 db.commit()
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         # Broadcast cursor update to other users
         await self._broadcast_to_room(room_id, {
@@ -378,13 +404,20 @@ class ConnectionManager:
         self.room_locks[room_id][component_id] = lock
 
         # Store in database
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             # Remove any existing locks for this component
             db.query(ComponentLock).filter(ComponentLock.component_id == component_id).delete()
             
             # Add new lock
             db.add(lock)
             db.commit()
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         # Broadcast lock event
         await self._broadcast_to_room(room_id, {
@@ -407,7 +440,9 @@ class ConnectionManager:
             del self.room_locks[room_id][component_id]
 
         # Remove from database
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             db.query(ComponentLock).filter(
                 and_(
                     ComponentLock.component_id == component_id,
@@ -415,6 +450,11 @@ class ConnectionManager:
                 )
             ).delete()
             db.commit()
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         # Broadcast unlock event
         await self._broadcast_to_room(room_id, {
@@ -432,7 +472,9 @@ class ConnectionManager:
             return
 
         # Store message in database
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             message = ChatMessage(
                 id=str(uuid4()),
                 room_id=room_id,
@@ -442,6 +484,11 @@ class ConnectionManager:
             )
             db.add(message)
             db.commit()
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         # Broadcast to room
         await self._broadcast_to_room(room_id, {
@@ -479,7 +526,9 @@ class ConnectionManager:
     async def _send_room_state(self, websocket: WebSocket, room_id: str):
         """Send current room state to user"""
         
-        with get_db_session() as db:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
             # Get active users
             sessions = db.query(UserSession).filter(
                 and_(
@@ -499,6 +548,11 @@ class ConnectionManager:
                     permissions=session.permissions,
                 ).dict() for session in sessions
             ]
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
 
         await websocket.send_text(json.dumps({
             "type": "user_list",

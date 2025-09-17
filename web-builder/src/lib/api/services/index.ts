@@ -7,6 +7,7 @@ export { AuthService, authService } from './auth';
 export { TemplateService, templateService } from './templates';
 export { WorkflowService, workflowService } from './workflows';
 export { CRMService, crmService } from './crm';
+export { ProjectService, projectService } from './projects';
 export { templateOptimizationApi } from './template-optimization';
 export { AnalyticsService, analyticsService } from './analytics';
 export { slaRemediationService } from './sla-remediation';
@@ -29,6 +30,10 @@ export type {
   ContactCreate,
   ContactUpdate,
   ContactFilters,
+  Project,
+  ProjectCreate,
+  ProjectUpdate,
+  ProjectFilters,
   EmailCampaign,
   EmailCampaignCreate,
   EmailCampaignUpdate,

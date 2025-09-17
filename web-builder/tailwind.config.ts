@@ -23,6 +23,26 @@ const config: Config = {
           900: '#1e3a8a',
           950: '#172554',
         },
+        // Luxury Theme Colors - Integrated from theme.ts
+        luxury: {
+          gold: {
+            50: '#fefce8',
+            100: '#fef3c7',
+            200: '#fde68a',
+            300: '#fcd34d',
+            400: '#facc15', // Primary luxury gold
+            500: '#eab308',
+            600: '#ca8a04',
+            700: '#a16207',
+            800: '#854d0e',
+            900: '#713f12',
+          },
+          black: {
+            50: '#f8f8f8',
+            900: '#0a0a0a', // Luxury black
+            950: '#050505', // Deep luxury black
+          }
+        },
         // Canvas and builder-specific colors
         canvas: {
           bg: '#fafafa',

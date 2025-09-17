@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.database import get_async_session
-from ..services.publishing_service import PublishingService
-from ..services.domain_manager import DomainManager
-from ..services.tasks import (
+from ....core.database import get_async_session
+from ....services.publishing_service import PublishingService
+from ....services.domain_manager import DomainManager
+from ....services.tasks import (
     publish_site_task, 
     verify_domain_task, 
     check_ssl_status_task,
@@ -326,8 +326,8 @@ async def optimize_site(
 @router.get("/sites/{site_id}/analytics")
 async def get_site_analytics(
     site_id: str,
-    period: str = Query("30d", regex="^(7d|30d|90d)$", description="Analytics period"),
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    period: str = Query("30d", regex="^(7d|30d|90d)$", description="Analytics period")
 ):
     """Get site analytics report."""
     try:

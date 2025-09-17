@@ -26,7 +26,7 @@ class Settings(BaseSettings):
         "http://localhost:3000", 
         "http://localhost:3002",
         "http://127.0.0.1:3000",
-        "http://127.0.0.1:3002"
+        "http27.0.0.1:3002"
     ]
     
     # Security
@@ -50,9 +50,20 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3002"
     ]
     
+    # Redis Configuration
+    REDIS_URL: str = "redis://localhost:6379/0"
+    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
+    
+    # Workflow Engine
+    MAX_WORKFLOW_EXECUTION_TIME: int = 300  # 5 minutes
+    MAX_CONCURRENT_WORKFLOWS: int = 10
+    BUILD_TIMEOUT: int = 300
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
+        extra = "ignore"  # Allow extra fields in .env file
 
 
 # Create settings instance

@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { RegisterData } from '@/lib/api/types';
+import theme from '@/lib/theme';
+
+const { luxuryTheme, themeUtils } = theme;
 
 export function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -73,7 +76,7 @@ export function RegisterForm() {
       };
       
       await register(userData);
-      router.push('/');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -82,42 +85,42 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+    <div className={luxuryTheme.components.authForm.container}>
+      <div className={luxuryTheme.components.authForm.wrapper}>
+        <div className={luxuryTheme.components.authForm.header}>
+          <h2 className={luxuryTheme.components.authForm.title}>
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className={`mt-2 text-sm ${luxuryTheme.colors.text.secondary}`}>
             Or{' '}
             <Link
               href="/auth/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className={luxuryTheme.components.authForm.link}
             >
               sign in to your existing account
             </Link>
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Register</CardTitle>
-            <CardDescription>
-              Create a new account to get started
+        <Card className={`${luxuryTheme.components.authForm.card} ${luxuryTheme.components.authForm.cardHover}`}>
+          <CardHeader className="text-center">
+            <CardTitle className={luxuryTheme.colors.text.primary}>Join AI Marketing Pro</CardTitle>
+            <CardDescription className={luxuryTheme.colors.text.secondary}>
+              Create a new account to get started with intelligent marketing
             </CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {error && (
-                <div className="rounded-md bg-red-50 p-4">
-                  <div className="text-sm text-red-700">{error}</div>
+                <div className={luxuryTheme.colors.status.error.full}>
+                  <div className={`text-sm ${luxuryTheme.colors.status.error.text}`}>{error}</div>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
+                  <Label htmlFor="firstName" className={luxuryTheme.colors.text.primary}>First name</Label>
                   <Input
                     id="firstName"
                     type="text"
@@ -127,11 +130,12 @@ export function RegisterForm() {
                     onChange={(e) => handleChange('firstName', e.target.value)}
                     placeholder="Enter your first name"
                     disabled={isSubmitting}
+                    className={luxuryTheme.components.input.full}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
+                  <Label htmlFor="lastName" className={luxuryTheme.colors.text.primary}>Last name</Label>
                   <Input
                     id="lastName"
                     type="text"
@@ -141,12 +145,13 @@ export function RegisterForm() {
                     onChange={(e) => handleChange('lastName', e.target.value)}
                     placeholder="Enter your last name"
                     disabled={isSubmitting}
+                    className={luxuryTheme.components.input.full}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
+                <Label htmlFor="email" className={luxuryTheme.colors.text.primary}>Email address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -156,11 +161,12 @@ export function RegisterForm() {
                   onChange={(e) => handleChange('email', e.target.value)}
                   placeholder="Enter your email"
                   disabled={isSubmitting}
+                  className={luxuryTheme.components.input.full}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className={luxuryTheme.colors.text.primary}>Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -170,11 +176,12 @@ export function RegisterForm() {
                   onChange={(e) => handleChange('password', e.target.value)}
                   placeholder="Create a password (min. 8 characters)"
                   disabled={isSubmitting}
+                  className={luxuryTheme.components.input.full}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword" className={luxuryTheme.colors.text.primary}>Confirm password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -184,23 +191,25 @@ export function RegisterForm() {
                   onChange={(e) => handleChange('confirmPassword', e.target.value)}
                   placeholder="Confirm your password"
                   disabled={isSubmitting}
+                  className={luxuryTheme.components.input.full}
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-3">
                 <Checkbox
                   id="acceptTerms"
                   checked={formData.acceptTerms}
                   onCheckedChange={(checked) => handleChange('acceptTerms', checked as boolean)}
                   disabled={isSubmitting}
+                  className="mt-1"
                 />
-                <Label htmlFor="acceptTerms" className="text-sm">
+                <Label htmlFor="acceptTerms" className={`text-sm leading-relaxed ${luxuryTheme.colors.text.secondary}`}>
                   I agree to the{' '}
-                  <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-500">
+                  <Link href="/terms" className={luxuryTheme.components.authForm.link}>
                     Terms and Conditions
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="font-medium text-blue-600 hover:text-blue-500">
+                  <Link href="/privacy" className={luxuryTheme.components.authForm.link}>
                     Privacy Policy
                   </Link>
                 </Label>
@@ -210,7 +219,7 @@ export function RegisterForm() {
             <CardFooter>
               <Button
                 type="submit"
-                className="w-full"
+                className={`w-full ${themeUtils.getButtonClasses('primary')}`}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creating account...' : 'Create account'}

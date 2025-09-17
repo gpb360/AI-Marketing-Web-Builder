@@ -12,10 +12,16 @@
     "check-isolation": "bash .claude/scripts/branch-isolation-check.sh"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "supabase": "^2.39.2"
   },
-  "devDependencies": {},
-  "keywords": ["archon", "bmad", "webhook", "workflow", "integration"],
+  "keywords": [
+    "archon",
+    "bmad",
+    "webhook",
+    "workflow",
+    "integration"
+  ],
   "author": "AI Marketing Web Builder Team",
   "license": "ISC"
 }

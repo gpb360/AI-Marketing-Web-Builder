@@ -290,7 +290,9 @@ export function MagicConnectorDemo({ className }: MagicConnectorDemoProps) {
         >
           <div className="flex items-center mb-3">
             <div className={`p-2 bg-${demoSteps[currentStep].color}-100 rounded-lg mr-3`}>
-              <demoSteps[currentStep].icon className={`w-5 h-5 text-${demoSteps[currentStep].color}-600`} />
+              {React.createElement(demoSteps[currentStep].icon, {
+                className: `w-5 h-5 text-${demoSteps[currentStep].color}-600`
+              })}
             </div>
             <h3 className="text-lg font-semibold text-gray-800">
               {demoSteps[currentStep].title}

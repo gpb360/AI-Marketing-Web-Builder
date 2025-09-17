@@ -180,7 +180,7 @@ class ReportTemplate(str, Enum):
 class ReportExportRequest(BaseModel):
     """Request to export analytics report."""
     report_type: ReportTemplate
-    format: str = Field(regex="^(pdf|csv|excel)$")
+    format: str = Field(pattern="^(pdf|csv|excel)$")
     filters: AnalyticsFilter
     include_charts: bool = True
     custom_branding: Optional[Dict[str, str]] = None
@@ -191,7 +191,7 @@ class ScheduledReportCreate(BaseModel):
     name: str
     description: Optional[str] = None
     report_type: ReportTemplate
-    format: str = Field(regex="^(pdf|csv|excel)$")
+    format: str = Field(pattern="^(pdf|csv|excel)$")
     filters: AnalyticsFilter
     schedule_cron: str  # e.g., "0 9 * * MON" for weekly Monday 9 AM
     email_recipients: List[str]
@@ -258,7 +258,7 @@ class RealTimeMetrics(BaseModel):
 
 class ExternalIntegrationCreate(BaseModel):
     """Create external analytics integration."""
-    platform: str = Field(regex="^(google_analytics|hubspot|salesforce)$")
+    platform: str = Field(pattern="^(google_analytics|hubspot|salesforce)$")
     platform_account_id: str
     config: Dict[str, Any]
     field_mappings: Dict[str, str]

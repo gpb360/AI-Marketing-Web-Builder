@@ -1,0 +1,14 @@
+# .pnpmrc - PNPM configuration for AI Marketing Web Builder
+strict-peer-dependencies=false
+auto-install-peers=true
+prefer-workspace-packages=true
+hoist-pattern[]=*eslint*
+hoist-pattern[]=*prettier*
+hoist-pattern[]=@types/*
+resolution-mode=highest
+save-workspace-protocol=false
+registry=https://registry.npmjs.org/
+fund=false
+audit=false
+optional=false
+engine-strict=true

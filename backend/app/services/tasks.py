@@ -2,63 +2,96 @@
 
 import asyncio
 from typing import Dict, Any, Optional
-from celery import Celery
 from datetime import datetime, timedelta
+
+# Optional Celery import - only import if available
+try:
+    from celery import Celery
+    CELERY_AVAILABLE = True
+except ImportError:
+    Celery = None
+    CELERY_AVAILABLE = False
 
 from ..core.config import settings
 from .publishing_service import PublishingService
 from .domain_manager import DomainManager
 
-# Initialize Celery app
-celery_app = Celery(
-    "aiwebbuilder",
-    broker=settings.celery_broker_url,
-    backend=settings.celery_result_backend,
-    include=["src.services.tasks"]
-)
+# Initialize Celery app only if Celery is available
+if CELERY_AVAILABLE:
+    try:
+        celery_app = Celery(
+            "aiwebbuilder",
+            broker=settings.CELERY_BROKER_URL,
+            backend=settings.CELERY_RESULT_BACKEND,
+            include=["app.services.tasks"]
+        )
 
-# Celery configuration
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
-    task_track_started=True,
-    task_time_limit=settings.build_timeout,
-    task_soft_time_limit=settings.build_timeout - 60,
-    worker_prefetch_multiplier=1,
-    task_acks_late=True,
-    worker_max_tasks_per_child=1000,
-)
+        # Celery configuration
+        celery_app.conf.update(
+            task_serializer="json",
+            accept_content=["json"],
+            result_serializer="json",
+            timezone="UTC",
+            enable_utc=True,
+            task_track_started=True,
+            task_time_limit=settings.BUILD_TIMEOUT,
+            task_soft_time_limit=settings.BUILD_TIMEOUT - 60,
+            worker_prefetch_multiplier=1,
+            task_acks_late=True,
+            worker_max_tasks_per_child=1000,
+        )
 
-# Task routing
-celery_app.conf.task_routes = {
-    "src.services.tasks.publish_site_task": {"queue": "publishing"},
-    "src.services.tasks.check_ssl_status_task": {"queue": "monitoring"},
-    "src.services.tasks.verify_domain_task": {"queue": "domains"},
-    "src.services.tasks.execute_workflow_task": {"queue": "workflows"},
-    "src.services.tasks.execute_workflow_node_task": {"queue": "workflows"},
-}
+        # Task routing
+        celery_app.conf.task_routes = {
+            "app.services.tasks.publish_site_task": {"queue": "publishing"},
+            "app.services.tasks.check_ssl_status_task": {"queue": "monitoring"},
+            "app.services.tasks.verify_domain_task": {"queue": "domains"},
+            "app.services.tasks.execute_workflow_task": {"queue": "workflows"},
+            "app.services.tasks.execute_workflow_node_task": {"queue": "workflows"},
+        }
 
-# Periodic tasks
-celery_app.conf.beat_schedule = {
-    "check-ssl-certificates": {
-        "task": "src.services.tasks.check_expiring_ssl_certificates",
-        "schedule": timedelta(hours=6),  # Check every 6 hours
-    },
-    "validate-deployments": {
-        "task": "src.services.tasks.validate_all_deployments",
-        "schedule": timedelta(hours=24),  # Check daily
-    },
-    "cleanup-failed-builds": {
-        "task": "src.services.tasks.cleanup_failed_builds",
-        "schedule": timedelta(hours=12),  # Cleanup twice daily
-    },
-}
+        # Periodic tasks
+        celery_app.conf.beat_schedule = {
+            "check-ssl-certificates": {
+                "task": "app.services.tasks.check_expiring_ssl_certificates",
+                "schedule": timedelta(hours=6),  # Check every 6 hours
+            },
+            "validate-deployments": {
+                "task": "app.services.tasks.validate_all_deployments",
+                "schedule": timedelta(hours=24),  # Check daily
+            },
+            "cleanup-failed-builds": {
+                "task": "app.services.tasks.cleanup_failed_builds",
+                "schedule": timedelta(hours=12),  # Cleanup twice daily
+            },
+        }
+    except Exception as e:
+        print(f"Failed to initialize Celery: {e}")
+        CELERY_AVAILABLE = False
+        celery_app = None
+else:
+    celery_app = None
 
+# Define task decorators that work even if Celery is not available
+def task_decorator(*args, **kwargs):
+    """A dummy task decorator that works when Celery is not available."""
+    def decorator(func):
+        # If Celery is available, use the real decorator
+        if CELERY_AVAILABLE and celery_app:
+            return celery_app.task(*args, **kwargs)(func)
+        # Otherwise, return the function as-is
+        return func
+    return decorator
 
-@celery_app.task(bind=True, name="src.services.tasks.publish_site_task")
+# Use the appropriate decorator based on Celery availability
+if CELERY_AVAILABLE and celery_app:
+    task = celery_app.task
+    bind_task = lambda *args, **kwargs: celery_app.task(bind=True, *args, **kwargs)
+else:
+    task = task_decorator
+    bind_task = lambda *args, **kwargs: task_decorator(bind=True, *args, **kwargs)
+
+@bind_task(name="app.services.tasks.publish_site_task")
 def publish_site_task(self, site_id: str, custom_domain: Optional[str] = None) -> Dict[str, Any]:
     """
     Background task to publish a site.
@@ -71,11 +104,12 @@ def publish_site_task(self, site_id: str, custom_domain: Optional[str] = None) -
         Publishing result
     """
     try:
-        # Update task status
-        self.update_state(
-            state="PROGRESS",
-            meta={"status": "Starting site generation", "progress": 10}
-        )
+        # Update task status if Celery is available
+        if CELERY_AVAILABLE:
+            self.update_state(
+                state="PROGRESS",
+                meta={"status": "Starting site generation", "progress": 10}
+            )
         
         # Run the publishing process
         publishing_service = PublishingService()
@@ -92,39 +126,42 @@ def publish_site_task(self, site_id: str, custom_domain: Optional[str] = None) -
             loop.close()
         
         if result["success"]:
-            self.update_state(
-                state="SUCCESS",
-                meta={
-                    "status": "Site published successfully",
-                    "progress": 100,
-                    "result": result
-                }
-            )
+            if CELERY_AVAILABLE:
+                self.update_state(
+                    state="SUCCESS",
+                    meta={
+                        "status": "Site published successfully",
+                        "progress": 100,
+                        "result": result
+                    }
+                )
         else:
-            self.update_state(
-                state="FAILURE",
-                meta={
-                    "status": "Publishing failed",
-                    "error": result.get("error"),
-                    "progress": 0
-                }
-            )
+            if CELERY_AVAILABLE:
+                self.update_state(
+                    state="FAILURE",
+                    meta={
+                        "status": "Publishing failed",
+                        "error": result.get("error"),
+                        "progress": 0
+                    }
+                )
         
         return result
         
     except Exception as e:
-        self.update_state(
-            state="FAILURE",
-            meta={
-                "status": "Publishing failed with exception",
-                "error": str(e),
-                "progress": 0
-            }
-        )
+        if CELERY_AVAILABLE:
+            self.update_state(
+                state="FAILURE",
+                meta={
+                    "status": "Publishing failed with exception",
+                    "error": str(e),
+                    "progress": 0
+                }
+            )
         raise
 
 
-@celery_app.task(name="src.services.tasks.verify_domain_task")
+@task(name="app.services.tasks.verify_domain_task")
 def verify_domain_task(domain: str, site_id: str) -> Dict[str, Any]:
     """
     Background task to verify domain ownership.
@@ -159,7 +196,7 @@ def verify_domain_task(domain: str, site_id: str) -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.check_ssl_status_task")
+@task(name="app.services.tasks.check_ssl_status_task")
 def check_ssl_status_task(published_site_id: str) -> Dict[str, Any]:
     """
     Background task to check SSL certificate status.
@@ -215,7 +252,7 @@ def check_ssl_status_task(published_site_id: str) -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.check_expiring_ssl_certificates")
+@task(name="app.services.tasks.check_expiring_ssl_certificates")
 def check_expiring_ssl_certificates() -> Dict[str, Any]:
     """
     Periodic task to check for expiring SSL certificates.
@@ -265,7 +302,7 @@ def check_expiring_ssl_certificates() -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.renew_ssl_certificate_task")
+@task(name="app.services.tasks.renew_ssl_certificate_task")
 def renew_ssl_certificate_task(published_site_id: str) -> Dict[str, Any]:
     """
     Background task to renew SSL certificate.
@@ -320,7 +357,7 @@ def renew_ssl_certificate_task(published_site_id: str) -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.validate_all_deployments")
+@task(name="app.services.tasks.validate_all_deployments")
 def validate_all_deployments() -> Dict[str, Any]:
     """
     Periodic task to validate all active deployments.
@@ -386,7 +423,7 @@ def validate_all_deployments() -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.cleanup_failed_builds")
+@task(name="app.services.tasks.cleanup_failed_builds")
 def cleanup_failed_builds() -> Dict[str, Any]:
     """
     Periodic task to clean up failed build artifacts.
@@ -441,7 +478,7 @@ def cleanup_failed_builds() -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.optimize_site_performance")
+@task(name="app.services.tasks.optimize_site_performance")
 def optimize_site_performance(site_id: str) -> Dict[str, Any]:
     """
     Background task to optimize site performance.
@@ -495,7 +532,7 @@ def optimize_site_performance(site_id: str) -> Dict[str, Any]:
 
 
 # Task for generating site analytics report
-@celery_app.task(name="src.services.tasks.generate_analytics_report")
+@task(name="app.services.tasks.generate_analytics_report")
 def generate_analytics_report(site_id: str, period: str = "30d") -> Dict[str, Any]:
     """
     Generate analytics report for a site.
@@ -563,7 +600,7 @@ def generate_analytics_report(site_id: str, period: str = "30d") -> Dict[str, An
 
 # Workflow Execution Tasks
 
-@celery_app.task(bind=True, name="src.services.tasks.execute_workflow_task")
+@bind_task(name="app.services.tasks.execute_workflow_task")
 def execute_workflow_task(self, execution_id: int) -> Dict[str, Any]:
     """
     Background task to execute a complete workflow.
@@ -686,7 +723,7 @@ def execute_workflow_task(self, execution_id: int) -> Dict[str, Any]:
         }
 
 
-@celery_app.task(name="src.services.tasks.execute_workflow_node_task")
+@task(name="app.services.tasks.execute_workflow_node_task")
 def execute_workflow_node_task(execution_id: int, node: Dict[str, Any]) -> Dict[str, Any]:
     """
     Execute a single workflow node.

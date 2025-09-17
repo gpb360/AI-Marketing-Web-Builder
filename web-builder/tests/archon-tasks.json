@@ -1,0 +1,568 @@
+[
+  {
+    "taskId": "test-frontend-page-1",
+    "title": "Test Frontend Page: /",
+    "description": "Validate the / page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-2",
+    "title": "Test Frontend Page: /auth/login",
+    "description": "Validate the /auth/login page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-3",
+    "title": "Test Frontend Page: /auth/register",
+    "description": "Validate the /auth/register page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-4",
+    "title": "Test Frontend Page: /dashboard",
+    "description": "Validate the /dashboard page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-5",
+    "title": "Test Frontend Page: /builder",
+    "description": "Validate the /builder page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-6",
+    "title": "Test Frontend Page: /builder/templates",
+    "description": "Validate the /builder/templates page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-7",
+    "title": "Test Frontend Page: /canvas",
+    "description": "Validate the /canvas page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-8",
+    "title": "Test Frontend Page: /canvas-ai",
+    "description": "Validate the /canvas-ai page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-9",
+    "title": "Test Frontend Page: /analytics",
+    "description": "Validate the /analytics page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-10",
+    "title": "Test Frontend Page: /analytics-dashboard",
+    "description": "Validate the /analytics-dashboard page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-11",
+    "title": "Test Frontend Page: /sla-dashboard",
+    "description": "Validate the /sla-dashboard page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-12",
+    "title": "Test Frontend Page: /smart-templates",
+    "description": "Validate the /smart-templates page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-13",
+    "title": "Test Frontend Page: /templates",
+    "description": "Validate the /templates page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-14",
+    "title": "Test Frontend Page: /migration",
+    "description": "Validate the /migration page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-15",
+    "title": "Test Frontend Page: /context-aware-demo",
+    "description": "Validate the /context-aware-demo page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-16",
+    "title": "Test Frontend Page: /test",
+    "description": "Validate the /test page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-17",
+    "title": "Test Frontend Page: /privacy",
+    "description": "Validate the /privacy page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-frontend-page-18",
+    "title": "Test Frontend Page: /terms",
+    "description": "Validate the /terms page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "frontend",
+      "testing",
+      "page-validation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-1",
+    "title": "Test Backend API Endpoint: /api/v1/auth/login",
+    "description": "Validate the /api/v1/auth/login API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "authentication"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-2",
+    "title": "Test Backend API Endpoint: /api/v1/auth/register",
+    "description": "Validate the /api/v1/auth/register API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "authentication"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-3",
+    "title": "Test Backend API Endpoint: /api/v1/auth/refresh",
+    "description": "Validate the /api/v1/auth/refresh API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "authentication"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-4",
+    "title": "Test Backend API Endpoint: /api/v1/templates",
+    "description": "Validate the /api/v1/templates API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "templates"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-5",
+    "title": "Test Backend API Endpoint: /api/v1/workflows",
+    "description": "Validate the /api/v1/workflows API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "workflows"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-6",
+    "title": "Test Backend API Endpoint: /api/v1/crm",
+    "description": "Validate the /api/v1/crm API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "crm"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-7",
+    "title": "Test Backend API Endpoint: /api/v1/publishing",
+    "description": "Validate the /api/v1/publishing API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "publishing"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-8",
+    "title": "Test Backend API Endpoint: /api/v1/collaboration",
+    "description": "Validate the /api/v1/collaboration API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "collaboration"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-9",
+    "title": "Test Backend API Endpoint: /api/v1/ws",
+    "description": "Validate the /api/v1/ws API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "workflows"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-10",
+    "title": "Test Backend API Endpoint: /api/v1/sla-optimization",
+    "description": "Validate the /api/v1/sla-optimization API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "sla"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-11",
+    "title": "Test Backend API Endpoint: /api/v1/sla-remediation",
+    "description": "Validate the /api/v1/sla-remediation API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "sla"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-12",
+    "title": "Test Backend API Endpoint: /api/v1/ai",
+    "description": "Validate the /api/v1/ai API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "ai"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "test-backend-endpoint-13",
+    "title": "Test Backend API Endpoint: /api/v1/business-context",
+    "description": "Validate the /api/v1/business-context API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "backend",
+      "testing",
+      "api-validation",
+      "business context"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "integration-test-1",
+    "title": "Frontend-Backend Authentication Integration",
+    "description": "Validate the complete authentication flow from frontend login/registration forms to backend API endpoints. Verify token handling, session management, and error scenarios.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "integration",
+      "authentication",
+      "frontend",
+      "backend"
+    ],
+    "dependencies": [],
+    "estimatedTime": "4 hours"
+  },
+  {
+    "taskId": "integration-test-2",
+    "title": "Template Management Integration",
+    "description": "Validate the template management workflow from frontend template selection to backend template API operations. Verify data consistency, error handling, and performance.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "integration",
+      "templates",
+      "frontend",
+      "backend"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "integration-test-3",
+    "title": "Workflow Builder Integration",
+    "description": "Validate the workflow builder functionality from frontend drag-and-drop interface to backend workflow API operations. Verify workflow persistence, execution, and real-time updates.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "integration",
+      "workflows",
+      "frontend",
+      "backend"
+    ],
+    "dependencies": [],
+    "estimatedTime": "5 hours"
+  },
+  {
+    "taskId": "integration-test-4",
+    "title": "AI Features Integration",
+    "description": "Validate the AI features integration from frontend component suggestions to backend AI service endpoints. Verify response quality, error handling, and performance metrics.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "integration",
+      "ai",
+      "frontend",
+      "backend"
+    ],
+    "dependencies": [],
+    "estimatedTime": "4 hours"
+  },
+  {
+    "taskId": "integration-test-5",
+    "title": "Real-time Collaboration Integration",
+    "description": "Validate the real-time collaboration features including WebSocket connections, presence indicators, and collaborative editing. Verify synchronization and conflict resolution.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "integration",
+      "collaboration",
+      "websocket",
+      "frontend",
+      "backend"
+    ],
+    "dependencies": [],
+    "estimatedTime": "6 hours"
+  },
+  {
+    "taskId": "reporting-task-1",
+    "title": "Generate Page Categorization Report",
+    "description": "Generate a comprehensive report categorizing all pages as workable or missing. Include detailed analysis of page functionality and test coverage.",
+    "status": "todo",
+    "priority": "medium",
+    "tags": [
+      "reporting",
+      "analysis",
+      "documentation"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  },
+  {
+    "taskId": "reporting-task-2",
+    "title": "Generate Test Execution Report",
+    "description": "Generate a comprehensive test execution report summarizing results from all frontend, backend, and integration tests. Include pass/fail statistics and performance metrics.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "reporting",
+      "testing",
+      "metrics"
+    ],
+    "dependencies": [],
+    "estimatedTime": "3 hours"
+  },
+  {
+    "taskId": "reporting-task-3",
+    "title": "Generate BMAD Archon Workflow Report",
+    "description": "Generate a final report for the BMAD Archon workflow system summarizing all test results, page categorizations, and recommendations for future work.",
+    "status": "todo",
+    "priority": "high",
+    "tags": [
+      "reporting",
+      "archon",
+      "bmad",
+      "workflow"
+    ],
+    "dependencies": [],
+    "estimatedTime": "2 hours"
+  }
+]

@@ -1,0 +1,517 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Archon Task Board - AI-Marketing-Web-Builder Testing</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        h1 { color: #333; text-align: center; }
+        .board { display: flex; gap: 20px; margin-top: 20px; }
+        .column { flex: 1; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .column-header { padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid #eee; }
+        .todo .column-header { background-color: #e9ecef; }
+        .doing .column-header { background-color: #d1ecf1; }
+        .review .column-header { background-color: #fff3cd; }
+        .complete .column-header { background-color: #d4edda; }
+        .tasks { padding: 15px; min-height: 300px; }
+        .task { background-color: #f8f9fa; border-radius: 6px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .task-title { font-weight: bold; margin-bottom: 8px; }
+        .task-description { font-size: 0.9em; color: #666; margin-bottom: 10px; }
+        .task-meta { display: flex; justify-content: space-between; font-size: 0.8em; color: #888; }
+        .task-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+        .tag { background-color: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; }
+        .priority-high { border-left: 4px solid #dc3545; }
+        .priority-medium { border-left: 4px solid #ffc107; }
+        .priority-low { border-left: 4px solid #28a745; }
+        .stats { text-align: center; margin: 20px 0; }
+        .stat { display: inline-block; margin: 0 15px; }
+        .stat-value { font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <h1>Archon Task Board - AI-Marketing-Web-Builder Testing</h1>
+    
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value">39</div>
+            <div>Total Tasks</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">39</div>
+            <div>To Do</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">0</div>
+            <div>Doing</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">0</div>
+            <div>Review</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">0</div>
+            <div>Complete</div>
+        </div>
+    </div>
+    
+    <div class="board">
+        <div class="column todo">
+            <div class="column-header">To Do (39)</div>
+            <div class="tasks">
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Frontend Page: /</div>
+                    <div class="task-description">Validate the / page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Frontend Page: /auth/login</div>
+                    <div class="task-description">Validate the /auth/login page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Frontend Page: /auth/register</div>
+                    <div class="task-description">Validate the /auth/register page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Frontend Page: /dashboard</div>
+                    <div class="task-description">Validate the /dashboard page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /builder</div>
+                    <div class="task-description">Validate the /builder page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /builder/templates</div>
+                    <div class="task-description">Validate the /builder/templates page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /canvas</div>
+                    <div class="task-description">Validate the /canvas page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /canvas-ai</div>
+                    <div class="task-description">Validate the /canvas-ai page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /analytics</div>
+                    <div class="task-description">Validate the /analytics page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /analytics-dashboard</div>
+                    <div class="task-description">Validate the /analytics-dashboard page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /sla-dashboard</div>
+                    <div class="task-description">Validate the /sla-dashboard page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /smart-templates</div>
+                    <div class="task-description">Validate the /smart-templates page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /templates</div>
+                    <div class="task-description">Validate the /templates page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /migration</div>
+                    <div class="task-description">Validate the /migration page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /context-aware-demo</div>
+                    <div class="task-description">Validate the /context-aware-demo page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /test</div>
+                    <div class="task-description">Validate the /test page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /privacy</div>
+                    <div class="task-description">Validate the /privacy page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Frontend Page: /terms</div>
+                    <div class="task-description">Validate the /terms page functionality including UI elements, navigation, and user interactions. Verify that the page loads correctly and all interactive elements work as expected.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">frontend</span><span class="tag">testing</span><span class="tag">page-validation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/auth/login</div>
+                    <div class="task-description">Validate the /api/v1/auth/login API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">authentication</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/auth/register</div>
+                    <div class="task-description">Validate the /api/v1/auth/register API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">authentication</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/auth/refresh</div>
+                    <div class="task-description">Validate the /api/v1/auth/refresh API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">authentication</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/templates</div>
+                    <div class="task-description">Validate the /api/v1/templates API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">templates</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/workflows</div>
+                    <div class="task-description">Validate the /api/v1/workflows API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">workflows</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/crm</div>
+                    <div class="task-description">Validate the /api/v1/crm API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">crm</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/publishing</div>
+                    <div class="task-description">Validate the /api/v1/publishing API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">publishing</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/collaboration</div>
+                    <div class="task-description">Validate the /api/v1/collaboration API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">collaboration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/ws</div>
+                    <div class="task-description">Validate the /api/v1/ws API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">workflows</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/sla-optimization</div>
+                    <div class="task-description">Validate the /api/v1/sla-optimization API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">sla</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/sla-remediation</div>
+                    <div class="task-description">Validate the /api/v1/sla-remediation API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">sla</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/ai</div>
+                    <div class="task-description">Validate the /api/v1/ai API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">ai</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Test Backend API Endpoint: /api/v1/business-context</div>
+                    <div class="task-description">Validate the /api/v1/business-context API endpoint functionality including request/response handling, error cases, and data validation. Verify that the endpoint behaves correctly under various conditions and returns appropriate status codes.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">backend</span><span class="tag">testing</span><span class="tag">api-validation</span><span class="tag">business context</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Frontend-Backend Authentication Integration</div>
+                    <div class="task-description">Validate the complete authentication flow from frontend login/registration forms to backend API endpoints. Verify token handling, session management, and error scenarios.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 4 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">integration</span><span class="tag">authentication</span><span class="tag">frontend</span><span class="tag">backend</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Template Management Integration</div>
+                    <div class="task-description">Validate the template management workflow from frontend template selection to backend template API operations. Verify data consistency, error handling, and performance.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">integration</span><span class="tag">templates</span><span class="tag">frontend</span><span class="tag">backend</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Workflow Builder Integration</div>
+                    <div class="task-description">Validate the workflow builder functionality from frontend drag-and-drop interface to backend workflow API operations. Verify workflow persistence, execution, and real-time updates.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 5 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">integration</span><span class="tag">workflows</span><span class="tag">frontend</span><span class="tag">backend</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">AI Features Integration</div>
+                    <div class="task-description">Validate the AI features integration from frontend component suggestions to backend AI service endpoints. Verify response quality, error handling, and performance metrics.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 4 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">integration</span><span class="tag">ai</span><span class="tag">frontend</span><span class="tag">backend</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Real-time Collaboration Integration</div>
+                    <div class="task-description">Validate the real-time collaboration features including WebSocket connections, presence indicators, and collaborative editing. Verify synchronization and conflict resolution.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 6 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">integration</span><span class="tag">collaboration</span><span class="tag">websocket</span><span class="tag">frontend</span><span class="tag">backend</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-medium">
+                    <div class="task-title">Generate Page Categorization Report</div>
+                    <div class="task-description">Generate a comprehensive report categorizing all pages as workable or missing. Include detailed analysis of page functionality and test coverage.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">reporting</span><span class="tag">analysis</span><span class="tag">documentation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Generate Test Execution Report</div>
+                    <div class="task-description">Generate a comprehensive test execution report summarizing results from all frontend, backend, and integration tests. Include pass/fail statistics and performance metrics.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 3 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">reporting</span><span class="tag">testing</span><span class="tag">metrics</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task priority-high">
+                    <div class="task-title">Generate BMAD Archon Workflow Report</div>
+                    <div class="task-description">Generate a final report for the BMAD Archon workflow system summarizing all test results, page categorizations, and recommendations for future work.</div>
+                    <div class="task-meta">
+                        <div>⏱️ 2 hours</div>
+                        <div class="task-tags">
+                            <span class="tag">reporting</span><span class="tag">archon</span><span class="tag">bmad</span><span class="tag">workflow</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="column doing">
+            <div class="column-header">Doing (0)</div>
+            <div class="tasks">
+                
+            </div>
+        </div>
+        
+        <div class="column review">
+            <div class="column-header">Review (0)</div>
+            <div class="tasks">
+                
+            </div>
+        </div>
+        
+        <div class="column complete">
+            <div class="column-header">Complete (0)</div>
+            <div class="tasks">
+                
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  

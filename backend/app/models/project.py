@@ -3,11 +3,11 @@ Project models for user-created websites and projects.
 """
 
 from typing import Optional, List, Dict, Any
-from sqlalchemy import String, Text, Boolean, JSON, Enum, ForeignKey
+from sqlalchemy import String, Text, Boolean, JSON, Enum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
 class ProjectStatus(str, enum.Enum):
@@ -18,7 +18,7 @@ class ProjectStatus(str, enum.Enum):
     DELETED = "deleted"
 
 
-class Project(Base, TimestampMixin):
+class Project(Base, TimestampMixin, UUIDMixin):
     """User project model for created websites."""
     
     __tablename__ = "projects"
@@ -28,8 +28,8 @@ class Project(Base, TimestampMixin):
     status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus), default=ProjectStatus.DRAFT)
     
     # Project relationships
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    template_id: Mapped[Optional[int]] = mapped_column(ForeignKey("templates.id"))
+    owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    template_id: Mapped[Optional[str]] = mapped_column(ForeignKey("templates.id"))
     
     # Project configuration
     config: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
@@ -60,7 +60,7 @@ class Project(Base, TimestampMixin):
         return f"<Project(id={self.id}, name='{self.name}', owner_id={self.owner_id})>"
 
 
-class ProjectPage(Base, TimestampMixin):
+class ProjectPage(Base, TimestampMixin, UUIDMixin):
     """Individual page within a project."""
     
     __tablename__ = "project_pages"
@@ -72,7 +72,7 @@ class ProjectPage(Base, TimestampMixin):
     # Page configuration
     is_homepage: Mapped[bool] = mapped_column(Boolean, default=False)
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
-    order_index: Mapped[int] = mapped_column(default=0)
+    order_index: Mapped[int] = mapped_column(Integer, default=0)
     
     # SEO for individual pages
     meta_title: Mapped[Optional[str]] = mapped_column(String(200))
@@ -80,7 +80,7 @@ class ProjectPage(Base, TimestampMixin):
     meta_keywords: Mapped[List[str]] = mapped_column(JSON, default=list)
     
     # Page relationships
-    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), nullable=False)
+    project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"), nullable=False)
     project: Mapped["Project"] = relationship("Project", back_populates="pages")
     
     def __repr__(self) -> str:

@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from datetime import datetime
 
-from app.models.crm import ContactStatus, ContactSource, EmailCampaignStatus
+from app.models.crm import ContactStatus, ContactSource, CampaignStatus as EmailCampaignStatus
 
 
 class CRMContactBase(BaseModel):

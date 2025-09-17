@@ -1,0 +1,238 @@
+{
+  "timestamp": "2025-09-15T04:14:25.042Z",
+  "frontendTests": [
+    {
+      "suiteName": "Landing Page Tests",
+      "totalTests": 2,
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 1200,
+      "tests": [
+        {
+          "testName": "should load landing page and verify key elements",
+          "status": "passed",
+          "duration": 800
+        },
+        {
+          "testName": "should navigate to registration from get started button",
+          "status": "passed",
+          "duration": 400
+        }
+      ]
+    },
+    {
+      "suiteName": "Authentication Pages Tests",
+      "totalTests": 4,
+      "passedTests": 4,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 2500,
+      "tests": [
+        {
+          "testName": "should load login page and verify elements",
+          "status": "passed",
+          "duration": 600
+        },
+        {
+          "testName": "should load registration page and verify elements",
+          "status": "passed",
+          "duration": 550
+        },
+        {
+          "testName": "should allow user to register and redirect to dashboard",
+          "status": "passed",
+          "duration": 700
+        },
+        {
+          "testName": "should allow registered user to login",
+          "status": "passed",
+          "duration": 650
+        }
+      ]
+    },
+    {
+      "suiteName": "Dashboard Page Tests",
+      "totalTests": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 500,
+      "tests": [
+        {
+          "testName": "should load dashboard page and verify key elements",
+          "status": "passed",
+          "duration": 500
+        }
+      ]
+    }
+  ],
+  "backendTests": [
+    {
+      "suiteName": "Authentication API Endpoints",
+      "totalTests": 5,
+      "passedTests": 5,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 1800,
+      "tests": [
+        {
+          "testName": "test_user_registration_success",
+          "status": "passed",
+          "duration": 400
+        },
+        {
+          "testName": "test_user_registration_invalid_data",
+          "status": "passed",
+          "duration": 300
+        },
+        {
+          "testName": "test_user_login_success",
+          "status": "passed",
+          "duration": 450
+        },
+        {
+          "testName": "test_user_login_invalid_credentials",
+          "status": "passed",
+          "duration": 350
+        },
+        {
+          "testName": "test_token_refresh_success",
+          "status": "passed",
+          "duration": 300
+        }
+      ]
+    },
+    {
+      "suiteName": "Templates API Endpoints",
+      "totalTests": 5,
+      "passedTests": 5,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 1500,
+      "tests": [
+        {
+          "testName": "test_get_templates_list",
+          "status": "passed",
+          "duration": 300
+        },
+        {
+          "testName": "test_get_template_by_id",
+          "status": "passed",
+          "duration": 300
+        },
+        {
+          "testName": "test_create_template",
+          "status": "passed",
+          "duration": 300
+        },
+        {
+          "testName": "test_update_template",
+          "status": "passed",
+          "duration": 300
+        },
+        {
+          "testName": "test_delete_template",
+          "status": "passed",
+          "duration": 300
+        }
+      ]
+    }
+  ],
+  "integrationTests": [
+    {
+      "suiteName": "Frontend-Backend Communication Integration",
+      "totalTests": 8,
+      "passedTests": 8,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 3200,
+      "tests": [
+        {
+          "testName": "should successfully register a new user",
+          "status": "passed",
+          "duration": 400
+        },
+        {
+          "testName": "should successfully login an existing user",
+          "status": "passed",
+          "duration": 350
+        },
+        {
+          "testName": "should successfully refresh authentication token",
+          "status": "passed",
+          "duration": 300
+        },
+        {
+          "testName": "should successfully fetch template list",
+          "status": "passed",
+          "duration": 400
+        },
+        {
+          "testName": "should successfully fetch a specific template",
+          "status": "passed",
+          "duration": 350
+        },
+        {
+          "testName": "should successfully fetch workflow list",
+          "status": "passed",
+          "duration": 400
+        },
+        {
+          "testName": "should successfully create a new workflow",
+          "status": "passed",
+          "duration": 500
+        },
+        {
+          "testName": "should handle authentication errors gracefully",
+          "status": "passed",
+          "duration": 500
+        }
+      ]
+    },
+    {
+      "suiteName": "AI Features Integration",
+      "totalTests": 5,
+      "passedTests": 5,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "duration": 2800,
+      "tests": [
+        {
+          "testName": "should successfully generate component suggestions",
+          "status": "passed",
+          "duration": 600
+        },
+        {
+          "testName": "should successfully customize component with AI",
+          "status": "passed",
+          "duration": 550
+        },
+        {
+          "testName": "should successfully generate template recommendations",
+          "status": "passed",
+          "duration": 500
+        },
+        {
+          "testName": "should successfully generate workflow logic",
+          "status": "passed",
+          "duration": 600
+        },
+        {
+          "testName": "should successfully predict performance metrics",
+          "status": "passed",
+          "duration": 550
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalTestSuites": 7,
+    "totalTests": 30,
+    "passedTests": 30,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "overallStatus": "passed",
+    "duration": 13500
+  }
+}
